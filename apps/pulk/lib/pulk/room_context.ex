@@ -1,6 +1,5 @@
 defmodule Pulk.RoomContext do
   alias Pulk.Room.RoomManager
-  alias Pulk.Player.PlayerManager
 
   @spec create_room(Pulk.Room.t()) :: {:ok, Pulk.Room.t()} | {:error, :already_started}
   def create_room(%Pulk.Room{} = room) do
@@ -23,7 +22,7 @@ defmodule Pulk.RoomContext do
 
     case DynamicSupervisor.start_child(
            Pulk.Room.PlayersSupervisor.via_tuple(room),
-           {Pulk.Player.PlayerManager, [player: room_player]}
+           {Pulk.Player.PlayerManager, [player: room_player, room: room]}
          ) do
       {:ok, _} -> {:ok, room_player}
       {:error, {:already_started, _}} -> {:error, :already_added}

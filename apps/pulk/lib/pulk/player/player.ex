@@ -7,7 +7,6 @@ defmodule Pulk.Player do
   @enforce_keys [:player_id]
   defstruct [:player_id, :room_id]
 
-
   @spec create() :: Pulk.Player.t()
   @spec create(Map.t()) :: Pulk.Player.t()
   def create(attrs \\ %{}) do

@@ -1,5 +1,4 @@
-alias Pulk.GameMaster
-alias Pulk.RoomMaster
+alias Pulk.RoomContext
 
-{:ok, room} = GameMaster.create_room(Pulk.Room.create())
+{:ok, room} = RoomContext.create_room(Pulk.Room.create())
 player = Pulk.Player.create()

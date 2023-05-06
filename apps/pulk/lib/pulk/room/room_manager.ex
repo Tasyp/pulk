@@ -23,7 +23,6 @@ defmodule Pulk.Room.RoomManager do
     end
   end
 
-  @spec via_tuple(String.t()) :: {:via, Registry, {Pulk.Registry, any}}
   def via_tuple(room_id) do
     Pulk.Registry.via_tuple({__MODULE__, room_id})
   end
