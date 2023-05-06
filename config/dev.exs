@@ -26,7 +26,6 @@ config :pulk_web, PulkWeb.Endpoint,
   secret_key_base: "oZXnu746+vsAHr9IutPB2rC8gXjax3zo6ajLmEHe+SdGQZT0XQNsEiwnlDPsLofk",
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
-    tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
   ]
 
 # ## SSL Support
@@ -57,7 +56,6 @@ config :pulk_web, PulkWeb.Endpoint,
   live_reload: [
     patterns: [
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
-      ~r"priv/gettext/.*(po)$",
       ~r"lib/pulk_web/(controllers|live|components)/.*(ex|heex)$"
     ]
   ]

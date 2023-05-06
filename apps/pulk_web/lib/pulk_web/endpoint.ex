@@ -7,7 +7,7 @@ defmodule PulkWeb.Endpoint do
   @session_options [
     store: :cookie,
     key: "_pulk_web_key",
-    signing_salt: "4jaqQ3IQ",
+    signing_salt: "lzKoei9J",
     same_site: "Lax"
   ]
 

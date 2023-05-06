@@ -10,15 +10,13 @@ defmodule Pulk.Application do
       # Start the Ecto repository
       # Pulk.Repo,
       # Start the PubSub system
-      # {Phoenix.PubSub, name: Pulk.PubSub},
+      {Phoenix.PubSub, name: Pulk.PubSub},
       # Start Finch
       # {Finch, name: Pulk.Finch},
       Pulk.Pg,
       {Task.Supervisor, name: Pulk.TaskSupervisor},
       Pulk.Registry,
       Pulk.Game.Supervisor
-      # Start a worker by calling: Pulk.Worker.start_link(arg)
-      # {Pulk.Worker, arg}
     ]
 
     Supervisor.start_link(children, strategy: :one_for_one, name: Pulk.Supervisor)

@@ -43,7 +43,6 @@ defmodule PulkWeb do
         layouts: [html: PulkWeb.Layouts]
 
       import Plug.Conn
-      import PulkWeb.Gettext
 
       unquote(verified_routes())
     end
@@ -85,7 +84,6 @@ defmodule PulkWeb do
       import Phoenix.HTML
       # Core UI components and translation
       import PulkWeb.CoreComponents
-      import PulkWeb.Gettext
 
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS

@@ -1,2 +1,2 @@
 ExUnit.start()
-Ecto.Adapters.SQL.Sandbox.mode(Pulk.Repo, :manual)
+Ecto.Adapters.SQL.Sandbox.mode(PulkWeb.Repo, :manual)
