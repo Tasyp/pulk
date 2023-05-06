@@ -1,4 +1,4 @@
-defmodule Pulk.RoomMaster do
+defmodule Pulk.RoomContext do
   alias Pulk.Room.RoomManager
   alias Pulk.Player.PlayerManager
 
