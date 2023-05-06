@@ -36,11 +36,11 @@ defmodule Pulk.Game.Board do
     |> Enum.map(fn _ -> 1..sizeX |> Enum.map(fn _ -> Figure.create!() end) end)
   end
 
-  @spec update_board(t(), list(list(String.t()))) ::
+  @spec update_from_raw_matrix(t(), list(list(String.t()))) ::
           {:ok, t()} | {:error, :invalid_figures} | {:error, :invalid_size}
-  def update_board(%__MODULE__{} = board, raw_matrix) do
-    with :ok <- is_board_parsable?(raw_matrix),
-         :ok <- is_board_size_correct?(board, raw_matrix) do
+  def update_from_raw_matrix(%__MODULE__{} = board, raw_matrix) do
+    with :ok <- is_matrix_parsable?(raw_matrix),
+         :ok <- is_matrix_size_correct?(board, raw_matrix) do
       parsed_matrix =
         raw_matrix
         |> Enum.map(&Enum.map(&1, fn cell -> Figure.create!(cell) end))
@@ -49,8 +49,8 @@ defmodule Pulk.Game.Board do
     end
   end
 
-  @spec is_board_size_correct?(t(), list(list(String.t()))) :: :ok | {:error, :invalid_size}
-  def is_board_size_correct?(%__MODULE__{sizeX: sizeX, sizeY: sizeY}, raw_matrix) do
+  @spec is_matrix_size_correct?(t(), list(list(String.t()))) :: :ok | {:error, :invalid_size}
+  def is_matrix_size_correct?(%__MODULE__{sizeX: sizeX, sizeY: sizeY}, raw_matrix) do
     actualSizeY = length(raw_matrix)
 
     actualSizesX =
@@ -63,8 +63,8 @@ defmodule Pulk.Game.Board do
     end
   end
 
-  @spec is_board_parsable?(list(list(String.t()))) :: :ok | {:error, :invalid_figures}
-  def is_board_parsable?(raw_matrix) do
+  @spec is_matrix_parsable?(list(list(String.t()))) :: :ok | {:error, :invalid_figures}
+  def is_matrix_parsable?(raw_matrix) do
     parsable? =
       raw_matrix
       |> Enum.flat_map(fn row ->

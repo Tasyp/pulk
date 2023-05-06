@@ -1,6 +1,8 @@
 defmodule Pulk.Player.PlayerManager do
   use GenServer
 
+  alias Pulk.Game.Board
+
   def start_link(init_args) do
     player = Keyword.fetch!(init_args, :player)
     room = Keyword.fetch!(init_args, :room)
@@ -12,11 +14,11 @@ defmodule Pulk.Player.PlayerManager do
     )
   end
 
-  @spec is_player_present?(String.t()) :: boolean()
+  @spec is_player_present?(String.t()) :: :ok | {:error, :unknown_player}
   def is_player_present?(player_id) do
     case Pulk.Registry.lookup({__MODULE__, player_id}) do
-      [] -> false
-      _ -> true
+      [] -> {:error, :unknown_player}
+      _ -> :ok
     end
   end
 
@@ -28,29 +30,35 @@ defmodule Pulk.Player.PlayerManager do
     GenServer.call(pid, :get_board)
   end
 
-  def update_board(pid, board) do
-    GenServer.cast(pid, {:update_board, board})
+  def update_raw_matrix(pid, raw_matrix) do
+    GenServer.call(pid, {:update_raw_matrix, raw_matrix})
   end
 
   @impl true
   def init(%{room: %Pulk.Room{} = room, player: %Pulk.Player{} = player}) do
-    board = Pulk.Game.Board.create(room.board_size)
+    board = Board.create(room.board_size)
     {:ok, %{player: player, board: board}}
   end
 
   @impl true
   def handle_call(:get_player, _from, %{player: player} = state) do
-    {:reply, player, state}
+    {:reply, {:ok, player}, state}
   end
 
   @impl true
   def handle_call(:get_board, _from, %{board: board} = state) do
-    {:reply, board, state}
+    {:reply, {:ok, board}, state}
   end
 
   @impl true
-  def handle_cast({:update_board, board}, state) do
-    {:noreply, %{state | board: board}}
+  def handle_call({:update_raw_matrix, raw_matrix}, _from, %{board: board} = state) do
+    {response, state} =
+      case Board.update_from_raw_matrix(board, raw_matrix) do
+        {:ok, board} -> {{:ok, board}, %{state | board: board}}
+        error -> {error, state}
+      end
+
+    {:reply, response, state}
   end
 
   def lookup(player_id) do

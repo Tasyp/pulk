@@ -1,12 +1,30 @@
 defmodule Pulk.PlayerContext do
   alias Pulk.Player.PlayerManager
+  alias Pulk.Game.Board
 
-  @spec get_player(String.t()) :: {:error, :not_found} | {:ok, Pulk.Player.t()}
+  @spec get_player(String.t()) :: {:error, :unknown_player} | {:ok, Pulk.Player.t()}
   def get_player(player_id) do
-    if PlayerManager.is_player_present?(player_id) do
+    with :ok <- PlayerManager.is_player_present?(player_id) do
       PlayerManager.get_player(PlayerManager.via_tuple(player_id))
-    else
-      :error
+    end
+  end
+
+  @spec get_board(String.t()) :: {:ok, Board.t()} | {:error, :unknown_player}
+  def get_board(player_id) do
+    with :ok <- PlayerManager.is_player_present?(player_id) do
+      PlayerManager.get_board(PlayerManager.via_tuple(player_id))
+    end
+  end
+
+  @spec update_board_matrix(String.t(), list(list(String.t()))) ::
+          {:ok, Board.t()}
+          | {:error, :unknown_player}
+          | {:error, :invalid_figures}
+          | {:error, :invalid_size}
+
+  def update_board_matrix(player_id, matrix) do
+    with :ok <- PlayerManager.is_player_present?(player_id) do
+      PlayerManager.update_raw_matrix(PlayerManager.via_tuple(player_id), matrix)
     end
   end
 end
