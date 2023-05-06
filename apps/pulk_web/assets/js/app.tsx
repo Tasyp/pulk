@@ -16,6 +16,8 @@
 //
 
 // Include phoenix_html to handle method=PUT/DELETE in forms and buttons.
+import "../css/app.css"
+
 import "phoenix_html"
 import React from "react";
 import { createRoot } from 'react-dom/client';
@@ -24,4 +26,4 @@ import App from ".";
 
 const container = document.getElementById("app");
 const root = createRoot(container!);
-root.render(<App name="New World" />);
+root.render(<App />);
