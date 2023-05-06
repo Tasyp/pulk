@@ -10,14 +10,16 @@ defmodule Pulk.Room do
 
   @default_player_limit 5
 
+  @spec create() :: Pulk.Room.t()
   @spec create(Map.t()) :: Pulk.Room.t()
   def create(attrs \\ %{}) when is_map(attrs) do
     %__MODULE__{
-      room_id: Map.get(attrs, :room_id, generate_id()) || generate_id(),
+      room_id: Map.get(attrs, :room_id) || generate_id(),
       max_player_limit: Map.get(attrs, :max_player_limit, @default_player_limit)
     }
   end
 
+  @spec generate_id() :: Ecto.UUID.t()
   def generate_id do
     Ecto.UUID.generate()
   end
