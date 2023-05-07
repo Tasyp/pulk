@@ -1,6 +1,4 @@
 defmodule Pulk.RoomContext do
-  alias nil
-  alias nil
   alias Pulk.Room.RoomManager
 
   @spec create_room(Pulk.Room.t()) :: {:ok, Pulk.Room.t()} | {:error, :already_started}
@@ -110,7 +108,7 @@ defmodule Pulk.RoomContext do
     end
   end
 
-  @spec is_room_available?(String.t()) || :ok | {:error, :unknown_room} | {:error, :room_busy}
+  @spec is_room_available?(String.t()) :: :ok | {:error, :unknown_room} | {:error, :room_busy}
   def is_room_available?(room_id) do
     room_availability =
       with :ok <- RoomManager.is_room_present?(room_id) do

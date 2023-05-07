@@ -17,13 +17,14 @@ defmodule PulkWeb.Router do
   scope "/", PulkWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    get "/", PageController, :index
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", PulkWeb do
-  #   pipe_through :api
-  # end
+  scope "/api", PulkWeb do
+    pipe_through :api
+
+    get "/room", RoomController, :index
+  end
 
   # Enable LiveDashboard in development
   if Application.compile_env(:pulk_web, :dev_routes) do
