@@ -24,6 +24,10 @@ import { createRoot } from 'react-dom/client';
 
 import App from ".";
 
+import { setup } from "goober";
+
+setup(React.createElement);
+
 const container = document.getElementById("app");
 const root = createRoot(container!);
 root.render(<App />);

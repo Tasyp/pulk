@@ -25,7 +25,7 @@ config :pulk_web, PulkWeb.Endpoint,
   debug_errors: true,
   secret_key_base: "oZXnu746+vsAHr9IutPB2rC8gXjax3zo6ajLmEHe+SdGQZT0XQNsEiwnlDPsLofk",
   watchers: [
-    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
+    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]}
   ]
 
 # ## SSL Support
