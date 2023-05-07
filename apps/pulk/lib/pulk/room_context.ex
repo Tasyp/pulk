@@ -1,4 +1,6 @@
 defmodule Pulk.RoomContext do
+  alias nil
+  alias nil
   alias Pulk.Room.RoomManager
 
   @spec create_room(Pulk.Room.t()) :: {:ok, Pulk.Room.t()} | {:error, :already_started}
@@ -13,7 +15,7 @@ defmodule Pulk.RoomContext do
   end
 
   @spec add_player(Pulk.Room.t(), Pulk.Player.t()) ::
-          {:ok} | {:error, :already_added} | {:error, :too_many_players}
+          {:ok, Pulk.Player.t()} | {:error, :already_added} | {:error, :too_many_players}
   def add_player(
         %Pulk.Room{} = room,
         %Pulk.Player{} = player
@@ -75,7 +77,7 @@ defmodule Pulk.RoomContext do
         {:ok, _value} -> true
         _ -> false
       end)
-      |> Enum.map(fn {:ok, response} -> response end)
+      |> Enum.map(fn {:ok, {:ok, response}} -> response end)
       |> Enum.sort_by(fn %{player_count: player_count} -> player_count end, :desc)
       |> List.first()
 
@@ -101,12 +103,24 @@ defmodule Pulk.RoomContext do
     rooms
   end
 
-  @spec get_room(String.t()) :: {:error, :not_found} | {:ok, Pulk.Room.t()}
+  @spec get_room(String.t()) :: {:error, :unknown_room} | {:ok, Pulk.Room.t()}
   def get_room(room_id) do
-    if RoomManager.is_room_present?(room_id) do
+    with :ok <- RoomManager.is_room_present?(room_id) do
       RoomManager.get_room(RoomManager.via_tuple(room_id))
-    else
-      :error
+    end
+  end
+
+  @spec is_room_available?(String.t()) || :ok | {:error, :unknown_room} | {:error, :room_busy}
+  def is_room_available?(room_id) do
+    room_availability =
+      with :ok <- RoomManager.is_room_present?(room_id) do
+        RoomManager.get_availability(RoomManager.via_tuple(room_id))
+      end
+
+    case room_availability do
+      {:error, reason} -> {:error, reason}
+      {:ok, %{is_available: true}} -> :ok
+      _ -> {:error, :room_busy}
     end
   end
 end

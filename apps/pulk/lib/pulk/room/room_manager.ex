@@ -15,11 +15,11 @@ defmodule Pulk.Room.RoomManager do
     GenServer.call(pid, :get_availability)
   end
 
-  @spec is_room_present?(String.t()) :: boolean()
+  @spec is_room_present?(String.t()) :: :ok | {:error, :unknown_room}
   def is_room_present?(room_id) do
     case Pulk.Registry.lookup({__MODULE__, room_id}) do
-      [] -> false
-      _ -> true
+      [] -> {:error, :unknown_room}
+      _ -> :ok
     end
   end
 
@@ -49,12 +49,13 @@ defmodule Pulk.Room.RoomManager do
     %{specs: player_count} =
       DynamicSupervisor.count_children(Pulk.Room.PlayersSupervisor.via_tuple(room))
 
-    {:reply,
-     %{
-       room: room,
-       is_available: player_count < room.max_player_limit,
-       player_count: player_count
-     }, state}
+    response = %{
+      room: room,
+      is_available: player_count < room.max_player_limit,
+      player_count: player_count
+    }
+
+    {:reply, {:ok, response}, state}
   end
 
   @impl true
