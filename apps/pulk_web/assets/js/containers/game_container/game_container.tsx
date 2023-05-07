@@ -1,35 +1,36 @@
-import React from 'react'
-import { styled } from 'goober'
+import React from "react";
+import { styled } from "goober";
 
-import { TetrisField } from '../tetris_field'
-import { BoardView } from '../../components'
-import { getTestMatrix } from '../../lib/matrix'
-
-interface Props {
-
-}
+import { TetrisField } from "../tetris_field";
+import { BoardView } from "../../components";
+import { getTestMatrix } from "../../lib/matrix";
 
 const Container = styled("div")`
   display: flex;
   height: 100%;
-`
+`;
 
 const PlayerColumn = styled("div")`
   display: flex;
   justify-content: center;
   align-items: center;
   width: 40%;
-`
+`;
 
 const ComptetitorsColumn = styled<{ side?: "left" | "right" }>("div")`
   display: flex;
   width: 40%;
   padding: 16px;
   gap: 8px;
-  justify-content: ${(props) => props.side === 'left' ? 'flex-end' : 'flex-start'};
-`
+  justify-content: ${(props) =>
+    props.side === "left" ? "flex-end" : "flex-start"};
+`;
 
-const ViewContainer = styled("div")``
+interface Props {
+  roomId: string;
+}
+
+const ViewContainer = styled("div")``;
 
 export const GameContainer: React.FunctionComponent<Props> = () => {
   return (
@@ -48,5 +49,5 @@ export const GameContainer: React.FunctionComponent<Props> = () => {
         </ViewContainer>
       </ComptetitorsColumn>
     </Container>
-  )
-}
+  );
+};

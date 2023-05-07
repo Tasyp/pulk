@@ -1,13 +1,15 @@
-import React from 'react'
-import { getClassName } from 'react-tetris/lib/models/Piece';
+import React from "react";
+import { getClassName } from "react-tetris/lib/models/Piece";
 
-import { Matrix, composeTetrisMatrix } from '../../lib/matrix';
+import { Matrix, composeTetrisMatrix } from "../../lib/matrix";
 
 interface Props {
   matrix: Matrix;
 }
 
-export const BoardView: React.FunctionComponent<Props> = ({ matrix: inputMatrix }) => {
+export const BoardView: React.FunctionComponent<Props> = ({
+  matrix: inputMatrix,
+}) => {
   const matrix = composeTetrisMatrix(inputMatrix);
 
   return (
@@ -15,8 +17,9 @@ export const BoardView: React.FunctionComponent<Props> = ({ matrix: inputMatrix 
       <tbody>
         {matrix.map((row, i) => {
           const blocksInRow = row.map((block, j) => {
-            const classString = `game-block ${block ? getClassName(block) : 'block-empty'
-              }`;
+            const classString = `game-block ${
+              block ? getClassName(block) : "block-empty"
+            }`;
             return <td key={j} className={classString} />;
           });
 
@@ -24,5 +27,5 @@ export const BoardView: React.FunctionComponent<Props> = ({ matrix: inputMatrix 
         })}
       </tbody>
     </table>
-  )
+  );
 };

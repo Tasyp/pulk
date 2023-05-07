@@ -1,2 +1,2 @@
-export * from './matrix'
-export * from './utils'
+export * from "./matrix";
+export * from "./utils";

@@ -1,19 +1,21 @@
-import { Matrix as TetrisMatrix } from 'react-tetris/lib/models/Matrix'
+import { Matrix as TetrisMatrix } from "react-tetris/lib/models/Matrix";
 
 import { Matrix } from "./matrix";
 
 export const composeTetrisMatrix = (matrix: Matrix): TetrisMatrix => {
-  return matrix.map(row => row.map((value) => {
-    switch (value) {
-      case '':
-        return null;
-      default:
-        return value;
-    }
-  }))
-}
+  return matrix.map((row) =>
+    row.map((value) => {
+      switch (value) {
+        case "":
+          return null;
+        default:
+          return value;
+      }
+    })
+  );
+};
 
-const getEmptyLine = (count: number) => new Array(count).fill("")
+const getEmptyLine = (count: number) => new Array(count).fill("");
 
 export const getTestMatrix = (): Matrix => {
   return [
@@ -27,5 +29,5 @@ export const getTestMatrix = (): Matrix => {
     [null, "I", null, null, null],
     [null, "I", null, null, null],
     [null, "I", null, null, null],
-  ]
-}
+  ];
+};

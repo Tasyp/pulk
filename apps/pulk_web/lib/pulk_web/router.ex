@@ -14,16 +14,16 @@ defmodule PulkWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/", PulkWeb do
-    pipe_through :browser
-
-    get "/", PageController, :index
-  end
-
   scope "/api", PulkWeb do
     pipe_through :api
 
     get "/room", RoomController, :index
+  end
+
+  scope "/", PulkWeb do
+    pipe_through :browser
+
+    get "/*path", PageController, :index
   end
 
   # Enable LiveDashboard in development

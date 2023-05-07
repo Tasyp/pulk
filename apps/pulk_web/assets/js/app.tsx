@@ -16,11 +16,11 @@
 //
 
 // Include phoenix_html to handle method=PUT/DELETE in forms and buttons.
-import "../css/app.css"
+import "../css/app.css";
 
-import "phoenix_html"
+import "phoenix_html";
 import React from "react";
-import { createRoot } from 'react-dom/client';
+import { createRoot } from "react-dom/client";
 
 import App from ".";
 
