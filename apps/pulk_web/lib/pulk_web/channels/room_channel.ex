@@ -1,6 +1,7 @@
 defmodule PulkWeb.RoomChannel do
   use PulkWeb, :channel
   alias Pulk.RoomContext
+  alias Pulk.PlayerContext
   alias Pulk.Game.Board
 
   @impl true
@@ -8,28 +9,36 @@ defmodule PulkWeb.RoomChannel do
     player = Pulk.Player.create()
 
     response =
-      with {:ok, room} = RoomContext.get_room(room_id) do
+      with {:ok, room} <- RoomContext.get_room(room_id) do
         RoomContext.add_player(room, player)
       end
 
-    assign(socket, :player_id, player.player_id)
-    assign(socket, :room_id, room_id)
+    socket = assign(socket, :player_id, player.player_id)
+    socket = assign(socket, :room_id, room_id)
 
     case response do
-      :ok -> {:ok, socket}
+      {:ok, _player} -> {:ok, %{"player_id" => player.player_id}, socket}
       {:error, reason} -> {:error, %{reason: to_string(reason)}}
     end
   end
 
   @impl true
   def handle_in("board_update", %{"matrix" => matrix}, socket) do
-    if Board.is_matrix_parsable?(matrix) do
-      broadcast(socket, "board_update", %{
-        "matrix" => matrix,
-        "player_id" => socket.assigns.player_id
-      })
-    end
+    response =
+      case PlayerContext.update_board_matrix(socket.assigns.player_id, matrix) do
+        {:ok, board} ->
+          broadcast(socket, "board_update", %{
+            "matrix" => Board.to_raw_matrix(board),
+            "player_id" => socket.assigns.player_id
+          })
 
-    {:noreply, socket}
+          # TODO: Handle broadcast failure properly
+          :ok
+
+        {:error, reason} ->
+          {:error, %{reason: to_string(reason)}}
+      end
+
+    {:reply, response, socket}
   end
 end

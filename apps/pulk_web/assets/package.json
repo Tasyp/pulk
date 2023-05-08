@@ -1,10 +1,14 @@
 {
+  "license": "UNLICENSED",
   "scripts": {
     "format": "prettier --write .",
     "lint": "prettier --check ."
   },
   "dependencies": {
     "goober": "^2.1.13",
+    "phoenix": "../../../deps/phoenix",
+    "phoenix_html": "../../../deps/phoenix_html",
+    "phoenix_live_view": "../../../deps/phoenix_live_view",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-tetris": "^0.3.0",
@@ -12,6 +16,7 @@
     "wouter": "^2.10.1"
   },
   "devDependencies": {
+    "@types/phoenix": "^1.5.6",
     "@types/react": "^18.2.6",
     "@types/react-dom": "^18.2.4",
     "csstype": "^3.1.2",

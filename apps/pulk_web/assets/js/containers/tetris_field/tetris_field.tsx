@@ -1,13 +1,20 @@
 import React from "react";
 import Tetris from "react-tetris";
 
+import { Matrix } from "../../lib/matrix";
+import { GameMatrixObserver } from "./game_matrix_observer";
+
 import { styled } from "goober";
 
 const Container = styled("div")`
   display: flex;
 `;
 
-export const TetrisField: React.FunctionComponent = () => {
+interface Props {
+  setMatrix: (matrix: Matrix) => void;
+}
+
+export const TetrisField: React.FunctionComponent<Props> = ({ setMatrix }) => {
   return (
     <Tetris
       keyboardControls={{
@@ -25,11 +32,9 @@ export const TetrisField: React.FunctionComponent = () => {
         shift: "HOLD",
       }}
     >
-      {({ HeldPiece, Gameboard, state, controller }) => (
+      {({ Gameboard, state, controller }) => (
         <Container>
-          {/* <div>
-            <HeldPiece />
-          </div> */}
+          <GameMatrixObserver setMatrix={setMatrix} />
           <Gameboard />
           {/* <PieceQueue /> */}
           {state === "LOST" && (

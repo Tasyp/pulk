@@ -60,6 +60,6 @@ defmodule Pulk.Room.RoomManager do
 
   @impl true
   def handle_call(:get_room, _from, %{room: room} = state) do
-    {:reply, room, state}
+    {:reply, {:ok, room}, state}
   end
 end

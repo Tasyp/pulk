@@ -21,7 +21,6 @@ defmodule Pulk.PlayerContext do
           | {:error, :unknown_player}
           | {:error, :invalid_figures}
           | {:error, :invalid_size}
-
   def update_board_matrix(player_id, matrix) do
     with :ok <- PlayerManager.is_player_present?(player_id) do
       PlayerManager.update_raw_matrix(PlayerManager.via_tuple(player_id), matrix)

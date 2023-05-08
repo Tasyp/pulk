@@ -15,6 +15,21 @@ export const composeTetrisMatrix = (matrix: Matrix): TetrisMatrix => {
   );
 };
 
+export const composeMatrix = (matrix: TetrisMatrix): Matrix => {
+  return matrix.map((row) =>
+    row.map((value) => {
+      switch (value) {
+        case "ghost":
+          return "";
+        case null:
+          return "";
+        default:
+          return value;
+      }
+    })
+  );
+};
+
 const getEmptyLine = (count: number) => new Array(count).fill("");
 
 export const getTestMatrix = (): Matrix => {

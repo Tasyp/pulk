@@ -20,12 +20,6 @@ defmodule PulkWeb.Router do
     get "/room", RoomController, :index
   end
 
-  scope "/", PulkWeb do
-    pipe_through :browser
-
-    get "/*path", PageController, :index
-  end
-
   # Enable LiveDashboard in development
   if Application.compile_env(:pulk_web, :dev_routes) do
     # If you want to use the LiveDashboard in production, you should put
@@ -40,5 +34,11 @@ defmodule PulkWeb.Router do
 
       live_dashboard "/dashboard", metrics: PulkWeb.Telemetry
     end
+  end
+
+  scope "/", PulkWeb do
+    pipe_through :browser
+
+    get "/*path", PageController, :index
   end
 end

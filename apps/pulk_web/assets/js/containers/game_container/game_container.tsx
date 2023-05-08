@@ -2,8 +2,9 @@ import React from "react";
 import { styled } from "goober";
 
 import { TetrisField } from "../tetris_field";
-import { BoardView } from "../../components";
+import { BoardView, LoadingSpinner } from "../../components";
 import { getTestMatrix } from "../../lib/matrix";
+import { useRoom } from "./hooks";
 
 const Container = styled("div")`
   display: flex;
@@ -32,16 +33,32 @@ interface Props {
 
 const ViewContainer = styled("div")``;
 
-export const GameContainer: React.FunctionComponent<Props> = () => {
+export const GameContainer: React.FunctionComponent<Props> = ({ roomId }) => {
+  const { setMatrix, error, otherPlayers, isLoading } = useRoom({ roomId });
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (error !== undefined) {
+    return (
+      <Container>
+        <div>Failed {error}</div>
+      </Container>
+    );
+  }
+
   return (
     <Container>
       <ComptetitorsColumn side={"left"}>
-        <ViewContainer>
-          <BoardView matrix={getTestMatrix()} />
-        </ViewContainer>
+        {Array.from(otherPlayers.entries()).map(([playerId, matrix]) => (
+          <ViewContainer key={playerId}>
+            <BoardView matrix={matrix} />
+          </ViewContainer>
+        ))}
       </ComptetitorsColumn>
       <PlayerColumn>
-        <TetrisField />
+        <TetrisField setMatrix={setMatrix} />
       </PlayerColumn>
       <ComptetitorsColumn>
         <ViewContainer>

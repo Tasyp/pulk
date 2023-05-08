@@ -3,7 +3,7 @@ defmodule Pulk.Game.Figure do
           figure_type: String.t()
         }
 
-  @supported_figures MapSet.new(["", "I", "O", "T", "S", "Z", "J"])
+  @supported_figures MapSet.new(["", "I", "O", "T", "S", "Z", "J", "L"])
 
   @enforce_keys [:figure_type]
   defstruct [:figure_type]
