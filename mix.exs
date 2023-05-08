@@ -7,7 +7,15 @@ defmodule Pulk.Umbrella.MixProject do
       version: "0.1.0",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      aliases: aliases()
+      aliases: aliases(),
+      releases: [
+        pulk: [
+          applications: [
+            pulk: :permanent,
+            pulk_web: :permanent
+          ]
+        ]
+      ]
     ]
   end
 
@@ -42,6 +50,7 @@ defmodule Pulk.Umbrella.MixProject do
   defp aliases do
     [
       # run `mix setup` in all child apps
+      format: ["cmd mix format"],
       setup: ["cmd mix setup"]
     ]
   end

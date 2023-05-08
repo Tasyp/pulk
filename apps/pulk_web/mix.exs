@@ -60,7 +60,7 @@ defmodule PulkWeb.MixProject do
       setup: ["deps.get", "assets.setup", "assets.build"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       format: ["format", "cmd --cd assets yarn format"],
-      "assets.setup": ["esbuild.install --if-missing"],
+      "assets.setup": ["cmd --cd assets yarn", "esbuild.install --if-missing"],
       "assets.build": ["esbuild default"],
       "assets.deploy": ["esbuild default --minify", "phx.digest"]
     ]
