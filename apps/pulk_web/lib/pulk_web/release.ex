@@ -3,7 +3,8 @@ defmodule PulkWeb.Release do
   Used for executing DB release tasks when run in production without Mix
   installed.
   """
-  @app :pulk_web
+
+  # @app :pulk_web
 
   def migrate do
     # load_app()
