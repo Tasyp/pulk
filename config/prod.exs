@@ -10,7 +10,7 @@ import Config
 # which you should run after static files are built and
 # before starting your production server.
 config :pulk_web, PulkWeb.Endpoint,
-  url: [host: "localhost", port: 4000],
+  url: [host: "pulk.fly.dev", port: 8080],
   cache_static_manifest: "priv/static/cache_manifest.json"
 
 # Configures Swoosh API Client

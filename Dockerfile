@@ -50,6 +50,8 @@ RUN mix deps.compile
 
 COPY apps apps
 
+COPY rel rel
+
 COPY assets assets
 
 # Prepare asset depds
@@ -91,4 +93,8 @@ COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/pulk ./
 
 USER nobody
 
-ENTRYPOINT [ "/app/bin/pulk" ]
+CMD [ "/app/bin/server" ]
+
+# Appended by flyctl
+ENV ECTO_IPV6 true
+ENV ERL_AFLAGS "-proto_dist inet6_tcp"

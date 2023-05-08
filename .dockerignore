@@ -14,8 +14,6 @@
 # More information on using .dockerignore is available here:
 # https://docs.docker.com/engine/reference/builder/#dockerignore-file
 
-.dockerignore
-
 # Ignore git, but keep git HEAD and refs to access current commit hash if needed:
 #
 # $ cat .git/HEAD | awk '{print ".git/"$2}' | xargs cat
@@ -29,7 +27,7 @@
 /doc/
 /test/
 /tmp/
-.elixir_ls
+/.elixir_ls
 
 # Mix artifacts
 /_build/
