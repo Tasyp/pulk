@@ -10,8 +10,9 @@
 import Config
 
 # Configure Mix tasks and generators
-config :pulk,
-  ecto_repos: [Pulk.Repo]
+# TODO: Add Ecto
+# config :pulk,
+#   ecto_repos: [Pulk.Repo]
 
 # Configures the mailer
 #
@@ -22,9 +23,10 @@ config :pulk,
 # at the `config/runtime.exs`.
 config :pulk, Pulk.Mailer, adapter: Swoosh.Adapters.Local
 
-config :pulk_web,
-  ecto_repos: [Pulk.Repo],
-  generators: [context_app: :pulk]
+# TODO: Add Ecto
+# config :pulk_web,
+#   ecto_repos: [Pulk.Repo],
+#   generators: [context_app: :pulk]
 
 # Configures the endpoint
 config :pulk_web, PulkWeb.Endpoint,

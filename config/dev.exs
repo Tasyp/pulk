@@ -1,14 +1,15 @@
 import Config
 
+# TODO: Add Ecto
 # Configure your database
-config :pulk, Pulk.Repo,
-  username: "postgres",
-  password: "postgres",
-  hostname: "localhost",
-  database: "pulk_dev",
-  stacktrace: true,
-  show_sensitive_data_on_connection_error: true,
-  pool_size: 10
+# config :pulk, Pulk.Repo,
+#   username: "postgres",
+#   password: "postgres",
+#   hostname: "localhost",
+#   database: "pulk_dev",
+#   stacktrace: true,
+#   show_sensitive_data_on_connection_error: true,
+#   pool_size: 10
 
 # For development, we disable any cache and enable
 # debugging and code reloading.
