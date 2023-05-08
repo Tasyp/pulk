@@ -10,7 +10,7 @@ defmodule Pulk.Room do
   @enforce_keys [:room_id, :max_player_limit, :board_size]
   defstruct [:room_id, :max_player_limit, :started_at, :board_size]
 
-  @default_player_limit 99
+  @default_player_limit 4
   @default_board_size {10, 20}
 
   @spec create() :: Pulk.Room.t()
