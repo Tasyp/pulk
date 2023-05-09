@@ -32,7 +32,7 @@ RUN mix local.hex --force && \
 
 # set build ENV
 ENV MIX_ENV="prod"
-ENV EXTERNAL_HOSTNAME="pulk.onrender.com"
+ENV EXTERNAL_HOSTNAME="pulk.65.109.231.94.sslip.io"
 
 # install mix dependencies
 COPY mix.exs mix.lock ./
@@ -93,8 +93,7 @@ COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/pulk ./
 
 USER nobody
 
-ARG SECRET_KEY_BASE
-ENV SECRET_KEY_BASE=${SECRET_KEY_BASE}
+ENV SECRET_KEY_BASE="vwu54ioyHEMupK8h4My1JjdWYQ2Z7J7xeYDfeBmgt8szV+ILzeTAenGdjb9ayaZx"
 
 CMD [ "/app/bin/server" ]
 
