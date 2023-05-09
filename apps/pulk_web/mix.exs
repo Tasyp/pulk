@@ -61,7 +61,7 @@ defmodule PulkWeb.MixProject do
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       format: ["format", "cmd --cd assets yarn format"],
       "assets.setup": [
-        "cmd --cd assets npm install --legacy-peer-deps",
+        "cmd --cd assets yarn",
         "esbuild.install --if-missing"
       ],
       "assets.build": ["esbuild default"],
