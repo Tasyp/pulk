@@ -93,5 +93,8 @@ COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/pulk ./
 
 USER nobody
 
+ARG SECRET_KEY_BASE
+ENV SECRET_KEY_BASE=${SECRET_KEY_BASE}
+
 CMD [ "/app/bin/server" ]
 
