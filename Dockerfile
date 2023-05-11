@@ -32,7 +32,7 @@ RUN mix local.hex --force && \
 
 # set build ENV
 ENV MIX_ENV="prod"
-ENV EXTERNAL_HOSTNAME="pulk.65.109.231.94.sslip.io"
+ENV EXTERNAL_HOSTNAME="pulk.io"
 
 # install mix dependencies
 COPY mix.exs mix.lock ./
