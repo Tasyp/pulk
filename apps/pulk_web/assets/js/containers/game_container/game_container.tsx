@@ -34,7 +34,9 @@ interface Props {
 const ViewContainer = styled("div")``;
 
 export const GameContainer: React.FunctionComponent<Props> = ({ roomId }) => {
-  const { setMatrix, error, otherPlayers, isLoading } = useRoom({ roomId });
+  const { setMatrix, error, player, otherPlayers, isLoading } = useRoom({
+    roomId,
+  });
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -58,7 +60,7 @@ export const GameContainer: React.FunctionComponent<Props> = ({ roomId }) => {
         ))}
       </ComptetitorsColumn>
       <PlayerColumn>
-        <TetrisField setMatrix={setMatrix} />
+        <TetrisField matrix={player.matrix} setMatrix={setMatrix} />
       </PlayerColumn>
       <ComptetitorsColumn>
         <ViewContainer>

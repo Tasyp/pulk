@@ -1,4 +1,5 @@
 defmodule Pulk.RoomContext do
+  alias Pulk.PlayerContext
   alias Pulk.Room.RoomManager
 
   @spec create_room(Pulk.Room.t()) :: {:ok, Pulk.Room.t()} | {:error, :already_started}
@@ -18,15 +19,19 @@ defmodule Pulk.RoomContext do
         %Pulk.Room{} = room,
         %Pulk.Player{} = player
       ) do
-    room_player = Pulk.Player.assign_room(player, room)
+    if room.room_id == player.room_id do
+      {:ok, player}
+    else
+      room_player = Pulk.Player.assign_room(player, room)
 
-    case DynamicSupervisor.start_child(
-           Pulk.Room.PlayersSupervisor.via_tuple(room),
-           {Pulk.Player.PlayerManager, [player: room_player, room: room]}
-         ) do
-      {:ok, _} -> {:ok, room_player}
-      {:error, {:already_started, _}} -> {:error, :already_added}
-      {:error, :max_children} -> {:error, :too_many_players}
+      case DynamicSupervisor.start_child(
+             Pulk.Room.PlayersSupervisor.via_tuple(room),
+             {Pulk.Player.PlayerManager, [player: room_player, room: room]}
+           ) do
+        {:ok, _} -> {:ok, room_player}
+        {:error, {:already_started, _}} -> {:error, :already_added}
+        {:error, :max_children} -> {:error, :too_many_players}
+      end
     end
   end
 
@@ -54,6 +59,11 @@ defmodule Pulk.RoomContext do
     |> Enum.map(fn {_id, pid, _type, _module} ->
       Pulk.Player.PlayerManager.get_player(pid)
     end)
+    |> Enum.filter(fn
+      {:ok, _player} -> true
+      _ -> false
+    end)
+    |> Enum.map(fn {:ok, player} -> player end)
   end
 
   @spec get_available_room() :: {:ok, Pulk.Room.t()} | {:error, :all_rooms_busy}
@@ -72,7 +82,7 @@ defmodule Pulk.RoomContext do
         res || Task.shutdown(task, :brutal_kill)
       end)
       |> Enum.filter(fn
-        {:ok, _value} -> true
+        {:ok, {:ok, %{is_available: true}}} -> true
         _ -> false
       end)
       |> Enum.map(fn {:ok, {:ok, response}} -> response end)
@@ -105,6 +115,23 @@ defmodule Pulk.RoomContext do
   def get_room(room_id) do
     with :ok <- RoomManager.is_room_present?(room_id) do
       RoomManager.get_room(RoomManager.via_tuple(room_id))
+    end
+  end
+
+  @spec get_room_boards(String.t()) ::
+          {:error, :unknown_room} | {:ok, list({Pulk.Player.t(), Pulk.Game.Board.t()})}
+  def get_room_boards(room_id) do
+    with :ok <- RoomManager.is_room_present?(room_id),
+         {:ok, room} <- RoomManager.get_room(RoomManager.via_tuple(room_id)) do
+      boards =
+        room
+        |> get_players()
+        |> Enum.map(fn player ->
+          {:ok, board} = PlayerContext.get_board(player.player_id)
+          {player, board}
+        end)
+
+      {:ok, boards}
     end
   end
 

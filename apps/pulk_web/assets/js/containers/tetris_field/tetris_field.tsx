@@ -1,7 +1,7 @@
 import React from "react";
 import Tetris from "react-tetris";
 
-import { Matrix } from "../../lib/matrix";
+import { Matrix, composeTetrisMatrix } from "../../lib/matrix";
 import { GameMatrixObserver } from "./game_matrix_observer";
 
 import { styled } from "goober";
@@ -11,12 +11,27 @@ const Container = styled("div")`
 `;
 
 interface Props {
+  matrix?: Matrix;
   setMatrix: (matrix: Matrix) => void;
 }
 
-export const TetrisField: React.FunctionComponent<Props> = ({ setMatrix }) => {
+export const TetrisField: React.FunctionComponent<Props> = ({
+  matrix,
+  setMatrix,
+}) => {
+  const tetrisMatrix = React.useMemo(() => {
+    if (matrix === undefined) {
+      return { matrix: undefined, key: "default" };
+    }
+
+    const nextMatrix = composeTetrisMatrix(matrix);
+    return { matrix: nextMatrix, key: JSON.stringify(nextMatrix) };
+  }, [matrix]);
+
   return (
     <Tetris
+      key={tetrisMatrix.key}
+      matrix={tetrisMatrix.matrix}
       keyboardControls={{
         // Default values shown here. These will be used if no
         // `keyboardControls` prop is provided.

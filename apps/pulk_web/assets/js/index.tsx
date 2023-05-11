@@ -5,6 +5,7 @@ import { Socket } from "phoenix";
 
 import { Router } from "./router";
 import { SocketContext } from "./lib/socket";
+import { PlayerProvider } from "./lib/player";
 
 const Container = styled("div")`
   height: 100%;
@@ -13,7 +14,7 @@ const Container = styled("div")`
   padding: 0;
 `;
 
-const SWR_CONFIG = {
+export const SWR_CONFIG = {
   fetcher: (resource, init) => fetch(resource, init).then((res) => res.json()),
 };
 
@@ -25,9 +26,11 @@ const App: React.FunctionComponent<Props> = ({ socket }) => {
   return (
     <SWRConfig value={SWR_CONFIG}>
       <SocketContext.Provider value={socket}>
-        <Container>
-          <Router />
-        </Container>
+        <PlayerProvider>
+          <Container>
+            <Router />
+          </Container>
+        </PlayerProvider>
       </SocketContext.Provider>
     </SWRConfig>
   );

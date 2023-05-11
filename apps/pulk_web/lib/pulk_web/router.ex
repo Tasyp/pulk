@@ -2,22 +2,23 @@ defmodule PulkWeb.Router do
   use PulkWeb, :router
 
   pipeline :browser do
-    plug :accepts, ["html"]
-    plug :fetch_session
-    plug :fetch_live_flash
-    plug :put_root_layout, {PulkWeb.Layouts, :root}
-    plug :protect_from_forgery
-    plug :put_secure_browser_headers
+    plug(:accepts, ["html"])
+    plug(:fetch_session)
+    plug(:fetch_live_flash)
+    plug(:put_root_layout, {PulkWeb.Layouts, :root})
+    plug(:protect_from_forgery)
+    plug(:put_secure_browser_headers)
   end
 
   pipeline :api do
-    plug :accepts, ["json"]
+    plug(:accepts, ["json"])
   end
 
   scope "/api", PulkWeb do
-    pipe_through :api
+    pipe_through(:api)
 
-    get "/room", RoomController, :index
+    get("/room", RoomController, :index)
+    get("/player", PlayerController, :index)
   end
 
   # Enable LiveDashboard in development
@@ -30,15 +31,15 @@ defmodule PulkWeb.Router do
     import Phoenix.LiveDashboard.Router
 
     scope "/dev" do
-      pipe_through :browser
+      pipe_through(:browser)
 
-      live_dashboard "/dashboard", metrics: PulkWeb.Telemetry
+      live_dashboard("/dashboard", metrics: PulkWeb.Telemetry)
     end
   end
 
   scope "/", PulkWeb do
-    pipe_through :browser
+    pipe_through(:browser)
 
-    get "/*path", PageController, :index
+    get("/*path", PageController, :index)
   end
 end
