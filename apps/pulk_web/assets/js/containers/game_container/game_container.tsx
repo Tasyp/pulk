@@ -53,19 +53,27 @@ export const GameContainer: React.FunctionComponent<Props> = ({ roomId }) => {
   return (
     <Container>
       <ComptetitorsColumn side={"left"}>
-        {Array.from(otherPlayers.entries()).map(([playerId, matrix]) => (
-          <ViewContainer key={playerId}>
-            <BoardView matrix={matrix} />
-          </ViewContainer>
-        ))}
+        {Array.from(otherPlayers.entries()).map(
+          ([playerId, matrix], idx) =>
+            idx % 2 === 0 && (
+              <ViewContainer key={playerId}>
+                <BoardView matrix={matrix} />
+              </ViewContainer>
+            )
+        )}
       </ComptetitorsColumn>
       <PlayerColumn>
         <TetrisField matrix={player.matrix} setMatrix={setMatrix} />
       </PlayerColumn>
       <ComptetitorsColumn>
-        <ViewContainer>
-          <BoardView matrix={getTestMatrix()} />
-        </ViewContainer>
+        {Array.from(otherPlayers.entries()).map(
+          ([playerId, matrix], idx) =>
+            idx % 2 !== 0 && (
+              <ViewContainer key={playerId}>
+                <BoardView matrix={matrix} />
+              </ViewContainer>
+            )
+        )}
       </ComptetitorsColumn>
     </Container>
   );
