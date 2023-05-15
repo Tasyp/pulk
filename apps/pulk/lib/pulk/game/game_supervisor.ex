@@ -1,4 +1,4 @@
-defmodule Pulk.Game.Supervisor do
+defmodule Pulk.Game.GameSupervisor do
   use DynamicSupervisor, restart: :permanent
 
   def start_link(_init_arg) do

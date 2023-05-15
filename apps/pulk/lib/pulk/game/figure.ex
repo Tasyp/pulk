@@ -3,7 +3,7 @@ defmodule Pulk.Game.Figure do
           figure_type: String.t()
         }
 
-  @supported_figures MapSet.new(["", "I", "O", "T", "S", "Z", "J", "L"])
+  @supported_figures MapSet.new(["", "I", "O", "T", "S", "Z", "J", "L", "X"])
 
   @enforce_keys [:figure_type]
   defstruct [:figure_type]
@@ -21,6 +21,11 @@ defmodule Pulk.Game.Figure do
   @spec is_supported_figure?(String.t()) :: boolean()
   def is_supported_figure?(raw_figure) do
     MapSet.member?(@supported_figures, raw_figure)
+  end
+
+  @spec is_empty?(String.t()) :: boolean()
+  def is_empty?(figure) do
+    figure == ""
   end
 
   @spec to_string(t()) :: String.t()

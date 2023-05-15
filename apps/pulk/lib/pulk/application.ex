@@ -16,7 +16,7 @@ defmodule Pulk.Application do
       Pulk.Pg,
       {Task.Supervisor, name: Pulk.TaskSupervisor},
       Pulk.Registry,
-      Pulk.Game.Supervisor
+      Pulk.Game.GameSupervisor
     ]
 
     Supervisor.start_link(children, strategy: :one_for_one, name: Pulk.Supervisor)
