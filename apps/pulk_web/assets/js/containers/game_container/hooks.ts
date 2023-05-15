@@ -80,12 +80,12 @@ export const useRoom = ({
     const ref = onRoomMessage(
       channel,
       RoomEventType.BOARD_UPDATE,
-      ({ matrix, player_id }) => {
+      ({ board, player_id }) => {
         if (playerId === player_id) {
           return;
         }
 
-        setAllPlayers((acc) => new Map(acc.set(player_id, matrix)));
+        setAllPlayers((acc) => new Map(acc.set(player_id, board)));
       }
     );
 

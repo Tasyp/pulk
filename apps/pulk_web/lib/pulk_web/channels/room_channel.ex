@@ -2,7 +2,6 @@ defmodule PulkWeb.RoomChannel do
   use PulkWeb, :channel
   alias Pulk.RoomContext
   alias Pulk.PlayerContext
-  alias Pulk.Game.Board
 
   @impl true
   def join("room:" <> room_id, %{"player_id" => player_id}, socket) do
@@ -15,7 +14,7 @@ defmodule PulkWeb.RoomChannel do
     response =
       with {:ok, room} <- RoomContext.get_room(room_id),
            {:ok, _player} <- RoomContext.add_player(room, player),
-           {:ok, room_boards} <- RoomContext.get_room_boards(room_id) do
+           {:ok, room_boards} <- RoomContext.get_room_boards(room) do
         {:ok, room_boards}
       end
 
@@ -26,18 +25,10 @@ defmodule PulkWeb.RoomChannel do
 
     case response do
       {:ok, room_boards} ->
-        {
-          :ok,
-          %{
-            "player_id" => player_id,
-            "boards" =>
-              room_boards
-              |> Map.new(fn {%Pulk.Player{} = player, %Pulk.Game.Board{} = board} ->
-                {player.player_id, Board.to_raw_matrix(board)}
-              end)
-          },
-          socket
-        }
+        boards_by_player =
+          Map.new(room_boards, fn {player, board} -> {player.player_id, board} end)
+
+        {:ok, %{"boards" => boards_by_player}, socket}
 
       {:error, reason} ->
         {:error, %{reason: to_string(reason)}}
@@ -50,7 +41,7 @@ defmodule PulkWeb.RoomChannel do
       case PlayerContext.update_board_matrix(socket.assigns.player_id, matrix) do
         {:ok, board} ->
           broadcast(socket, "board_update", %{
-            "matrix" => Board.to_raw_matrix(board),
+            "board" => board,
             "player_id" => socket.assigns.player_id
           })
 

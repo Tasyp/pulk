@@ -1,6 +1,7 @@
 defmodule Pulk.PlayerContext do
   alias Pulk.Player.PlayerManager
   alias Pulk.Game.Board
+  alias Pulk.Game.Matrix
 
   @spec get_player(String.t()) :: {:error, :unknown_player} | {:ok, Pulk.Player.t()}
   def get_player(player_id) do
@@ -16,7 +17,7 @@ defmodule Pulk.PlayerContext do
     end
   end
 
-  @spec update_board_matrix(String.t(), list(list(String.t()))) ::
+  @spec update_board_matrix(String.t(), Matrix.loosy_matrix()) ::
           {:ok, Board.t()}
           | {:error, :unknown_player}
           | {:error, :invalid_figures}

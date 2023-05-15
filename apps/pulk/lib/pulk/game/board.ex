@@ -51,3 +51,9 @@ defmodule Pulk.Game.Board do
     end
   end
 end
+
+defimpl Jason.Encoder, for: [Pulk.Game.Board] do
+  def encode(struct, opts) do
+    Jason.Encode.list(Pulk.Game.Board.to_raw_matrix(struct), opts)
+  end
+end
