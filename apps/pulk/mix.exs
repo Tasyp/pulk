@@ -11,7 +11,7 @@ defmodule Pulk.MixProject do
       lockfile: "../../mix.lock",
       elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
-      compilers: [:domo_compiler] ++ Mix.compilers(),
+      compilers: [:domo_compiler] ++ Mix.compilers() ++ [:domo_phoenix_hot_reload],
       test_coverage: [ignore_modules: [~r/\.TypeEnsurer$/]],
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
