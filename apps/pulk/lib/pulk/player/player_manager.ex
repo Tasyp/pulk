@@ -1,6 +1,7 @@
 defmodule Pulk.Player.PlayerManager do
   use GenServer
 
+  alias Pulk.Game.Matrix
   alias Pulk.Game.Board
 
   def start_link(init_args) do
@@ -30,13 +31,18 @@ defmodule Pulk.Player.PlayerManager do
     GenServer.call(pid, :get_board)
   end
 
-  def update_raw_matrix(pid, raw_matrix) do
-    GenServer.call(pid, {:update_raw_matrix, raw_matrix})
+  def update_board(pid, board_update) do
+    GenServer.call(pid, {:update_board, board_update})
+  end
+
+  def update_matrix(pid, raw_matrix) do
+    GenServer.call(pid, {:update_matrix, raw_matrix})
   end
 
   @impl true
   def init(%{room: %Pulk.Room{} = room, player: %Pulk.Player{} = player}) do
-    board = Board.create(room.board_size)
+    {sizeX, sizeY} = room.board_size
+    {:ok, board} = Board.new(sizeX: sizeX, sizeY: sizeY, matrix: Matrix.new!(sizeX, sizeY))
     {:ok, %{player: player, board: board}}
   end
 
@@ -51,9 +57,9 @@ defmodule Pulk.Player.PlayerManager do
   end
 
   @impl true
-  def handle_call({:update_raw_matrix, raw_matrix}, _from, %{board: board} = state) do
+  def handle_call({:update_matrix, matrix}, _from, %{board: board} = state) do
     {response, state} =
-      case Board.update_from_raw_matrix(board, raw_matrix) do
+      case Board.update_matrix(board, matrix) do
         {:ok, board} -> {{:ok, board}, %{state | board: board}}
         error -> {error, state}
       end

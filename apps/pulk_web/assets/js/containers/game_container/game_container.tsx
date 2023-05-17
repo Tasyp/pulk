@@ -3,7 +3,6 @@ import { styled } from "goober";
 
 import { TetrisField } from "../tetris_field";
 import { BoardView, LoadingSpinner } from "../../components";
-import { getTestMatrix } from "../../lib/matrix";
 import { useRoom } from "./hooks";
 
 const Container = styled("div")`

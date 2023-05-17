@@ -8,6 +8,7 @@ defmodule Pulk.Umbrella.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       aliases: aliases(),
+      compilers: [:domo_compiler] ++ Mix.compilers(),
       releases: [
         pulk: [
           applications: [

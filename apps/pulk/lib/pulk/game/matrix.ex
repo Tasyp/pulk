@@ -1,28 +1,34 @@
 defmodule Pulk.Game.Matrix do
-  alias Pulk.Game.Figure
+  use TypedStruct
+  use Domo, gen_constructor_name: :_new
 
-  @type t :: list(list(Figure.t()))
-  @type loosy_matrix :: list(list(String.t()))
+  alias Pulk.Game.Piece
 
-  @spec create(pos_integer(), pos_integer()) :: t()
-  def create(sizeX, sizeY) do
-    1..sizeY
-    |> Enum.map(fn _ -> 1..sizeX |> Enum.map(fn _ -> Figure.create!() end) end)
+  @type matrix :: [[Piece.t()]]
+
+  typedstruct do
+    field :value, matrix(), enforce: true
   end
 
-  @spec to_raw_matrix(t()) :: loosy_matrix()
-  def to_raw_matrix(matrix) do
-    matrix
-    |> Enum.map(&Enum.map(&1, fn row -> Figure.to_string(row) end))
+  @spec new!(pos_integer(), pos_integer()) :: t()
+  def new!(sizeX, sizeY) do
+    matrix =
+      1..sizeY
+      |> Enum.map(fn _ -> 1..sizeX |> Enum.map(fn _ -> Piece.new!() end) end)
+
+    _new!(value: matrix)
   end
 
-  @spec is_matrix_size_correct?(loosy_matrix(), {pos_integer(), pos_integer()}) ::
+  def new(matrix) do
+    _new(value: matrix)
+  end
+
+  @spec has_matching_size?(t(), {pos_integer(), pos_integer()}) ::
           :ok | {:error, :invalid_size}
-  def is_matrix_size_correct?(raw_matrix, {sizeX, sizeY}) do
-    actualSizeY = length(raw_matrix)
+  def has_matching_size?(%__MODULE__{value: matrix}, {sizeX, sizeY}) do
+    actualSizeY = length(matrix)
 
-    actualSizesX =
-      raw_matrix |> Enum.map(fn row -> length(row) end) |> MapSet.new() |> Enum.to_list()
+    actualSizesX = matrix |> Enum.map(fn row -> length(row) end) |> MapSet.new() |> Enum.to_list()
 
     cond do
       actualSizeY != sizeY -> {:error, :invalid_size}
@@ -31,24 +37,8 @@ defmodule Pulk.Game.Matrix do
     end
   end
 
-  @spec is_matrix_parsable?(loosy_matrix()) :: :ok | {:error, :invalid_figures}
-  def is_matrix_parsable?(raw_matrix) do
-    parsable? =
-      raw_matrix
-      |> Enum.flat_map(fn row ->
-        Enum.map(row, fn cell -> Figure.is_supported_figure?(cell) end)
-      end)
-      |> Enum.all?()
-
-    if parsable? do
-      :ok
-    else
-      {:error, :invalid_figures}
-    end
-  end
-
   @spec remove_filled_lines(t()) :: {t(), non_neg_integer()}
-  def remove_filled_lines(matrix) do
+  def remove_filled_lines(%__MODULE__{value: matrix}) do
     {reversed_matrix, filled_lines_count} = do_remove_filled_lines(Enum.reverse(matrix))
     {Enum.reverse(reversed_matrix), filled_lines_count}
   end
@@ -58,7 +48,7 @@ defmodule Pulk.Game.Matrix do
   defp do_remove_filled_lines(reversed_matrix, filled_lines_count \\ 0) do
     [last_line | remaining_lines] = reversed_matrix
 
-    if Enum.all?(last_line, &Kernel.not(Figure.is_empty?(&1))) do
+    if Enum.all?(last_line, &Kernel.not(Piece.is_empty?(&1))) do
       do_remove_filled_lines(remaining_lines, filled_lines_count + 1)
     else
       {reversed_matrix, filled_lines_count}

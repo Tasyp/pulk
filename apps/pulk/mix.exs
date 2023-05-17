@@ -11,6 +11,8 @@ defmodule Pulk.MixProject do
       lockfile: "../../mix.lock",
       elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
+      compilers: [:domo_compiler] ++ Mix.compilers(),
+      test_coverage: [ignore_modules: [~r/\.TypeEnsurer$/]],
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps()
@@ -41,7 +43,9 @@ defmodule Pulk.MixProject do
       {:postgrex, ">= 0.0.0"},
       {:jason, "~> 1.2"},
       {:swoosh, "~> 1.3"},
-      {:finch, "~> 0.13"}
+      {:finch, "~> 0.13"},
+      {:typed_struct, "~> 0.3.0"},
+      {:domo, "~> 1.5"}
     ]
   end
 

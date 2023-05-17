@@ -57,9 +57,9 @@ export const useRoom = ({
       .receive("ok", (response) => {
         setAllPlayers((allPayers) => {
           const nextPlayers = Object.entries(
-            response.boards as Map<string, Matrix>
+            response.boards as Map<string, { matrix: Matrix }>
           ).reduce(
-            (acc, [playerId, board]) => acc.set(playerId, board),
+            (acc, [playerId, board]) => acc.set(playerId, board.matrix),
             allPayers
           );
           return new Map(nextPlayers);

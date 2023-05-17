@@ -11,6 +11,7 @@ defmodule PulkWeb.MixProject do
       lockfile: "../../mix.lock",
       elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
+      compilers: [:domo_compiler] ++ Mix.compilers() ++ [:domo_phoenix_hot_reload],
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps()
@@ -48,7 +49,8 @@ defmodule PulkWeb.MixProject do
       {:telemetry_poller, "~> 1.0"},
       {:pulk, in_umbrella: true},
       {:jason, "~> 1.2"},
-      {:plug_cowboy, "~> 2.5"}
+      {:plug_cowboy, "~> 2.5"},
+      {:domo, "~> 1.5"}
     ]
   end
 
