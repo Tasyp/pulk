@@ -3,7 +3,7 @@ defmodule PulkWeb.BoardJSON do
   alias PulkWeb.MatrixJSON
 
   def to_json(%Board{matrix: matrix} = board) do
-    %{board | matrix: MatrixJSON.to_json(matrix)}
+    Map.from_struct(%{board | matrix: MatrixJSON.to_json(matrix)})
   end
 end
 

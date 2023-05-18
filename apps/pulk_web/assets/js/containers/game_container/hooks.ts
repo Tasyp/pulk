@@ -96,7 +96,11 @@ export const useRoom = ({
 
   const setMatrix = useCallback(
     (matrix: Matrix): void => {
-      pushRoomMessage(channel, RoomEventType.BOARD_UPDATE, { matrix });
+      pushRoomMessage(channel, RoomEventType.BOARD_UPDATE, {
+        matrix,
+        active_piece: null,
+        piece_in_hold: null,
+      });
     },
     [channel]
   );

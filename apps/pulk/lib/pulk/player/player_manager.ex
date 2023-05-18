@@ -67,6 +67,17 @@ defmodule Pulk.Player.PlayerManager do
     {:reply, response, state}
   end
 
+  @impl true
+  def handle_call({:update_board, board_update}, _from, %{board: board} = state) do
+    {response, state} =
+      case Board.update(board, board_update) do
+        {:ok, board} -> {{:ok, board}, %{state | board: board}}
+        error -> {error, state}
+      end
+
+    {:reply, response, state}
+  end
+
   def lookup(player_id) do
     case Pulk.Registry.lookup({__MODULE__, player_id}) do
       [{pid, _}] -> {:ok, pid}

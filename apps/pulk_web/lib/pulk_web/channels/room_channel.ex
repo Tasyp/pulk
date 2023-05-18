@@ -36,10 +36,10 @@ defmodule PulkWeb.RoomChannel do
   end
 
   @impl true
-  def handle_in("board_update", %{"matrix" => raw_matrix}, socket) do
+  def handle_in("board_update", board_update_json, socket) do
     response =
-      with {:ok, matrix} <- PulkWeb.MatrixJSON.from_json(raw_matrix),
-           {:ok, board} <- PlayerContext.update_board_matrix(socket.assigns.player_id, matrix) do
+      with {:ok, board_update} <- PulkWeb.BoardUpdateJSON.from_json(board_update_json),
+           {:ok, board} <- PlayerContext.update_board(socket.assigns.player_id, board_update) do
         broadcast(socket, "board_update", %{
           "board" => board,
           "player_id" => socket.assigns.player_id

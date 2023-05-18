@@ -37,3 +37,14 @@ defmodule PulkWeb.MatrixJSON do
     end
   end
 end
+
+defimpl Jason.Encoder, for: [Pulk.Game.Matrix] do
+  alias PulkWeb.MatrixJSON
+
+  def encode(struct, opts) do
+    Jason.Encode.list(
+      MatrixJSON.to_json(struct),
+      opts
+    )
+  end
+end

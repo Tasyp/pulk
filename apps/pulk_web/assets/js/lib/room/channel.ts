@@ -6,7 +6,11 @@ export enum RoomEventType {
 }
 
 export type RoomOutgoingMessagePayload = {
-  [RoomEventType.BOARD_UPDATE]: { matrix: Matrix };
+  [RoomEventType.BOARD_UPDATE]: {
+    matrix: Matrix;
+    active_piece: null;
+    piece_in_hold: null;
+  };
 };
 
 export const pushRoomMessage = <T extends RoomEventType>(
