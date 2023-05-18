@@ -19,6 +19,11 @@ defmodule Pulk.Game.Matrix do
     _new!(value: matrix)
   end
 
+  @spec new!(matrix()) :: t()
+  def new!(matrix) do
+    _new!(value: matrix)
+  end
+
   def new(matrix) do
     _new(value: matrix)
   end
@@ -40,11 +45,11 @@ defmodule Pulk.Game.Matrix do
   @spec remove_filled_lines(t()) :: {t(), non_neg_integer()}
   def remove_filled_lines(%__MODULE__{value: matrix}) do
     {reversed_matrix, filled_lines_count} = do_remove_filled_lines(Enum.reverse(matrix))
-    {Enum.reverse(reversed_matrix), filled_lines_count}
+    {new!(Enum.reverse(reversed_matrix)), filled_lines_count}
   end
 
-  @spec do_remove_filled_lines(t()) :: {t(), non_neg_integer()}
-  @spec do_remove_filled_lines(t(), non_neg_integer()) :: {t(), non_neg_integer()}
+  @spec do_remove_filled_lines(matrix()) :: {matrix(), non_neg_integer()}
+  @spec do_remove_filled_lines(matrix(), non_neg_integer()) :: {matrix(), non_neg_integer()}
   defp do_remove_filled_lines(reversed_matrix, filled_lines_count \\ 0) do
     [last_line | remaining_lines] = reversed_matrix
 
