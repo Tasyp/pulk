@@ -4,29 +4,41 @@ defmodule PulkWeb.MatrixJSON do
 
   @type matrix_json :: list(list(String.t()))
 
-  @spec to_json(Matrix.t()) :: matrix_json()
-  def to_json(%Matrix{value: matrix}) do
-    matrix
-    |> Enum.map(&Enum.map(&1, fn row -> Piece.to_string(row) end))
-  end
-
-  @spec from_json(matrix_json()) :: {:ok, Matrix.t()} | {:error, any()}
+  @spec from_json(matrix_json()) ::
+          {:ok, Matrix.t()} | {:error, :invalid_figure} | {:error, :invalid_matrix}
   def from_json(raw_matrix) do
     with :ok <- is_matrix_parsable?(raw_matrix) do
       matrix =
         raw_matrix
         |> Enum.map(&Enum.map(&1, fn cell -> Piece.new!(piece_type: cell) end))
 
-      Matrix.new(matrix)
+      case Matrix.new(matrix) do
+        {:ok, matrix} ->
+          {:ok, matrix}
+
+        {:error, _} ->
+          {:error, :invalid_matrix}
+      end
     end
   end
 
-  @spec is_matrix_parsable?(matrix_json()) :: :ok | {:error, :invalid_figure}
-  defp is_matrix_parsable?(raw_matrix) do
+  @spec is_matrix_parsable?(matrix_json()) ::
+          :ok | {:error, :invalid_figure} | {:error, :invalid_matrix}
+  defp is_matrix_parsable?(raw_matrix) when is_list(raw_matrix) do
     parsable? =
       raw_matrix
-      |> Enum.flat_map(fn row ->
-        Enum.map(row, fn cell -> Piece.is_supported_piece?(cell) end)
+      |> Enum.flat_map(fn
+        row when is_list(row) ->
+          Enum.map(row, fn
+            cell when is_binary(cell) ->
+              Piece.is_supported_piece?(cell)
+
+            _ ->
+              false
+          end)
+
+        _ ->
+          [false]
       end)
       |> Enum.all?()
 
@@ -36,14 +48,16 @@ defmodule PulkWeb.MatrixJSON do
       {:error, :invalid_figure}
     end
   end
+
+  defp is_matrix_parsable?(_) do
+    {:error, :invalid_matrix}
+  end
 end
 
 defimpl Jason.Encoder, for: [Pulk.Game.Matrix] do
-  alias PulkWeb.MatrixJSON
-
   def encode(struct, opts) do
     Jason.Encode.list(
-      MatrixJSON.to_json(struct),
+      struct.value,
       opts
     )
   end

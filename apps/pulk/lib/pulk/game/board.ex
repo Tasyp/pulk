@@ -20,11 +20,18 @@ defmodule Pulk.Game.Board do
     field :matrix, Matrix.t()
   end
 
-  @spec update_matrix(t(), Matrix.t()) :: {:ok, t()} | {:error, :invalid_size}
+  @spec update_matrix(t(), Matrix.t()) ::
+          {:ok, t()} | {:error, :invalid_size} | {:error, :invalid_matrix}
   def update_matrix(%__MODULE__{} = board, matrix) do
     with :ok <- Matrix.has_matching_size?(matrix, {board.sizeX, board.sizeY}),
          {:ok, next_board} <- ensure_type(%{board | matrix: matrix}) do
       {:ok, next_board}
+    else
+      {:error, list_reason} when is_list(list_reason) ->
+        {:error, :invalid_matrix}
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 

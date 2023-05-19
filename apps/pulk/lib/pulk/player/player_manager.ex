@@ -61,7 +61,7 @@ defmodule Pulk.Player.PlayerManager do
     {response, state} =
       case Board.update_matrix(board, matrix) do
         {:ok, board} -> {{:ok, board}, %{state | board: board}}
-        error -> {error, state}
+        {:error, reason} -> {{:error, reason}, state}
       end
 
     {:reply, response, state}
@@ -72,7 +72,7 @@ defmodule Pulk.Player.PlayerManager do
     {response, state} =
       case Board.update(board, board_update) do
         {:ok, board} -> {{:ok, board}, %{state | board: board}}
-        error -> {error, state}
+        {:error, reason} -> {{:error, reason}, state}
       end
 
     {:reply, response, state}

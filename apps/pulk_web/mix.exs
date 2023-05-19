@@ -50,6 +50,7 @@ defmodule PulkWeb.MixProject do
       {:pulk, in_umbrella: true},
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
+      {:typed_struct, "~> 0.3.0"},
       {:domo, "~> 1.5"}
     ]
   end
