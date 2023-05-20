@@ -1,6 +1,5 @@
 defmodule PulkWeb.PositionedPieceJSON do
   alias Pulk.Game.PositionedPiece
-  alias PulkWeb.MatrixJSON
   alias PulkWeb.PieceJSON
 
   @type positioned_piece_json :: %{

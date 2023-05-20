@@ -23,8 +23,8 @@ defmodule Pulk.Room do
     }
   end
 
-  @spec generate_id() :: Ecto.UUID.t()
+  @spec generate_id() :: String.t()
   def generate_id do
-    Ecto.UUID.generate()
+    FriendlyID.generate(3, separator: "-", transform: &:string.lowercase/1)
   end
 end

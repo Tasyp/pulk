@@ -1,6 +1,5 @@
 [
-  import_deps: [:ecto, :ecto_sql, :typed_struct, :domo],
-  subdirectories: ["priv/*/migrations"],
+  import_deps: [:typed_struct, :domo],
   plugins: [],
-  inputs: ["*.{heex,ex,exs}", "{config,lib,test}/**/*.{heex,ex,exs}", "priv/*/seeds.exs"]
+  inputs: ["*.{heex,ex,exs}", "{config,lib,test}/**/*.{heex,ex,exs}"]
 ]

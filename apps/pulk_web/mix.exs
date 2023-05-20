@@ -38,7 +38,6 @@ defmodule PulkWeb.MixProject do
   defp deps do
     [
       {:phoenix, "~> 1.7.2"},
-      {:phoenix_ecto, "~> 4.4"},
       {:phoenix_html, "~> 3.3"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:phoenix_live_view, "~> 0.18.16"},
@@ -61,7 +60,7 @@ defmodule PulkWeb.MixProject do
   defp aliases do
     [
       setup: ["deps.get", "assets.setup", "assets.build"],
-      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
+      test: ["test"],
       format: ["format", "cmd --cd assets yarn format"],
       "assets.setup": [
         "cmd --cd assets yarn",

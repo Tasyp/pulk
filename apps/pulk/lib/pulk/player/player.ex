@@ -21,8 +21,8 @@ defmodule Pulk.Player do
     %{player | room_id: room_id}
   end
 
-  @spec generate_id() :: Ecto.UUID.t()
+  @spec generate_id() :: String.t()
   def generate_id do
-    Ecto.UUID.generate()
+    Nanoid.generate()
   end
 end

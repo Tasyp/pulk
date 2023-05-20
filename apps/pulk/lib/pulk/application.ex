@@ -7,12 +7,10 @@ defmodule Pulk.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      # Start the Ecto repository
-      # Pulk.Repo,
       # Start the PubSub system
       {Phoenix.PubSub, name: Pulk.PubSub},
       # Start Finch
-      # {Finch, name: Pulk.Finch},
+      {Finch, name: Pulk.Finch},
       Pulk.Pg,
       {Task.Supervisor, name: Pulk.TaskSupervisor},
       Pulk.Registry,
