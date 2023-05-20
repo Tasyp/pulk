@@ -1,6 +1,6 @@
 import { Matrix as TetrisMatrix } from "react-tetris/lib/models/Matrix";
 
-import { Matrix } from "./matrix";
+import { Matrix, PositionedPiece } from "./board";
 
 export const composeTetrisMatrix = (matrix: Matrix): TetrisMatrix => {
   return matrix.map((row) =>
@@ -28,6 +28,20 @@ export const composeMatrix = (matrix: TetrisMatrix): Matrix => {
       }
     })
   );
+};
+
+export const addPiece = (
+  inputMatrix: Matrix,
+  piece: PositionedPiece
+): Matrix => {
+  const matrix = inputMatrix.map((row) => row.map((cell) => cell));
+  const nextMatrix = piece.coordinates.reduce((matrix, [x, y]) => {
+    const row = matrix[y];
+    row[x] = piece.piece;
+    matrix[y] = row;
+    return matrix;
+  }, matrix);
+  return nextMatrix;
 };
 
 const getEmptyLine = (count: number) => new Array(count).fill("");

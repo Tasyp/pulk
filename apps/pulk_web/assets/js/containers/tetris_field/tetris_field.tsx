@@ -1,8 +1,8 @@
 import React from "react";
 import Tetris from "react-tetris";
 
-import { Matrix, composeTetrisMatrix } from "../../lib/matrix";
 import { GameMatrixObserver } from "./game_matrix_observer";
+import { Board, BoardUpdate, composeTetrisMatrix } from "../../lib/board";
 
 import { styled } from "goober";
 
@@ -11,22 +11,22 @@ const Container = styled("div")`
 `;
 
 interface Props {
-  matrix?: Matrix;
-  setMatrix: (matrix: Matrix) => void;
+  board?: Board;
+  setBoard: (boardUpdate: BoardUpdate) => void;
 }
 
 export const TetrisField: React.FunctionComponent<Props> = ({
-  matrix,
-  setMatrix,
+  board,
+  setBoard,
 }) => {
   const tetrisMatrix = React.useMemo(() => {
-    if (matrix === undefined) {
+    if (board === undefined) {
       return { matrix: undefined, key: "default" };
     }
 
-    const nextMatrix = composeTetrisMatrix(matrix);
+    const nextMatrix = composeTetrisMatrix(board.matrix);
     return { matrix: nextMatrix, key: JSON.stringify(nextMatrix) };
-  }, [matrix]);
+  }, [board]);
 
   return (
     <Tetris
@@ -49,7 +49,7 @@ export const TetrisField: React.FunctionComponent<Props> = ({
     >
       {({ Gameboard, state, controller }) => (
         <Container>
-          <GameMatrixObserver setMatrix={setMatrix} />
+          <GameMatrixObserver setBoard={setBoard} />
           <Gameboard />
           {/* <PieceQueue /> */}
           {state === "LOST" && (

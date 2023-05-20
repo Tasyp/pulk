@@ -5,6 +5,8 @@ defmodule Pulk.Game.Board do
   alias Pulk.Game.Piece
   alias Pulk.Game.Matrix
   alias Pulk.Game.BoardUpdate
+  alias Pulk.Game.BoardSnapshot
+  alias Pulk.Game.PositionedPiece
 
   typedstruct enforce: true do
     field :sizeX, pos_integer()
@@ -13,11 +15,14 @@ defmodule Pulk.Game.Board do
     field :score, non_neg_integer(), default: 0
     field :piece_in_hold, Piece.t(), enforce: false
 
-    field :active_piece,
-          %{piece: Piece.t(), coordinates: [{non_neg_integer(), non_neg_integer()}]},
-          enforce: false
+    field :active_piece, PositionedPiece.t(), enforce: false
 
     field :matrix, Matrix.t()
+  end
+
+  @spec to_snapshot(t()) :: BoardSnapshot.t()
+  def to_snapshot(%__MODULE__{active_piece: active_piece, matrix: matrix}) do
+    BoardSnapshot.new!(active_piece: active_piece, matrix: matrix)
   end
 
   @spec update_matrix(t(), Matrix.t()) ::

@@ -1,19 +1,70 @@
 import { Channel } from "phoenix";
-import { Matrix } from "../matrix";
+import { BoardSnapshot, Matrix, Piece } from "../board";
+import { KeysToSnakeCase } from "../utils";
 
-export enum RoomEventType {
+export type PlayerId = string;
+
+export enum RoomErrorType {
+  UNKNOWN_ROOM = "unknown_room",
+  UNKNOWN = "room",
+}
+
+export type IncomingBoardSnapshot = {
+  matrix: Matrix;
+  active_piece: {
+    piece: Piece;
+    coordinates: [x: number, y: number][];
+  } | null;
+};
+
+export type RoomJoinPayload = {
+  player_board: {
+    matrix: Matrix;
+    active_piece: {
+      piece: Piece;
+      coordinates: [x: number, y: number][];
+    } | null;
+    piece_in_hold: Piece | null;
+  };
+  other_snapshots: Record<PlayerId, IncomingBoardSnapshot>;
+};
+
+export const onRoomJoin = (
+  channel: Channel,
+  onSuccess: (payload: RoomJoinPayload) => void,
+  onError: (error: RoomErrorType) => void
+) => {
+  channel
+    .join()
+    .receive("ok", (response) => onSuccess(response))
+    .receive("error", (response) => onError(getRoomJoinError(response)));
+};
+
+const getRoomJoinError = (response): RoomErrorType => {
+  switch (response?.reason) {
+    case "unknown_room":
+      return RoomErrorType.UNKNOWN_ROOM;
+    default:
+      return RoomErrorType.UNKNOWN;
+  }
+};
+
+export enum RoomOutgoingEventType {
   BOARD_UPDATE = "board_update",
 }
 
 export type RoomOutgoingMessagePayload = {
-  [RoomEventType.BOARD_UPDATE]: {
+  [RoomOutgoingEventType.BOARD_UPDATE]: {
     matrix: Matrix;
-    active_piece: null;
-    piece_in_hold: null;
+    active_piece: {
+      piece: Piece;
+      coordinates: [x: number, y: number][];
+    } | null;
+    piece_in_hold: Piece | null;
   };
 };
 
-export const pushRoomMessage = <T extends RoomEventType>(
+export const pushRoomMessage = <T extends RoomOutgoingEventType>(
   channel: Channel,
   messageType: T,
   payload: RoomOutgoingMessagePayload[T]
@@ -21,11 +72,18 @@ export const pushRoomMessage = <T extends RoomEventType>(
   channel.push(messageType, payload);
 };
 
+export enum RoomIncomingEventType {
+  BOARD_SNAPSHOT_UPDATE = "board_snapshot_update",
+}
+
 export type RoomIncomingMessagePayload = {
-  [RoomEventType.BOARD_UPDATE]: { board: Matrix; player_id: string };
+  [RoomIncomingEventType.BOARD_SNAPSHOT_UPDATE]: {
+    board_snapshot: IncomingBoardSnapshot;
+    player_id: string;
+  };
 };
 
-export function onRoomMessage<T extends RoomEventType>(
+export function onRoomMessage<T extends RoomIncomingEventType>(
   channel: Channel,
   messageType: T,
   callback: (payload: RoomIncomingMessagePayload[T]) => void

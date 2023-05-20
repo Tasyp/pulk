@@ -2,7 +2,7 @@ import React from "react";
 import { styled } from "goober";
 
 import { TetrisField } from "../tetris_field";
-import { BoardView, LoadingSpinner } from "../../components";
+import { BoardSnapshotView, LoadingSpinner } from "../../components";
 import { useRoom } from "./hooks";
 
 const Container = styled("div")`
@@ -33,7 +33,7 @@ interface Props {
 const ViewContainer = styled("div")``;
 
 export const GameContainer: React.FunctionComponent<Props> = ({ roomId }) => {
-  const { setMatrix, error, player, otherPlayers, isLoading } = useRoom({
+  const { setBoard, error, player, otherPlayers, isLoading } = useRoom({
     roomId,
   });
 
@@ -49,27 +49,31 @@ export const GameContainer: React.FunctionComponent<Props> = ({ roomId }) => {
     );
   }
 
+  if (player === undefined) {
+    return <Container>Unknown player</Container>;
+  }
+
   return (
     <Container>
       <ComptetitorsColumn side={"left"}>
         {Array.from(otherPlayers.entries()).map(
-          ([playerId, matrix], idx) =>
+          ([playerId, snapshot], idx) =>
             idx % 2 === 0 && (
               <ViewContainer key={playerId}>
-                <BoardView matrix={matrix} />
+                <BoardSnapshotView snapshot={snapshot} />
               </ViewContainer>
             )
         )}
       </ComptetitorsColumn>
       <PlayerColumn>
-        <TetrisField matrix={player.matrix} setMatrix={setMatrix} />
+        <TetrisField board={player} setBoard={setBoard} />
       </PlayerColumn>
       <ComptetitorsColumn>
         {Array.from(otherPlayers.entries()).map(
-          ([playerId, matrix], idx) =>
+          ([playerId, snapshot], idx) =>
             idx % 2 !== 0 && (
               <ViewContainer key={playerId}>
-                <BoardView matrix={matrix} />
+                <BoardSnapshotView snapshot={snapshot} />
               </ViewContainer>
             )
         )}

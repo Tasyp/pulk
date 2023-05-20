@@ -8,7 +8,7 @@ defmodule PulkWeb.PieceJSON do
   end
 
   def from_json(piece) when is_binary(piece) do
-    case Piece.new(piece) do
+    case Piece.new(piece_type: piece) do
       {:ok, piece} -> {:ok, piece}
       {:error, _} -> {:error, :invalid_figure}
     end

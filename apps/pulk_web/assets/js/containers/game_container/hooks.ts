@@ -2,18 +2,16 @@ import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import { SocketContext } from "../../lib/socket";
 import {
-  RoomEventType,
+  RoomErrorType,
+  RoomIncomingEventType,
+  RoomOutgoingEventType,
   getRoomChannelId,
+  onRoomJoin,
   onRoomMessage,
   pushRoomMessage,
 } from "../../lib/room";
-import { Matrix } from "../../lib/matrix";
+import { BoardUpdate, Board, BoardSnapshot } from "../../lib/board";
 import { usePlayer } from "../../lib/player";
-
-export enum RoomErrorType {
-  UNKNOWN_ROOM = "unknown_room",
-  UNKNOWN = "room",
-}
 
 export const useRoom = ({
   roomId,
@@ -22,9 +20,9 @@ export const useRoom = ({
 }): {
   isLoading: boolean;
   error: RoomErrorType | undefined;
-  setMatrix: (matrix: Matrix) => void;
-  player: { matrix: Matrix };
-  otherPlayers: Map<string, Matrix>;
+  setBoard: (boardUpdate: BoardUpdate) => void;
+  player: Board | undefined;
+  otherPlayers: Map<string, BoardSnapshot>;
 } => {
   const { playerId } = usePlayer();
   const [roomJoinState, setRoomJoinState] = useState<"ok" | "failed" | "init">(
@@ -33,16 +31,9 @@ export const useRoom = ({
   const [errorReason, setErrorReason] = useState<undefined | RoomErrorType>(
     undefined
   );
-  const [allPlayers, setAllPlayers] = useState(new Map<string, Matrix>());
-
-  const otherPlayers = useMemo(
-    () =>
-      new Map(
-        [...allPlayers.entries()].filter(
-          ([currentPlayerId, _]) => playerId !== currentPlayerId
-        )
-      ),
-    [allPlayers, playerId]
+  const [playerBoard, setPlayerBoard] = useState<Board | null>(null);
+  const [otherPlayers, setOtherPlayers] = useState(
+    new Map<string, BoardSnapshot>()
   );
 
   const socket = useContext(SocketContext);
@@ -52,54 +43,79 @@ export const useRoom = ({
   );
 
   useEffect(() => {
-    channel
-      .join()
-      .receive("ok", (response) => {
-        setAllPlayers((allPayers) => {
-          const nextPlayers = Object.entries(
-            response.boards as Map<string, { matrix: Matrix }>
-          ).reduce(
-            (acc, [playerId, board]) => acc.set(playerId, board.matrix),
-            allPayers
-          );
-          return new Map(nextPlayers);
+    onRoomJoin(
+      channel,
+      (payload) => {
+        setOtherPlayers(
+          new Map(
+            Object.entries(payload.other_snapshots).map(
+              ([playerId, snapshot]) => [
+                playerId,
+                {
+                  matrix: snapshot.matrix,
+                  activePiece: snapshot.active_piece,
+                },
+              ]
+            )
+          )
+        );
+
+        const {
+          matrix: matrix,
+          active_piece: activePiece,
+          piece_in_hold: pieceInHold,
+        } = payload.player_board;
+
+        setPlayerBoard({
+          matrix,
+          activePiece,
+          pieceInHold,
         });
         setRoomJoinState("ok");
-      })
-      .receive("error", (response) => {
+      },
+      (error) => {
         setRoomJoinState("failed");
-        setErrorReason(getRoomJoinError(response));
-      });
-
-    return () => {
-      channel.leave();
-    };
-  }, [setRoomJoinState, setAllPlayers, setErrorReason]);
-
-  useEffect(() => {
-    const ref = onRoomMessage(
-      channel,
-      RoomEventType.BOARD_UPDATE,
-      ({ board, player_id }) => {
-        if (playerId === player_id) {
-          return;
-        }
-
-        setAllPlayers((acc) => new Map(acc.set(player_id, board)));
+        setErrorReason(error);
       }
     );
 
     return () => {
-      channel.off(RoomEventType.BOARD_UPDATE, ref);
+      channel.leave();
     };
-  }, [setAllPlayers, playerId]);
+  }, [setRoomJoinState, setOtherPlayers, setErrorReason]);
 
-  const setMatrix = useCallback(
-    (matrix: Matrix): void => {
-      pushRoomMessage(channel, RoomEventType.BOARD_UPDATE, {
-        matrix,
-        active_piece: null,
-        piece_in_hold: null,
+  useEffect(() => {
+    const ref = onRoomMessage(
+      channel,
+      RoomIncomingEventType.BOARD_SNAPSHOT_UPDATE,
+      ({ board_snapshot, player_id }) => {
+        if (playerId === player_id) {
+          return;
+        }
+
+        setOtherPlayers(
+          (acc) =>
+            new Map(
+              acc.set(player_id, {
+                matrix: board_snapshot.matrix,
+                activePiece: board_snapshot.active_piece,
+              })
+            )
+        );
+      }
+    );
+
+    return () => {
+      channel.off(RoomIncomingEventType.BOARD_SNAPSHOT_UPDATE, ref);
+    };
+  }, [setOtherPlayers, playerId]);
+
+  const setBoard = useCallback(
+    (boardUpdate: BoardUpdate): void => {
+      pushRoomMessage(channel, RoomOutgoingEventType.BOARD_UPDATE, {
+        matrix: boardUpdate.matrix,
+        active_piece: boardUpdate.activePiece,
+        piece_in_hold: boardUpdate.pieceInHold,
       });
     },
     [channel]
@@ -108,19 +124,8 @@ export const useRoom = ({
   return {
     isLoading: roomJoinState === "init",
     error: roomJoinState === "failed" ? errorReason : undefined,
-    setMatrix,
-    player: {
-      matrix: allPlayers.get(playerId)!,
-    },
+    setBoard,
+    player: playerBoard ?? undefined,
     otherPlayers,
   };
-};
-
-const getRoomJoinError = (response): RoomErrorType => {
-  switch (response?.reason) {
-    case "unknown_room":
-      return RoomErrorType.UNKNOWN_ROOM;
-    default:
-      return RoomErrorType.UNKNOWN;
-  }
 };

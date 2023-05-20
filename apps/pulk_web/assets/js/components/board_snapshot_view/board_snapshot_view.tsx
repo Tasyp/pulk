@@ -1,17 +1,18 @@
 import React from "react";
 import { getClassName } from "react-tetris/lib/models/Piece";
 
-import { Matrix, composeTetrisMatrix } from "../../lib/matrix";
+import { BoardSnapshot, addPiece, composeTetrisMatrix } from "../../lib/board";
 
 interface Props {
-  matrix: Matrix;
+  snapshot: BoardSnapshot;
 }
 
-export const BoardView: React.FunctionComponent<Props> = ({
-  matrix: inputMatrix,
+export const BoardSnapshotView: React.FunctionComponent<Props> = ({
+  snapshot: { matrix: inputMatrix, activePiece },
 }) => {
-  const matrix = composeTetrisMatrix(inputMatrix);
-
+  const matrix = composeTetrisMatrix(
+    activePiece !== null ? addPiece(inputMatrix, activePiece) : inputMatrix
+  );
   return (
     <table className="game-board">
       <tbody>
