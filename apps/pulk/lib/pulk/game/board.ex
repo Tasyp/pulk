@@ -74,7 +74,7 @@ defmodule Pulk.Game.Board do
     next_board =
       board
       |> Map.put(:matrix, matrix)
-      |> maybe_remove_filled_lines(filled_lines_count)
+      |> recalculate_score(filled_lines_count)
 
     next_board
   end

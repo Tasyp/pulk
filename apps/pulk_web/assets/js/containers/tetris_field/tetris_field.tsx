@@ -21,16 +21,16 @@ export const TetrisField: React.FunctionComponent<Props> = ({
 }) => {
   const tetrisMatrix = React.useMemo(() => {
     if (board === undefined) {
-      return { matrix: undefined, key: "default" };
+      return { matrix: undefined };
     }
 
     const nextMatrix = composeTetrisMatrix(board.matrix);
-    return { matrix: nextMatrix, key: JSON.stringify(nextMatrix) };
-  }, [board]);
+    return { matrix: nextMatrix };
+  }, [board?.matrix]);
 
   return (
     <Tetris
-      key={tetrisMatrix.key}
+      key={JSON.stringify(tetrisMatrix.matrix)}
       matrix={tetrisMatrix.matrix}
       keyboardControls={{
         // Default values shown here. These will be used if no

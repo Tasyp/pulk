@@ -82,9 +82,9 @@ react-dom@^18.2.0:
     loose-envify "^1.1.0"
     scheduler "^0.23.0"
 
-react-tetris@tasyp/react-tetris#6e82673:
+react-tetris@tasyp/react-tetris#0bd715:
   version "0.3.0"
-  resolved "https://codeload.github.com/tasyp/react-tetris/tar.gz/6e82673325f9a3f51fbbab608d198965eaaff9db"
+  resolved "https://codeload.github.com/tasyp/react-tetris/tar.gz/0bd715269f685e6069d9501529225d86479eb583"
   dependencies:
     keymaster "1.6.2"
 

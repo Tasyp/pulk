@@ -10,7 +10,7 @@ defmodule PulkWeb.MatrixJSON do
     with :ok <- is_matrix_parsable?(raw_matrix) do
       matrix =
         raw_matrix
-        |> Enum.map(&Enum.map(&1, fn cell -> Piece.new!(piece_type: cell) end))
+        |> Enum.map(&Enum.map(&1, fn cell -> Piece.new!(cell) end))
 
       case Matrix.new(matrix) do
         {:ok, matrix} ->

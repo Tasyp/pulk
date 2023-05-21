@@ -4,7 +4,8 @@ defmodule Pulk.Game.Matrix do
 
   alias Pulk.Game.Piece
 
-  @type matrix :: [[Piece.t()]]
+  @type line :: [Piece.t()]
+  @type matrix :: [line()]
 
   typedstruct do
     field :value, matrix(), enforce: true
@@ -44,19 +45,48 @@ defmodule Pulk.Game.Matrix do
 
   @spec remove_filled_lines(t()) :: {t(), non_neg_integer()}
   def remove_filled_lines(%__MODULE__{value: matrix}) do
-    {reversed_matrix, filled_lines_count} = do_remove_filled_lines(Enum.reverse(matrix))
-    {new!(Enum.reverse(reversed_matrix)), filled_lines_count}
+    {matrix, filled_lines_count} = do_remove_filled_lines(matrix)
+    {new!(matrix), filled_lines_count}
   end
 
   @spec do_remove_filled_lines(matrix()) :: {matrix(), non_neg_integer()}
-  @spec do_remove_filled_lines(matrix(), non_neg_integer()) :: {matrix(), non_neg_integer()}
-  defp do_remove_filled_lines(reversed_matrix, filled_lines_count \\ 0) do
-    [last_line | remaining_lines] = reversed_matrix
+  @spec do_remove_filled_lines(matrix(), non_neg_integer()) ::
+          {matrix(), non_neg_integer()}
+  defp do_remove_filled_lines(matrix, filled_lines_count \\ 0) do
+    maybe_filled_line_idx =
+      matrix
+      |> Enum.find_index(&line_filled?/1)
 
-    if Enum.all?(last_line, &Kernel.not(Piece.is_empty?(&1))) do
-      do_remove_filled_lines(remaining_lines, filled_lines_count + 1)
-    else
-      {reversed_matrix, filled_lines_count}
+    case maybe_filled_line_idx do
+      nil ->
+        {matrix, filled_lines_count}
+
+      line_idx ->
+        next_matrix =
+          line_idx..0//-1
+          |> Enum.to_list()
+          |> List.foldl(matrix, fn
+            0, acc ->
+              empty_line =
+                matrix
+                |> Enum.at(line_idx)
+                |> Enum.map(fn _ -> Piece.new!() end)
+
+              List.replace_at(acc, 0, empty_line)
+
+            idx, acc ->
+              List.replace_at(acc, idx, Enum.at(acc, idx - 1))
+          end)
+
+        do_remove_filled_lines(
+          next_matrix,
+          filled_lines_count + 1
+        )
     end
+  end
+
+  @spec line_filled?(line()) :: boolean()
+  defp line_filled?(line) do
+    Enum.all?(line, &Kernel.not(Piece.is_empty?(&1)))
   end
 end
