@@ -31,8 +31,8 @@ defmodule Pulk.Player.PlayerManager do
     GenServer.call(pid, :get_board)
   end
 
-  def update_board(pid, board_update) do
-    GenServer.call(pid, {:update_board, board_update})
+  def update_board(pid, board_update, opts \\ []) do
+    GenServer.call(pid, {:update_board, board_update, opts})
   end
 
   def update_matrix(pid, raw_matrix) do
@@ -68,9 +68,11 @@ defmodule Pulk.Player.PlayerManager do
   end
 
   @impl true
-  def handle_call({:update_board, board_update}, _from, %{board: board} = state) do
+  def handle_call({:update_board, board_update, opts}, _from, %{board: board} = state) do
+    recalculate? = Keyword.get(opts, :recalculate?, false)
+
     {response, state} =
-      case Board.update(board, board_update) do
+      case Board.update(board, board_update, recalculate?: recalculate?) do
         {:ok, board} -> {{:ok, board}, %{state | board: board}}
         {:error, reason} -> {{:error, reason}, state}
       end
