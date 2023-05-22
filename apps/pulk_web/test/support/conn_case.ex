@@ -32,7 +32,6 @@ defmodule PulkWeb.ConnCase do
   end
 
   setup tags do
-    PulkWeb.DataCase.setup_sandbox(tags)
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
 end

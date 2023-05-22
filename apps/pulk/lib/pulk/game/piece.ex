@@ -1,6 +1,6 @@
 defmodule Pulk.Game.Piece do
   use TypedStruct
-  use Domo
+  use Domo, gen_constructor_name: :_new
 
   @supported_pieces MapSet.new(["", "I", "O", "T", "S", "Z", "J", "L", "X"])
 
@@ -9,6 +9,18 @@ defmodule Pulk.Game.Piece do
 
   typedstruct do
     field :piece_type, piece_type(), default: ""
+  end
+
+  def new(piece_type) do
+    _new(piece_type: piece_type)
+  end
+
+  def new!() do
+    _new!()
+  end
+
+  def new!(piece_type) do
+    _new!(piece_type: piece_type)
   end
 
   @spec is_supported_piece?(String.t()) :: :ok | {:error, :invalid_piece}
@@ -20,8 +32,8 @@ defmodule Pulk.Game.Piece do
     end
   end
 
-  @spec is_empty?(String.t()) :: boolean()
-  def is_empty?(piece) do
+  @spec is_empty?(t()) :: boolean()
+  def is_empty?(%__MODULE__{piece_type: piece}) do
     piece == ""
   end
 

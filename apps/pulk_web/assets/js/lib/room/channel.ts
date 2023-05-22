@@ -1,6 +1,5 @@
 import { Channel } from "phoenix";
-import { BoardSnapshot, Matrix, Piece } from "../board";
-import { KeysToSnakeCase } from "../utils";
+import { Matrix, Piece } from "../board";
 
 export type PlayerId = string;
 
@@ -20,6 +19,8 @@ export type IncomingBoardSnapshot = {
 export type RoomJoinPayload = {
   player_board: {
     matrix: Matrix;
+    score: number;
+    level: number;
     active_piece: {
       piece: Piece;
       coordinates: [x: number, y: number][];
@@ -55,21 +56,35 @@ export enum RoomOutgoingEventType {
 
 export type RoomOutgoingMessagePayload = {
   [RoomOutgoingEventType.BOARD_UPDATE]: {
-    matrix: Matrix;
-    active_piece: {
-      piece: Piece;
-      coordinates: [x: number, y: number][];
-    } | null;
-    piece_in_hold: Piece | null;
+    payload: {
+      matrix: Matrix;
+      active_piece: {
+        piece: Piece;
+        coordinates: [x: number, y: number][];
+      } | null;
+      piece_in_hold: Piece | null;
+    };
+    success: {
+      matrix: Matrix;
+      active_piece: {
+        piece: Piece;
+        coordinates: [x: number, y: number][];
+      } | null;
+      piece_in_hold: Piece | null;
+      score: number;
+      cleared_lines_count: number;
+      level: number;
+    };
   };
 };
 
 export const pushRoomMessage = <T extends RoomOutgoingEventType>(
   channel: Channel,
   messageType: T,
-  payload: RoomOutgoingMessagePayload[T]
+  payload: RoomOutgoingMessagePayload[T]["payload"],
+  onSuccess: (payload: RoomOutgoingMessagePayload[T]["success"]) => void
 ) => {
-  channel.push(messageType, payload);
+  channel.push(messageType, payload).receive("ok", onSuccess);
 };
 
 export enum RoomIncomingEventType {

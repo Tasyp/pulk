@@ -64,12 +64,16 @@ export const useRoom = ({
           matrix: matrix,
           active_piece: activePiece,
           piece_in_hold: pieceInHold,
+          score: score,
+          level: level,
         } = payload.player_board;
 
         setPlayerBoard({
           matrix,
           activePiece,
           pieceInHold,
+          score,
+          level,
         });
         setRoomJoinState("ok");
       },
@@ -112,13 +116,26 @@ export const useRoom = ({
 
   const setBoard = useCallback(
     (boardUpdate: BoardUpdate): void => {
-      pushRoomMessage(channel, RoomOutgoingEventType.BOARD_UPDATE, {
-        matrix: boardUpdate.matrix,
-        active_piece: boardUpdate.activePiece,
-        piece_in_hold: boardUpdate.pieceInHold,
-      });
+      pushRoomMessage(
+        channel,
+        RoomOutgoingEventType.BOARD_UPDATE,
+        {
+          matrix: boardUpdate.matrix,
+          active_piece: boardUpdate.activePiece,
+          piece_in_hold: boardUpdate.pieceInHold,
+        },
+        (response) => {
+          // @ts-ignore
+          setPlayerBoard((board) => ({
+            ...board,
+            matrix: response.matrix,
+            score: response.score,
+            level: response.level,
+          }));
+        }
+      );
     },
-    [channel]
+    [channel, setPlayerBoard]
   );
 
   return {

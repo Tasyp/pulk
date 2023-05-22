@@ -15,6 +15,8 @@ export type BoardUpdate = {
 
 export type Board = {
   matrix: Matrix;
+  score: number;
+  level: number;
   activePiece: PositionedPiece | null;
   pieceInHold: Piece | null;
 };
