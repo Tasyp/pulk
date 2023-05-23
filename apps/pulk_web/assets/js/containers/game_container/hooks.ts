@@ -54,6 +54,7 @@ export const useRoom = ({
                 {
                   matrix: snapshot.matrix,
                   activePiece: snapshot.active_piece,
+                  state: snapshot.state,
                 },
               ]
             )
@@ -66,6 +67,7 @@ export const useRoom = ({
           piece_in_hold: pieceInHold,
           score: score,
           level: level,
+          state: state,
         } = payload.player_board;
 
         setPlayerBoard({
@@ -74,6 +76,7 @@ export const useRoom = ({
           pieceInHold,
           score,
           level,
+          state,
         });
         setRoomJoinState("ok");
       },
@@ -103,6 +106,7 @@ export const useRoom = ({
               acc.set(player_id, {
                 matrix: board_snapshot.matrix,
                 activePiece: board_snapshot.active_piece,
+                state: board_snapshot.state,
               })
             )
         );
@@ -125,13 +129,17 @@ export const useRoom = ({
           piece_in_hold: boardUpdate.pieceInHold,
         },
         (response) => {
-          // @ts-ignore
-          setPlayerBoard((board) => ({
-            ...board,
-            matrix: response.matrix,
-            score: response.score,
-            level: response.level,
-          }));
+          setPlayerBoard((board) =>
+            board !== null
+              ? {
+                  ...board,
+                  matrix: response.matrix,
+                  score: response.score,
+                  level: response.level,
+                  state: response.state,
+                }
+              : null
+          );
         }
       );
     },

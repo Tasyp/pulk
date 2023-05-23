@@ -1,5 +1,5 @@
 import { Channel } from "phoenix";
-import { Matrix, Piece } from "../board";
+import { BoardState, Matrix, Piece } from "../board";
 
 export type PlayerId = string;
 
@@ -10,6 +10,7 @@ export enum RoomErrorType {
 
 export type IncomingBoardSnapshot = {
   matrix: Matrix;
+  state: BoardState;
   active_piece: {
     piece: Piece;
     coordinates: [x: number, y: number][];
@@ -21,6 +22,7 @@ export type RoomJoinPayload = {
     matrix: Matrix;
     score: number;
     level: number;
+    state: BoardState;
     active_piece: {
       piece: Piece;
       coordinates: [x: number, y: number][];
@@ -72,6 +74,7 @@ export type RoomOutgoingMessagePayload = {
       } | null;
       piece_in_hold: Piece | null;
       score: number;
+      state: BoardState;
       cleared_lines_count: number;
       level: number;
     };

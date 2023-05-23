@@ -17,11 +17,19 @@ export type Board = {
   matrix: Matrix;
   score: number;
   level: number;
+  state: BoardState;
   activePiece: PositionedPiece | null;
   pieceInHold: Piece | null;
 };
 
 export type BoardSnapshot = {
   matrix: Matrix;
+  state: BoardState;
   activePiece: PositionedPiece | null;
 };
+
+export enum BoardState {
+  INITIAL = "initial",
+  PLAYING = "playing",
+  COMPLETE = "complete",
+}

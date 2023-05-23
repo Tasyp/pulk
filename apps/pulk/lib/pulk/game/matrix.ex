@@ -43,6 +43,12 @@ defmodule Pulk.Game.Matrix do
     end
   end
 
+  @spec is_complete?(t()) :: boolean()
+  def is_complete?(%__MODULE__{value: matrix}) do
+    matrix
+    |> Enum.all?(&line_not_empty?/1)
+  end
+
   @spec remove_filled_lines(t()) :: {t(), non_neg_integer()}
   def remove_filled_lines(%__MODULE__{value: matrix}) do
     {matrix, filled_lines_count} = do_remove_filled_lines(matrix)
@@ -70,7 +76,7 @@ defmodule Pulk.Game.Matrix do
               empty_line =
                 matrix
                 |> Enum.at(line_idx)
-                |> Enum.map(fn _ -> Piece.new!() end)
+                |> create_empty_line()
 
               List.replace_at(acc, 0, empty_line)
 
@@ -83,6 +89,17 @@ defmodule Pulk.Game.Matrix do
           filled_lines_count + 1
         )
     end
+  end
+
+  @spec create_empty_line(line()) :: line()
+  defp create_empty_line(line) do
+    line
+    |> Enum.map(fn _ -> Piece.new!() end)
+  end
+
+  @spec line_not_empty?(line()) :: boolean()
+  defp line_not_empty?(line) do
+    Enum.any?(line, &Kernel.not(Piece.is_empty?(&1)))
   end
 
   @spec line_filled?(line()) :: boolean()

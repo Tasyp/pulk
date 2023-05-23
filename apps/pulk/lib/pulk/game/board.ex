@@ -7,6 +7,7 @@ defmodule Pulk.Game.Board do
   alias Pulk.Game.BoardUpdate
   alias Pulk.Game.BoardSnapshot
   alias Pulk.Game.PositionedPiece
+  alias Pulk.Game.BoardState
 
   @points_per_line 100
 
@@ -16,6 +17,7 @@ defmodule Pulk.Game.Board do
     field :score, non_neg_integer(), default: 0
     field :cleared_lines_count, non_neg_integer(), default: 0
     field :piece_in_hold, Piece.t(), enforce: false
+    field :state, BoardState.t(), default: :initial
 
     field :active_piece, PositionedPiece.t(), enforce: false
 
@@ -28,8 +30,8 @@ defmodule Pulk.Game.Board do
   end
 
   @spec to_snapshot(t()) :: BoardSnapshot.t()
-  def to_snapshot(%__MODULE__{active_piece: active_piece, matrix: matrix}) do
-    BoardSnapshot.new!(active_piece: active_piece, matrix: matrix)
+  def to_snapshot(%__MODULE__{active_piece: active_piece, matrix: matrix, state: state}) do
+    BoardSnapshot.new!(active_piece: active_piece, matrix: matrix, state: state)
   end
 
   @spec update_matrix(t(), Matrix.t()) ::
@@ -48,8 +50,13 @@ defmodule Pulk.Game.Board do
   end
 
   @spec update(t(), BoardUpdate.t(), keyword()) ::
-          {:ok, BoardUpdate.t()} | {:error, :invalid_update}
-  def update(%__MODULE__{} = board, %BoardUpdate{} = board_update, opts \\ []) do
+          {:ok, BoardUpdate.t()} | {:error, :invalid_update} | {:error, :board_complete}
+
+  def update(%__MODULE__{state: :ended}, %BoardUpdate{}, _opts) do
+    {:error, :board_complete}
+  end
+
+  def update(%__MODULE__{} = board, %BoardUpdate{} = board_update, opts) do
     recalculate? = Keyword.get(opts, :recalculate?, false)
 
     next_board =
@@ -59,7 +66,7 @@ defmodule Pulk.Game.Board do
           active_piece: board_update.active_piece,
           matrix: board_update.matrix
       }
-      |> maybe_remove_filled_lines(recalculate?)
+      |> maybe_recalculate(recalculate?)
 
     case ensure_type(next_board) do
       {:ok, board} -> {:ok, board}
@@ -67,8 +74,15 @@ defmodule Pulk.Game.Board do
     end
   end
 
-  @spec maybe_remove_filled_lines(t(), boolean()) :: t()
-  def maybe_remove_filled_lines(%__MODULE__{} = board, true) do
+  @spec recalculate(t()) :: t()
+  def recalculate(%__MODULE__{} = board) do
+    board
+    |> remove_filled_lines()
+    |> detect_end_state()
+  end
+
+  @spec remove_filled_lines(t()) :: t()
+  def remove_filled_lines(%__MODULE__{} = board) do
     {matrix, filled_lines_count} = Matrix.remove_filled_lines(board.matrix)
 
     next_board =
@@ -77,10 +91,6 @@ defmodule Pulk.Game.Board do
       |> recalculate_score(filled_lines_count)
 
     next_board
-  end
-
-  def maybe_remove_filled_lines(%__MODULE__{} = board, false) do
-    board
   end
 
   @spec recalculate_score(t(), non_neg_integer()) :: t()
@@ -98,4 +108,27 @@ defmodule Pulk.Game.Board do
         score: board.score + score_increase
     }
   end
+
+  @spec detect_end_state(t()) :: t()
+  def detect_end_state(%__MODULE__{} = board) do
+    if Matrix.is_complete?(board.matrix) do
+      %{board | state: :complete}
+    else
+      board
+    end
+  end
+
+  @spec maybe_recalculate(t(), boolean()) :: t()
+  defp maybe_recalculate(%__MODULE__{} = board, true) do
+    board |> recalculate()
+  end
+
+  @spec maybe_recalculate(t(), boolean()) :: t()
+  defp maybe_recalculate(%__MODULE__{} = board, false) do
+    board
+  end
+end
+
+defmodule Pulk.Game.BoardState do
+  @type t() :: :initial | :playing | :complete
 end

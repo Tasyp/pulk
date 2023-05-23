@@ -12,6 +12,7 @@ const Container = styled("div")`
 
 const PlayerColumn = styled("div")`
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   width: 40%;
@@ -66,6 +67,7 @@ export const GameContainer: React.FunctionComponent<Props> = ({ roomId }) => {
         )}
       </ComptetitorsColumn>
       <PlayerColumn>
+        <div>state: {player.state}</div>
         <TetrisField board={player} setBoard={setBoard} />
       </PlayerColumn>
       <ComptetitorsColumn>
