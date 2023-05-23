@@ -67,7 +67,9 @@ export const GameContainer: React.FunctionComponent<Props> = ({ roomId }) => {
         )}
       </ComptetitorsColumn>
       <PlayerColumn>
-        <div>state: {player.state}</div>
+        <div>
+          state: {JSON.stringify({ ...player, matrix: undefined }, null, 2)}
+        </div>
         <TetrisField board={player} setBoard={setBoard} />
       </PlayerColumn>
       <ComptetitorsColumn>

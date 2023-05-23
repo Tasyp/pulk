@@ -4,13 +4,13 @@ defmodule Pulk.Game.BoardSnapshot do
 
   alias Pulk.Game.PositionedPiece
   alias Pulk.Game.Matrix
-  alias Pulk.Game.BoardState
+  alias Pulk.Game.Board
 
   typedstruct do
-    field :active_piece, PositionedPiece.t()
+    field(:active_piece, PositionedPiece.t())
 
-    field :matrix, Matrix.t(), enforce: true
+    field(:matrix, Matrix.t(), enforce: true)
 
-    field :state, BoardState.t(), enforce: true
+    field(:status, Board.status(), enforce: true)
   end
 end

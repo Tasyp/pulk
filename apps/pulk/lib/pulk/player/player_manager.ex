@@ -3,6 +3,7 @@ defmodule Pulk.Player.PlayerManager do
 
   alias Pulk.Game.Matrix
   alias Pulk.Game.Board
+  alias Pulk.Room.RoomManager
 
   def start_link(init_args) do
     player = Keyword.fetch!(init_args, :player)
@@ -33,6 +34,10 @@ defmodule Pulk.Player.PlayerManager do
 
   def update_board(pid, board_update, opts \\ []) do
     GenServer.call(pid, {:update_board, board_update, opts})
+  end
+
+  def update_board_status(pid, board_status) do
+    GenServer.call(pid, {:update_board_status, board_status})
   end
 
   def update_matrix(pid, raw_matrix) do
@@ -78,6 +83,17 @@ defmodule Pulk.Player.PlayerManager do
       end
 
     {:reply, response, state}
+  end
+
+  @impl true
+  def handle_call(
+        {:update_board_status, board_status},
+        _from,
+        %{board: board, player: player} = state
+      ) do
+    {:ok, board} = Board.update_status(board, board_status)
+    RoomManager.recalculate_room(player)
+    {:reply, {:ok, board}, %{state | board: board}}
   end
 
   def lookup(player_id) do

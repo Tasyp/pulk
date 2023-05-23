@@ -7,21 +7,22 @@ defmodule Pulk.Game.Board do
   alias Pulk.Game.BoardUpdate
   alias Pulk.Game.BoardSnapshot
   alias Pulk.Game.PositionedPiece
-  alias Pulk.Game.BoardState
 
   @points_per_line 100
 
+  @type status() :: :initial | :playing | :complete
+
   typedstruct enforce: true do
-    field :sizeX, pos_integer()
-    field :sizeY, pos_integer()
-    field :score, non_neg_integer(), default: 0
-    field :cleared_lines_count, non_neg_integer(), default: 0
-    field :piece_in_hold, Piece.t(), enforce: false
-    field :state, BoardState.t(), default: :initial
+    field(:sizeX, pos_integer())
+    field(:sizeY, pos_integer())
+    field(:score, non_neg_integer(), default: 0)
+    field(:cleared_lines_count, non_neg_integer(), default: 0)
+    field(:piece_in_hold, Piece.t(), enforce: false)
+    field(:status, status(), default: :initial)
 
-    field :active_piece, PositionedPiece.t(), enforce: false
+    field(:active_piece, PositionedPiece.t(), enforce: false)
 
-    field :matrix, Matrix.t()
+    field(:matrix, Matrix.t())
   end
 
   @spec level(t()) :: pos_integer()
@@ -30,8 +31,13 @@ defmodule Pulk.Game.Board do
   end
 
   @spec to_snapshot(t()) :: BoardSnapshot.t()
-  def to_snapshot(%__MODULE__{active_piece: active_piece, matrix: matrix, state: state}) do
-    BoardSnapshot.new!(active_piece: active_piece, matrix: matrix, state: state)
+  def to_snapshot(%__MODULE__{active_piece: active_piece, matrix: matrix, status: status}) do
+    BoardSnapshot.new!(active_piece: active_piece, matrix: matrix, status: status)
+  end
+
+  @spec update_status(t(), state :: status()) :: {:ok, t()}
+  def update_status(%__MODULE__{} = board, status) do
+    {:ok, ensure_type!(%{board | status: status})}
   end
 
   @spec update_matrix(t(), Matrix.t()) ::
@@ -52,7 +58,7 @@ defmodule Pulk.Game.Board do
   @spec update(t(), BoardUpdate.t(), keyword()) ::
           {:ok, BoardUpdate.t()} | {:error, :invalid_update} | {:error, :board_complete}
 
-  def update(%__MODULE__{state: :ended}, %BoardUpdate{}, _opts) do
+  def update(%__MODULE__{status: :ended}, %BoardUpdate{}, _opts) do
     {:error, :board_complete}
   end
 
@@ -112,10 +118,15 @@ defmodule Pulk.Game.Board do
   @spec detect_end_state(t()) :: t()
   def detect_end_state(%__MODULE__{} = board) do
     if Matrix.is_complete?(board.matrix) do
-      %{board | state: :complete}
+      %{board | status: :complete}
     else
       board
     end
+  end
+
+  @spec has_lines_cleared(t(), count :: non_neg_integer()) :: boolean()
+  def has_lines_cleared(%__MODULE__{} = board, count) do
+    board.cleared_lines_count >= count
   end
 
   @spec maybe_recalculate(t(), boolean()) :: t()
@@ -127,8 +138,4 @@ defmodule Pulk.Game.Board do
   defp maybe_recalculate(%__MODULE__{} = board, false) do
     board
   end
-end
-
-defmodule Pulk.Game.BoardState do
-  @type t() :: :initial | :playing | :complete
 end

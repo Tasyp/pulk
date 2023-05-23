@@ -136,6 +136,13 @@ defmodule Pulk.RoomContext do
     {:ok, boards}
   end
 
+  @spec update_status(Room.t(), Room.status()) :: {:error, :unknown_room} | {:ok, Room.t()}
+  def update_status(%Room{room_id: room_id}, status) do
+    with :ok <- RoomManager.is_room_present?(room_id) do
+      RoomManager.update_status(RoomManager.via_tuple(room_id), status)
+    end
+  end
+
   @spec is_room_available?(Room.t()) :: :ok | {:error, :unknown_room} | {:error, :room_busy}
   def is_room_available?(%Room{room_id: room_id}) do
     room_availability =

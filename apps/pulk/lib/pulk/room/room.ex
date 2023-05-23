@@ -2,9 +2,14 @@ defmodule Pulk.Room do
   use TypedStruct
   use Domo, gen_constructor_name: :_new
 
+  alias Pulk.Room.GameMode
+
+  @type status() :: :initial | :playing | :complete
   @type coordinates() :: {pos_integer(), pos_integer()}
 
   typedstruct enforce: true do
+    field :game_mode, GameMode.mode_type(), default: GameMode.default_game_mode()
+    field :status, status(), default: :initial
     field :room_id, String.t()
     field :started_at, DateTime.t(), enforce: false
     field :max_player_limit, pos_integer(), default: 4
@@ -21,6 +26,11 @@ defmodule Pulk.Room do
   @spec new() :: {:ok, t()} | {:error, list()}
   def new(room \\ %{}) do
     _new(room |> prefill_room)
+  end
+
+  @spec update_status(room :: t(), status :: status()) :: {:ok, t()}
+  def update_status(%__MODULE__{} = room, status) do
+    {:ok, ensure_type!(%{room | status: status})}
   end
 
   defp prefill_room(room) do
