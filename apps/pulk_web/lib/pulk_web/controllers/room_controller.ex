@@ -26,7 +26,7 @@ defmodule PulkWeb.RoomController do
               {:ok, room}
 
             {:error, :all_rooms_busy} ->
-              RoomContext.create_room(Room.create())
+              RoomContext.create_room(Room.new!())
           end
 
         {:ok, player} ->

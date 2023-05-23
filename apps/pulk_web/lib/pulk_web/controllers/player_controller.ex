@@ -4,7 +4,7 @@ defmodule PulkWeb.PlayerController do
   alias Pulk.Player
 
   def index(conn, _params) do
-    player = Player.create()
+    player = Player.new!()
 
     render(conn, :index, player: player)
   end

@@ -10,12 +10,19 @@ defmodule PulkWeb.RoomChannel do
   def join("room:" <> room_id, %{"player_id" => player_id}, socket) do
     player =
       case PlayerContext.get_player(player_id) do
-        {:ok, player} -> player
-        {:error, :unknown_player} -> Pulk.Player.create(%{player_id: player_id})
+        {:ok, player} ->
+          {:ok, player}
+
+        {:error, :unknown_player} ->
+          case Pulk.Player.new(%{player_id: player_id}) do
+            {:ok, player} -> {:ok, player}
+            {:error, _reason} -> {:error, :invalid_player_id}
+          end
       end
 
     response =
-      with {:ok, room} <- RoomContext.get_room(room_id),
+      with {:ok, player} <- player,
+           {:ok, room} <- RoomContext.get_room(room_id),
            {:ok, _player} <- RoomContext.add_player(room, player),
            {:ok, room_boards} <- RoomContext.get_room_boards(room) do
         {:ok, room_boards}

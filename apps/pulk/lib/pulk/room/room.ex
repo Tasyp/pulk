@@ -1,26 +1,31 @@
 defmodule Pulk.Room do
-  @type t :: %__MODULE__{
-          room_id: String.t(),
-          started_at: DateTime.t() | nil,
-          max_player_limit: Integer.t(),
-          # {X, Y} coordinates
-          board_size: {pos_integer(), pos_integer()}
-        }
+  use TypedStruct
+  use Domo, gen_constructor_name: :_new
 
-  @enforce_keys [:room_id, :max_player_limit, :board_size]
-  defstruct [:room_id, :max_player_limit, :started_at, :board_size]
+  @type coordinates() :: {pos_integer(), pos_integer()}
 
-  @default_player_limit 4
-  @default_board_size {10, 20}
+  typedstruct enforce: true do
+    field :room_id, String.t()
+    field :started_at, DateTime.t(), enforce: false
+    field :max_player_limit, pos_integer(), default: 4
+    field :board_size, coordinates(), default: {10, 20}
+  end
 
-  @spec create() :: Pulk.Room.t()
-  @spec create(Map.t()) :: Pulk.Room.t()
-  def create(attrs \\ %{}) when is_map(attrs) do
-    %__MODULE__{
-      room_id: Map.get(attrs, :room_id) || generate_id(),
-      max_player_limit: Map.get(attrs, :max_player_limit, @default_player_limit),
-      board_size: Map.get(attrs, :board_size, @default_board_size)
-    }
+  @spec new!(t()) :: t()
+  @spec new!() :: t()
+  def new!(room \\ %{}) do
+    _new!(room |> prefill_room)
+  end
+
+  @spec new(t()) :: {:ok, t()} | {:error, list()}
+  @spec new() :: {:ok, t()} | {:error, list()}
+  def new(room \\ %{}) do
+    _new(room |> prefill_room)
+  end
+
+  defp prefill_room(room) do
+    room
+    |> Map.put_new(:room_id, generate_id())
   end
 
   @spec generate_id() :: String.t()

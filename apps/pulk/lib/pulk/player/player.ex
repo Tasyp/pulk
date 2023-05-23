@@ -1,19 +1,27 @@
 defmodule Pulk.Player do
-  @type t :: %__MODULE__{
-          room_id: String.t() | nil,
-          player_id: String.t()
-        }
+  use TypedStruct
+  use Domo, gen_constructor_name: :_new
 
-  @enforce_keys [:player_id]
-  defstruct [:player_id, :room_id]
+  typedstruct do
+    field :room_id, String.t()
+    field :player_id, String.t(), enforce: true
+  end
 
-  @spec create() :: Pulk.Player.t()
-  @spec create(Map.t()) :: Pulk.Player.t()
-  def create(attrs \\ %{}) do
-    %__MODULE__{
-      player_id: Map.get(attrs, :player_id) || generate_id(),
-      room_id: Map.get(attrs, :room_id)
-    }
+  @spec new!(t()) :: t()
+  @spec new!() :: t()
+  def new!(room \\ %{}) do
+    _new!(room |> prefill_player)
+  end
+
+  @spec new(t()) :: {:ok, t()} | {:error, list()}
+  @spec new() :: {:ok, t()} | {:error, list()}
+  def new(room \\ %{}) do
+    _new(room |> prefill_player)
+  end
+
+  defp prefill_player(player) do
+    player
+    |> Map.put_new(:player_id, generate_id())
   end
 
   @spec assign_room(Pulk.Player.t(), Pulk.Room.t()) :: Pulk.Player.t()
