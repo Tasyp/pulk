@@ -1,4 +1,6 @@
 defmodule Pulk.Room.GameMode do
+  require Logger
+
   use TypedStruct
 
   alias Pulk.Room
@@ -36,13 +38,14 @@ defmodule Pulk.Room.GameMode do
     end
   end
 
-  @spec handle_room_update(t(), room :: Room.t()) :: {:ok, t()} | {:error, reason :: atom}
+  @spec handle_room_update(t(), room :: Room.t()) ::
+          {:ok, t(), Room.t()} | {:error, reason :: atom}
   def handle_room_update(%__MODULE__{module: module, state: module_state} = mode, room) do
     state = apply(module, :handle_room_update, [module_state, room])
 
     case state do
-      {:ok, state} ->
-        {:ok, %{mode | state: state}}
+      {:ok, state, room} ->
+        {:ok, %{mode | state: state}, room}
 
       {:error, reason} ->
         {:error, reason}

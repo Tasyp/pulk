@@ -44,6 +44,10 @@ defmodule Pulk.Player.PlayerManager do
     GenServer.call(pid, {:update_matrix, raw_matrix})
   end
 
+  def set_placement(pid, placement) do
+    GenServer.call(pid, {:set_placement, placement})
+  end
+
   @impl true
   def init(%{room: %Pulk.Room{} = room, player: %Pulk.Player{} = player}) do
     {sizeX, sizeY} = room.board_size
@@ -73,13 +77,22 @@ defmodule Pulk.Player.PlayerManager do
   end
 
   @impl true
-  def handle_call({:update_board, board_update, opts}, _from, %{board: board} = state) do
+  def handle_call(
+        {:update_board, board_update, opts},
+        _from,
+        %{board: board, player: player} = state
+      ) do
     recalculate? = Keyword.get(opts, :recalculate?, false)
 
     {response, state} =
       case Board.update(board, board_update, recalculate?: recalculate?) do
-        {:ok, board} -> {{:ok, board}, %{state | board: board}}
-        {:error, reason} -> {{:error, reason}, state}
+        {:ok, board} ->
+          RoomManager.recalculate_room_status(player)
+
+          {{:ok, board}, %{state | board: board}}
+
+        {:error, reason} ->
+          {{:error, reason}, state}
       end
 
     {:reply, response, state}
@@ -89,10 +102,15 @@ defmodule Pulk.Player.PlayerManager do
   def handle_call(
         {:update_board_status, board_status},
         _from,
-        %{board: board, player: player} = state
+        %{board: board} = state
       ) do
     {:ok, board} = Board.update_status(board, board_status)
-    RoomManager.recalculate_room(player)
+    {:reply, {:ok, board}, %{state | board: board}}
+  end
+
+  @impl true
+  def handle_call({:set_placement, placement}, _from, %{board: board} = state) do
+    {:ok, board} = Board.set_placement(board, placement)
     {:reply, {:ok, board}, %{state | board: board}}
   end
 

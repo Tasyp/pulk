@@ -16,13 +16,13 @@ defmodule Pulk.Room do
     field :board_size, coordinates(), default: {10, 20}
   end
 
-  @spec new!(t()) :: t()
+  @spec new!(map()) :: t()
   @spec new!() :: t()
   def new!(room \\ %{}) do
     _new!(room |> prefill_room)
   end
 
-  @spec new(t()) :: {:ok, t()} | {:error, list()}
+  @spec new(map()) :: {:ok, t()} | {:error, list()}
   @spec new() :: {:ok, t()} | {:error, list()}
   def new(room \\ %{}) do
     _new(room |> prefill_room)

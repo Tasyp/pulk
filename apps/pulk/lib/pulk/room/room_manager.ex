@@ -1,4 +1,6 @@
 defmodule Pulk.Room.RoomManager do
+  require Logger
+
   alias Pulk.Room
   alias Pulk.Room.GameMode
   alias Pulk.Player
@@ -40,12 +42,12 @@ defmodule Pulk.Room.RoomManager do
     GenServer.call(pid, {:update_status, status})
   end
 
-  def recalculate_room(%Player{room_id: room_id}) do
-    GenServer.cast(via_tuple(room_id), :recalculate_room)
+  def recalculate_room_status(%Player{room_id: room_id}) do
+    recalculate_room_status(via_tuple(room_id))
   end
 
-  def recalculate_room(pid) do
-    GenServer.cast(pid, :recalculate_room)
+  def recalculate_room_status(pid) do
+    GenServer.cast(pid, :recalculate_room_status)
   end
 
   def get_all_room_managers() do
@@ -60,7 +62,7 @@ defmodule Pulk.Room.RoomManager do
 
     {:ok, game_mode} =
       GameMode.new!(room.game_mode)
-      |> GameMode.init(%{line_goal: 40})
+      |> GameMode.init(%{line_goal: 5})
 
     {:ok, %{room: room, game_mode: game_mode}}
   end
@@ -91,11 +93,14 @@ defmodule Pulk.Room.RoomManager do
   end
 
   @impl true
-  def handle_cast(:recalculate_room, %{room: room, game_mode: game_mode} = state) do
-    {:ok, game_mode} =
-      game_mode
-      |> GameMode.handle_room_update(room)
+  def handle_cast(:recalculate_room_status, %{room: room, game_mode: game_mode} = state) do
+    case GameMode.handle_room_update(game_mode, room) do
+      {:ok, game_mode, room} ->
+        {:noreply, %{state | game_mode: game_mode, room: room}}
 
-    {:noreply, %{state | game_mode: game_mode}}
+      {:error, reason} ->
+        Logger.error("Could not recalculate room #{room.room_id} status: #{inspect(reason)}")
+        {:noreply, state}
+    end
   end
 end

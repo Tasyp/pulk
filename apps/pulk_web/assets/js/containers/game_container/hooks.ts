@@ -68,6 +68,7 @@ export const useRoom = ({
           score: score,
           level: level,
           status: status,
+          placement: placement,
         } = payload.player_board;
 
         setPlayerBoard({
@@ -77,6 +78,7 @@ export const useRoom = ({
           score,
           level,
           status,
+          placement: placement,
         });
         setRoomJoinState("ok");
       },
@@ -133,6 +135,7 @@ export const useRoom = ({
             board !== null
               ? {
                   ...board,
+                  placement: response.placement,
                   matrix: response.matrix,
                   score: response.score,
                   level: response.level,

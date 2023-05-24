@@ -17,6 +17,7 @@ export type Board = {
   matrix: Matrix;
   score: number;
   level: number;
+  placement: number | null;
   status: BoardStatus;
   activePiece: PositionedPiece | null;
   pieceInHold: Piece | null;

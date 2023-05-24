@@ -5,13 +5,17 @@ import { BoardSnapshot, addPiece, composeTetrisMatrix } from "../../lib/board";
 
 interface Props {
   snapshot: BoardSnapshot;
+  hasActivePiece?: boolean;
 }
 
 export const BoardSnapshotView: React.FunctionComponent<Props> = ({
   snapshot: { matrix: inputMatrix, activePiece },
+  hasActivePiece = true,
 }) => {
   const matrix = composeTetrisMatrix(
-    activePiece !== null ? addPiece(inputMatrix, activePiece) : inputMatrix
+    hasActivePiece && activePiece !== null
+      ? addPiece(inputMatrix, activePiece)
+      : inputMatrix
   );
   return (
     <table className="game-board">

@@ -10,7 +10,7 @@ defmodule Pulk.Game.Board do
 
   @points_per_line 100
 
-  @type status() :: :initial | :playing | :complete
+  @type status() :: :initial | :ongoing | :complete
 
   typedstruct enforce: true do
     field(:sizeX, pos_integer())
@@ -19,6 +19,7 @@ defmodule Pulk.Game.Board do
     field(:cleared_lines_count, non_neg_integer(), default: 0)
     field(:piece_in_hold, Piece.t(), enforce: false)
     field(:status, status(), default: :initial)
+    field(:placement, pos_integer(), enforce: false)
 
     field(:active_piece, PositionedPiece.t(), enforce: false)
 
@@ -58,7 +59,7 @@ defmodule Pulk.Game.Board do
   @spec update(t(), BoardUpdate.t(), keyword()) ::
           {:ok, BoardUpdate.t()} | {:error, :invalid_update} | {:error, :board_complete}
 
-  def update(%__MODULE__{status: :ended}, %BoardUpdate{}, _opts) do
+  def update(%__MODULE__{status: :complete}, %BoardUpdate{}, _opts) do
     {:error, :board_complete}
   end
 
@@ -129,12 +130,16 @@ defmodule Pulk.Game.Board do
     board.cleared_lines_count >= count
   end
 
+  @spec set_placement(t(), placement :: pos_integer()) :: {:ok, t()}
+  def set_placement(%__MODULE__{} = board, placement) do
+    {:ok, ensure_type!(%{board | status: :complete, placement: placement})}
+  end
+
   @spec maybe_recalculate(t(), boolean()) :: t()
   defp maybe_recalculate(%__MODULE__{} = board, true) do
     board |> recalculate()
   end
 
-  @spec maybe_recalculate(t(), boolean()) :: t()
   defp maybe_recalculate(%__MODULE__{} = board, false) do
     board
   end

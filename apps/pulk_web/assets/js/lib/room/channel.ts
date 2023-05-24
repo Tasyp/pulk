@@ -22,6 +22,7 @@ export type RoomJoinPayload = {
     matrix: Matrix;
     score: number;
     level: number;
+    placement: number | null;
     status: BoardStatus;
     active_piece: {
       piece: Piece;
@@ -77,6 +78,7 @@ export type RoomOutgoingMessagePayload = {
       status: BoardStatus;
       cleared_lines_count: number;
       level: number;
+      placement: number;
     };
   };
 };
