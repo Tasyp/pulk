@@ -40,6 +40,13 @@ defmodule Pulk.Room.GameMode do
 
   @spec handle_room_update(t(), room :: Room.t()) ::
           {:ok, t(), Room.t()} | {:error, reason :: atom}
+  def handle_room_update(
+        %__MODULE__{},
+        %{status: :complete} = room
+      ) do
+    {:ok, room}
+  end
+
   def handle_room_update(%__MODULE__{module: module, state: module_state} = mode, room) do
     state = apply(module, :handle_room_update, [module_state, room])
 
