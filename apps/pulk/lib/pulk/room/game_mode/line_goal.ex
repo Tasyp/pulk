@@ -27,18 +27,13 @@ defmodule Pulk.Room.GameMode.LineGoal do
       ) do
     room_boards = get_room_boards_by_cleared_line_count(room)
 
-    maybe_winner = get_winner(room_boards, line_goal)
-
     next_room =
-      case maybe_winner do
-        {:ok, _player_board} ->
-          {:ok, room} = Room.update_status(room, :complete)
-          room
-
-        :error ->
-          room
+      if can_be_room_closed?(room_boards, line_goal) do
+        {:ok, room} = Room.update_status(room, :complete)
+        room
+      else
+        room
       end
-
     # Makes sure all players got placings
     set_player_placements(next_room, room_boards)
 
@@ -52,7 +47,7 @@ defmodule Pulk.Room.GameMode.LineGoal do
     |> Enum.sort_by(fn {_player, board} -> board.cleared_lines_count end, :desc)
   end
 
-  defp get_winner(room_boards, line_goal) do
+  defp can_be_room_closed?(room_boards, line_goal) do
     active_boards =
       room_boards
       |> Enum.filter(fn {_player, board} -> board.status != :complete end)
@@ -62,25 +57,29 @@ defmodule Pulk.Room.GameMode.LineGoal do
     case maybe_winner do
       {player, board} ->
         cond do
-          # 1. Check if the player has reached the goal, then we can consider them as a winner
+          # 1. If the player has reached the goal, then we can consider them as a winner
           Board.has_lines_cleared(board, line_goal) ->
-            {:ok, {player, board}}
+            true
 
-          # 2. Check if there is only one playing board left and room is not just for one, then we can complete the game
+          # 2. If there is only one playing board left and room is not just for one, then we can complete the game
           length(active_boards) == 1 && length(room_boards) > 1 ->
             set_player_placement(player, 1)
 
-            {:ok, {player, board}}
+            true
 
-          # 3. No winner. Let's continue playing
+          # 3. If all players have lost, then game can be completed
+          length(active_boards) == 0 ->
+            true
+
+          # 4. No winner. Let's continue playing
           true ->
-            :error
+            false
         end
 
       # There are no active players in the room. Race condition?
       _ ->
         Logger.warning("Tried to find a winner in a room with no active players")
-        :error
+        false
     end
   end
 
