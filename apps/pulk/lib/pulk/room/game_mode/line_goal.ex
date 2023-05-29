@@ -9,8 +9,8 @@ defmodule Pulk.Room.GameMode.LineGoal do
 
   @behaviour GameMode.Behaviour
 
-  typedstruct do
-    field(:line_goal, pos_integer(), default: 40)
+  typedstruct enforce: true do
+    field :line_goal, pos_integer()
   end
 
   @impl true
@@ -23,21 +23,21 @@ defmodule Pulk.Room.GameMode.LineGoal do
         %__MODULE__{line_goal: line_goal} = state,
         %Pulk.Room{} = room
       ) do
-    room_player_boards = get_room_boards_by_cleared_line_count(room)
+    {:ok, players_boards} = RoomContext.get_room_boards(room)
 
-    room_boards =
-      room_player_boards
+    boards =
+      players_boards
       |> Enum.map(fn {_player, board} -> board end)
 
     next_room =
-      if can_be_room_closed?(room_boards, line_goal) do
+      if can_be_room_closed?(boards, line_goal) do
         {:ok, room} = Room.update_status(room, :complete)
         room
       else
         room
       end
 
-    get_player_placements(next_room, room_player_boards)
+    get_player_placements(next_room, players_boards)
     |> Enum.map(fn {player, placement} ->
       set_player_placement(player, placement)
     end)
@@ -50,6 +50,7 @@ defmodule Pulk.Room.GameMode.LineGoal do
     active_boards =
       room_boards
       |> Enum.filter(&(&1.status != :complete))
+      |> Enum.sort_by(& &1.cleared_lines_count, :desc)
 
     maybe_winner = List.first(active_boards)
 
@@ -131,13 +132,6 @@ defmodule Pulk.Room.GameMode.LineGoal do
       _ ->
         1
     end
-  end
-
-  defp get_room_boards_by_cleared_line_count(room) do
-    {:ok, room_boards} = RoomContext.get_room_boards(room)
-
-    room_boards
-    |> Enum.sort_by(fn {_player, board} -> board.cleared_lines_count end, :desc)
   end
 
   defp set_player_placement(player, placement) do

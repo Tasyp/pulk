@@ -61,8 +61,8 @@ defmodule Pulk.Room.RoomManager do
     :pg.join(__MODULE__, self())
 
     {:ok, game_mode} =
-      GameMode.new!(room.game_mode)
-      |> GameMode.init(%{line_goal: 5})
+      GameMode.new!(room.game_mode.type)
+      |> GameMode.init(room.game_mode.args)
 
     {:ok, %{room: room, game_mode: game_mode}}
   end

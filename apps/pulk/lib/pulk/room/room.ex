@@ -8,7 +8,7 @@ defmodule Pulk.Room do
   @type coordinates() :: {pos_integer(), pos_integer()}
 
   typedstruct enforce: true do
-    field :game_mode, GameMode.mode_type(), default: GameMode.default_game_mode()
+    field :game_mode, GameMode.game_mode(), default: GameMode.default_game_mode()
     field :status, status(), default: :initial
     field :room_id, String.t()
     field :started_at, DateTime.t(), enforce: false

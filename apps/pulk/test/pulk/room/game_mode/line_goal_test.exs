@@ -96,13 +96,17 @@ defmodule Pulk.Room.GameMode.LineGoalTest do
 
       player_board_D = get_player_board(room.room_id, %{status: :ongoing, cleared_lines_count: 3})
 
-
-      assert LineGoal.get_player_placements(room, [player_board_C, player_board_A, player_board_B, player_board_D]) ==
+      assert LineGoal.get_player_placements(room, [
+               player_board_C,
+               player_board_A,
+               player_board_B,
+               player_board_D
+             ]) ==
                [
                  {get_player(player_board_B), 4},
                  {get_player(player_board_C), 3},
                  {get_player(player_board_A), 2},
-                 {get_player(player_board_D), 1},
+                 {get_player(player_board_D), 1}
                ]
     end
 

@@ -139,9 +139,11 @@ defmodule Pulk.Game.Board do
     board.cleared_lines_count >= count
   end
 
-  @spec set_placement(t(), placement :: pos_integer()) :: {:ok, t()}
+  @spec set_placement(t(), placement :: pos_integer()) :: {:ok, t()} | {:error, term()}
   def set_placement(%__MODULE__{} = board, placement) do
-    {:ok, ensure_type!(%{board | status: :complete, placement: placement})}
+    with {:ok, board} <- ensure_type(%{board | status: :complete, placement: placement}) do
+      {:ok, board}
+    end
   end
 
   @spec maybe_recalculate(t(), boolean()) :: t()
