@@ -1,7 +1,6 @@
 defmodule Pulk.Player.PlayerManager do
   use GenServer
 
-  alias Pulk.Game.Matrix
   alias Pulk.Game.Board
   alias Pulk.Room.RoomManager
 
@@ -50,8 +49,8 @@ defmodule Pulk.Player.PlayerManager do
 
   @impl true
   def init(%{room: %Pulk.Room{} = room, player: %Pulk.Player{} = player}) do
-    {sizeX, sizeY} = room.board_size
-    {:ok, board} = Board.new(sizeX: sizeX, sizeY: sizeY, matrix: Matrix.new!(sizeX, sizeY))
+    {size_x, size_y} = room.board_size
+    {:ok, board} = Board.new(size_x, size_y)
     {:ok, %{player: player, board: board}}
   end
 

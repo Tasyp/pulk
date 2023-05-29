@@ -1,6 +1,6 @@
 defmodule Pulk.Game.Board do
   use TypedStruct
-  use Domo
+  use Domo, gen_constructor_name: :_new
 
   alias Pulk.Game.Piece
   alias Pulk.Game.Matrix
@@ -13,17 +13,26 @@ defmodule Pulk.Game.Board do
   @type status() :: :initial | :ongoing | :complete
 
   typedstruct enforce: true do
-    field(:sizeX, pos_integer())
-    field(:sizeY, pos_integer())
-    field(:score, non_neg_integer(), default: 0)
-    field(:cleared_lines_count, non_neg_integer(), default: 0)
-    field(:piece_in_hold, Piece.t(), enforce: false)
-    field(:status, status(), default: :initial)
-    field(:placement, pos_integer(), enforce: false)
+    field :size_x, pos_integer()
+    field :size_y, pos_integer()
+    field :score, non_neg_integer(), default: 0
+    field :cleared_lines_count, non_neg_integer(), default: 0
+    field :piece_in_hold, Piece.t(), enforce: false
+    # TODO: Replace with :initial when start logic is implemented
+    field :status, status(), default: :ongoing
+    field :placement, pos_integer(), enforce: false
 
-    field(:active_piece, PositionedPiece.t(), enforce: false)
+    field :active_piece, PositionedPiece.t(), enforce: false
 
-    field(:matrix, Matrix.t())
+    field :matrix, Matrix.t()
+  end
+
+  @spec new(pos_integer(), pos_integer()) :: {:ok, t()} | {:error, term()}
+  def new(size_x, size_y, attrs \\ %{}) do
+    _new(
+      %{size_x: size_x, size_y: size_y, matrix: Matrix.new!(size_x, size_y)}
+      |> Map.merge(attrs)
+    )
   end
 
   @spec level(t()) :: pos_integer()
@@ -44,7 +53,7 @@ defmodule Pulk.Game.Board do
   @spec update_matrix(t(), Matrix.t()) ::
           {:ok, t()} | {:error, :invalid_size} | {:error, :invalid_matrix}
   def update_matrix(%__MODULE__{} = board, matrix) do
-    with :ok <- Matrix.has_matching_size?(matrix, {board.sizeX, board.sizeY}),
+    with :ok <- Matrix.has_matching_size?(matrix, {board.size_x, board.size_y}),
          {:ok, next_board} <- ensure_type(%{board | matrix: matrix}) do
       {:ok, next_board}
     else
