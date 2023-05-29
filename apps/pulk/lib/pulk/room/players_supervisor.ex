@@ -12,7 +12,7 @@ defmodule Pulk.Room.PlayersSupervisor do
     DynamicSupervisor.init(max_children: max_player_limit, strategy: :one_for_one)
   end
 
-  def via_tuple(room_id) do
+  def via_tuple(%Pulk.Room{room_id: room_id}) do
     Pulk.Registry.via_tuple({__MODULE__, room_id})
   end
 end

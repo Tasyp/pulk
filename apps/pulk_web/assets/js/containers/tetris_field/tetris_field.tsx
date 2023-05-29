@@ -1,10 +1,16 @@
 import React from "react";
 import Tetris from "react-tetris";
 
-import { GameMatrixObserver } from "./game_matrix_observer";
-import { Board, BoardUpdate, composeTetrisMatrix } from "../../lib/board";
-
 import { styled } from "goober";
+
+import { GameMatrixObserver } from "./game_matrix_observer";
+import {
+  Board,
+  BoardStatus,
+  BoardUpdate,
+  composeTetrisMatrix,
+} from "../../lib/board";
+import { BoardSnapshotView } from "../../components";
 
 const Container = styled("div")`
   display: flex;
@@ -27,6 +33,18 @@ export const TetrisField: React.FunctionComponent<Props> = ({
     const nextMatrix = composeTetrisMatrix(board.matrix);
     return { matrix: nextMatrix };
   }, [board?.matrix]);
+
+  if (
+    board !== undefined &&
+    (board?.status === BoardStatus.COMPLETE || board?.placement !== null)
+  ) {
+    return (
+      <div>
+        <p>Place: {board.placement}</p>
+        <BoardSnapshotView snapshot={board} hasActivePiece={false} />
+      </div>
+    );
+  }
 
   return (
     <Tetris

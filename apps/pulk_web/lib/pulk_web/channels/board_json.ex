@@ -1,7 +1,15 @@
 defimpl Jason.Encoder, for: [Pulk.Game.Board] do
   alias Pulk.Game.Board
 
-  @visible_fields [:score, :cleared_lines_count, :piece_in_hold, :active_piece, :matrix, :state]
+  @visible_fields [
+    :score,
+    :cleared_lines_count,
+    :piece_in_hold,
+    :active_piece,
+    :matrix,
+    :status,
+    :placement
+  ]
 
   def encode(struct, opts) do
     next_struct =

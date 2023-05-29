@@ -12,10 +12,10 @@ defmodule Pulk.Game.Matrix do
   end
 
   @spec new!(pos_integer(), pos_integer()) :: t()
-  def new!(sizeX, sizeY) do
+  def new!(size_x, size_y) do
     matrix =
-      1..sizeY
-      |> Enum.map(fn _ -> 1..sizeX |> Enum.map(fn _ -> Piece.new!() end) end)
+      1..size_y
+      |> Enum.map(fn _ -> 1..size_x |> Enum.map(fn _ -> Piece.new!() end) end)
 
     _new!(value: matrix)
   end
@@ -31,14 +31,15 @@ defmodule Pulk.Game.Matrix do
 
   @spec has_matching_size?(t(), {pos_integer(), pos_integer()}) ::
           :ok | {:error, :invalid_size}
-  def has_matching_size?(%__MODULE__{value: matrix}, {sizeX, sizeY}) do
-    actualSizeY = length(matrix)
+  def has_matching_size?(%__MODULE__{value: matrix}, {size_x, size_y}) do
+    actual_size_y = length(matrix)
 
-    actualSizesX = matrix |> Enum.map(fn row -> length(row) end) |> MapSet.new() |> Enum.to_list()
+    actual_sizes_x =
+      matrix |> Enum.map(fn row -> length(row) end) |> MapSet.new() |> Enum.to_list()
 
     cond do
-      actualSizeY != sizeY -> {:error, :invalid_size}
-      actualSizesX != [sizeX] -> {:error, :invalid_size}
+      actual_size_y != size_y -> {:error, :invalid_size}
+      actual_sizes_x != [size_x] -> {:error, :invalid_size}
       true -> :ok
     end
   end

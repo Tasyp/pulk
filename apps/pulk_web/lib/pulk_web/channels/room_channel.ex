@@ -45,9 +45,11 @@ defmodule PulkWeb.RoomChannel do
   @impl true
   def handle_in("board_update", board_update_json, socket) do
     response =
-      with {:ok, board_update} <- PulkWeb.BoardUpdateJSON.from_json(board_update_json),
-           {:ok, board} <-
-             PlayerContext.update_board(socket.assigns.player_id, board_update, recalculate?: true) do
+      with {:ok, player} <- PlayerContext.get_player(socket.assigns.player_id),
+           {:ok, board_update} <- PulkWeb.BoardUpdateJSON.from_json(board_update_json),
+           {:ok, current_board} <- PlayerContext.get_board(player.player_id),
+           # TODO: Set up separate communication channel with users from server and remove this hack
+           {:ok, board} <- get_or_update_board(player, board_update, current_board) do
         broadcast(socket, "board_snapshot_update", %{
           "board_snapshot" => Board.to_snapshot(board),
           "player_id" => socket.assigns.player_id
@@ -60,6 +62,14 @@ defmodule PulkWeb.RoomChannel do
       end
 
     {:reply, response, socket}
+  end
+
+  defp get_or_update_board(player, board_update, current_board) do
+    if current_board.status == :complete do
+      {:ok, current_board}
+    else
+      PlayerContext.update_board(player.player_id, board_update, recalculate?: true)
+    end
   end
 
   @spec compose_join_response(list({Player.t(), Board.t()}), String.t()) :: %{

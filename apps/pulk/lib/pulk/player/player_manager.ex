@@ -1,8 +1,8 @@
 defmodule Pulk.Player.PlayerManager do
   use GenServer
 
-  alias Pulk.Game.Matrix
   alias Pulk.Game.Board
+  alias Pulk.Room.RoomManager
 
   def start_link(init_args) do
     player = Keyword.fetch!(init_args, :player)
@@ -35,14 +35,22 @@ defmodule Pulk.Player.PlayerManager do
     GenServer.call(pid, {:update_board, board_update, opts})
   end
 
+  def update_board_status(pid, board_status) do
+    GenServer.call(pid, {:update_board_status, board_status})
+  end
+
   def update_matrix(pid, raw_matrix) do
     GenServer.call(pid, {:update_matrix, raw_matrix})
   end
 
+  def set_placement(pid, placement) do
+    GenServer.call(pid, {:set_placement, placement})
+  end
+
   @impl true
   def init(%{room: %Pulk.Room{} = room, player: %Pulk.Player{} = player}) do
-    {sizeX, sizeY} = room.board_size
-    {:ok, board} = Board.new(sizeX: sizeX, sizeY: sizeY, matrix: Matrix.new!(sizeX, sizeY))
+    {size_x, size_y} = room.board_size
+    {:ok, board} = Board.new(size_x, size_y)
     {:ok, %{player: player, board: board}}
   end
 
@@ -68,16 +76,41 @@ defmodule Pulk.Player.PlayerManager do
   end
 
   @impl true
-  def handle_call({:update_board, board_update, opts}, _from, %{board: board} = state) do
+  def handle_call(
+        {:update_board, board_update, opts},
+        _from,
+        %{board: board, player: player} = state
+      ) do
     recalculate? = Keyword.get(opts, :recalculate?, false)
 
     {response, state} =
       case Board.update(board, board_update, recalculate?: recalculate?) do
-        {:ok, board} -> {{:ok, board}, %{state | board: board}}
-        {:error, reason} -> {{:error, reason}, state}
+        {:ok, board} ->
+          RoomManager.recalculate_room_status(player)
+
+          {{:ok, board}, %{state | board: board}}
+
+        {:error, reason} ->
+          {{:error, reason}, state}
       end
 
     {:reply, response, state}
+  end
+
+  @impl true
+  def handle_call(
+        {:update_board_status, board_status},
+        _from,
+        %{board: board} = state
+      ) do
+    {:ok, board} = Board.update_status(board, board_status)
+    {:reply, {:ok, board}, %{state | board: board}}
+  end
+
+  @impl true
+  def handle_call({:set_placement, placement}, _from, %{board: board} = state) do
+    {:ok, board} = Board.set_placement(board, placement)
+    {:reply, {:ok, board}, %{state | board: board}}
   end
 
   def lookup(player_id) do
