@@ -74,7 +74,7 @@ defmodule Pulk.Room.RoomManager do
 
     response = %{
       room: room,
-      is_available: player_count < room.max_player_limit,
+      is_available: player_count < room.max_player_limit && room.status == :initial,
       player_count: player_count
     }
 

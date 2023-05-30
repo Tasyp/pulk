@@ -1,6 +1,9 @@
 defmodule Pulk.Player.PlayerManager do
   use GenServer
 
+  require Logger
+
+  alias Phoenix.PubSub
   alias Pulk.Game.Board
   alias Pulk.Room.RoomManager
 
@@ -45,6 +48,14 @@ defmodule Pulk.Player.PlayerManager do
 
   def set_placement(pid, placement) do
     GenServer.call(pid, {:set_placement, placement})
+  end
+
+  def subscribe_to_board_updates(player_id) do
+    PubSub.subscribe(Pulk.PubSub, "player:#{player_id}:board")
+  end
+
+  def publish_board(pid) do
+    GenServer.cast(pid, {:publish_board})
   end
 
   @impl true
@@ -111,6 +122,24 @@ defmodule Pulk.Player.PlayerManager do
   def handle_call({:set_placement, placement}, _from, %{board: board} = state) do
     {:ok, board} = Board.set_placement(board, placement)
     {:reply, {:ok, board}, %{state | board: board}}
+  end
+
+  @impl true
+  def handle_cast({:publish_board}, %{board: board, player: player} = state) do
+    case PubSub.broadcast(
+           Pulk.PubSub,
+           "player:#{player.player_id}:board",
+           {:internal_board_update, board}
+         ) do
+      {:error, reason} ->
+        Logger.error("Board broadcast for player #{player.player_id}: #{inspect(reason)}")
+
+      _ ->
+        # ignore
+        nil
+    end
+
+    {:noreply, state}
   end
 
   def lookup(player_id) do

@@ -39,7 +39,7 @@ defmodule Pulk.Room.GameMode.LineGoal do
 
     get_player_placements(next_room, players_boards)
     |> Enum.map(fn {player, placement} ->
-      set_player_placement(player, placement)
+      set_player_placement_and_notify(player, placement)
     end)
 
     {:ok, state, next_room}
@@ -134,7 +134,10 @@ defmodule Pulk.Room.GameMode.LineGoal do
     end
   end
 
-  defp set_player_placement(player, placement) do
-    PlayerManager.set_placement(PlayerManager.via_tuple(player.player_id), placement)
+  defp set_player_placement_and_notify(player, placement) do
+    {:ok, _board} =
+      PlayerManager.set_placement(PlayerManager.via_tuple(player.player_id), placement)
+
+    PlayerManager.publish_board(PlayerManager.via_tuple(player.player_id))
   end
 end

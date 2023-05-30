@@ -94,12 +94,26 @@ export const pushRoomMessage = <T extends RoomOutgoingEventType>(
 
 export enum RoomIncomingEventType {
   BOARD_SNAPSHOT_UPDATE = "board_snapshot_update",
+  BOARD_UPDATE = "board_update",
 }
 
 export type RoomIncomingMessagePayload = {
   [RoomIncomingEventType.BOARD_SNAPSHOT_UPDATE]: {
     board_snapshot: IncomingBoardSnapshot;
     player_id: string;
+  };
+  [RoomIncomingEventType.BOARD_UPDATE]: {
+    matrix: Matrix;
+    active_piece: {
+      piece: Piece;
+      coordinates: [x: number, y: number][];
+    } | null;
+    piece_in_hold: Piece | null;
+    score: number;
+    status: BoardStatus;
+    cleared_lines_count: number;
+    level: number;
+    placement: number;
   };
 };
 

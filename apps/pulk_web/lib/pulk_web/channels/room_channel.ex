@@ -1,4 +1,6 @@
 defmodule PulkWeb.RoomChannel do
+  require Logger
+
   use PulkWeb, :channel
 
   alias Pulk.RoomContext
@@ -35,6 +37,8 @@ defmodule PulkWeb.RoomChannel do
 
     case response do
       {:ok, room_boards} ->
+        PlayerContext.subscribe_to_board_updates(player_id)
+
         {:ok, compose_join_response(room_boards, player_id), socket}
 
       {:error, reason} ->
@@ -47,14 +51,9 @@ defmodule PulkWeb.RoomChannel do
     response =
       with {:ok, player} <- PlayerContext.get_player(socket.assigns.player_id),
            {:ok, board_update} <- PulkWeb.BoardUpdateJSON.from_json(board_update_json),
-           {:ok, current_board} <- PlayerContext.get_board(player.player_id),
-           # TODO: Set up separate communication channel with users from server and remove this hack
-           {:ok, board} <- get_or_update_board(player, board_update, current_board) do
-        broadcast(socket, "board_snapshot_update", %{
-          "board_snapshot" => Board.to_snapshot(board),
-          "player_id" => socket.assigns.player_id
-        })
-
+           {:ok, board} <-
+             PlayerContext.update_board(player.player_id, board_update, recalculate?: true) do
+        send_board_to_others(socket, board)
         {:ok, board}
       else
         {:error, reason} ->
@@ -64,12 +63,18 @@ defmodule PulkWeb.RoomChannel do
     {:reply, response, socket}
   end
 
-  defp get_or_update_board(player, board_update, current_board) do
-    if current_board.status == :complete do
-      {:ok, current_board}
-    else
-      PlayerContext.update_board(player.player_id, board_update, recalculate?: true)
-    end
+  @impl true
+  def handle_info({:internal_board_update, board}, socket) do
+    send_board_to_others(socket, board)
+    push(socket, "board_update", board)
+    {:noreply, socket}
+  end
+
+  defp send_board_to_others(socket, board) do
+    broadcast_from(socket, "board_snapshot_update", %{
+      "board_snapshot" => Board.to_snapshot(board),
+      "player_id" => socket.assigns.player_id
+    })
   end
 
   @spec compose_join_response(list({Player.t(), Board.t()}), String.t()) :: %{

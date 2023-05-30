@@ -10,7 +10,7 @@ defmodule Pulk.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: Pulk.PubSub},
       # Start Finch
-      {Finch, name: Pulk.Finch},
+      # {Finch, name: Pulk.Finch},
       Pulk.Pg,
       {Task.Supervisor, name: Pulk.TaskSupervisor},
       Pulk.Registry,

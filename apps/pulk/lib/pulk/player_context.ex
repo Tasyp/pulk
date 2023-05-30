@@ -46,4 +46,9 @@ defmodule Pulk.PlayerContext do
       PlayerManager.update_board_status(PlayerManager.via_tuple(player_id), board_status)
     end
   end
+
+  @spec subscribe_to_board_updates(String.t()) :: :ok | {:error, term}
+  def subscribe_to_board_updates(player_id) do
+    PlayerManager.subscribe_to_board_updates(player_id)
+  end
 end

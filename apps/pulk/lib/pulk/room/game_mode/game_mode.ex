@@ -14,7 +14,7 @@ defmodule Pulk.Room.GameMode do
 
   @default_game_mode %{
     type: :line_goal,
-    args: %{line_goal: 40}
+    args: %{line_goal: 3}
   }
 
   @game_modes %{

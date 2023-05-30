@@ -94,7 +94,7 @@ export const useRoom = ({
   }, [setRoomJoinState, setOtherPlayers, setErrorReason]);
 
   useEffect(() => {
-    const ref = onRoomMessage(
+    const snapshotRef = onRoomMessage(
       channel,
       RoomIncomingEventType.BOARD_SNAPSHOT_UPDATE,
       ({ board_snapshot, player_id }) => {
@@ -115,8 +115,29 @@ export const useRoom = ({
       }
     );
 
+    const boardRef = onRoomMessage(
+      channel,
+      RoomIncomingEventType.BOARD_UPDATE,
+      (response) => {
+        console.log("BOARD UPDATE");
+        setPlayerBoard((board) =>
+          board !== null
+            ? {
+                ...board,
+                placement: response.placement,
+                matrix: response.matrix,
+                score: response.score,
+                level: response.level,
+                status: response.status,
+              }
+            : null
+        );
+      }
+    );
+
     return () => {
-      channel.off(RoomIncomingEventType.BOARD_SNAPSHOT_UPDATE, ref);
+      channel.off(RoomIncomingEventType.BOARD_SNAPSHOT_UPDATE, snapshotRef);
+      channel.off(RoomIncomingEventType.BOARD_UPDATE, boardRef);
     };
   }, [setOtherPlayers, playerId]);
 
