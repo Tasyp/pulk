@@ -10,6 +10,7 @@ defmodule Pulk.Player.PlayerManager do
   alias Phoenix.PubSub
   alias Pulk.Game.Board
   alias Pulk.Room.RoomManager
+  alias Pulk.Game.Gravity
 
   def start_link(init_args) do
     player = Keyword.fetch!(init_args, :player)
@@ -62,10 +63,25 @@ defmodule Pulk.Player.PlayerManager do
     GenServer.cast(pid, {:publish_board})
   end
 
+  def lookup(player_id) do
+    case Pulk.Registry.lookup({__MODULE__, player_id}) do
+      [{pid, _}] -> {:ok, pid}
+      _ -> {:error, :not_found}
+    end
+  end
+
+  def via_tuple(player_id) do
+    Pulk.Registry.via_tuple({__MODULE__, player_id})
+  end
+
   @impl true
   def init(%{room: %Pulk.Room{} = room, player: %Pulk.Player{} = player}) do
     {size_x, size_y} = room.board_size
     {:ok, board} = Board.new(size_x, size_y)
+
+    # TODO: Start tick timer when board is actually completed
+    Process.send_after(self(), :timer_tick, :timer.seconds(5))
+
     {:ok, %{player: player, board: board}}
   end
 
@@ -101,7 +117,7 @@ defmodule Pulk.Player.PlayerManager do
     {response, state} =
       case Board.update(board, board_update, recalculate?: recalculate?) do
         {:ok, board} ->
-          RoomManager.recalculate_room_status(player)
+          RoomManager.recalculate_room_status(player.room_id)
 
           {{:ok, board}, %{state | board: board}}
 
@@ -146,14 +162,18 @@ defmodule Pulk.Player.PlayerManager do
     {:noreply, state}
   end
 
-  def lookup(player_id) do
-    case Pulk.Registry.lookup({__MODULE__, player_id}) do
-      [{pid, _}] -> {:ok, pid}
-      _ -> {:error, :not_found}
-    end
+  @impl true
+  def handle_info(:timer_tick, %{board: %Board{status: :complete}, player: player} = state) do
+    # Board is complete. We can safely stop ticking.
+    {:noreply, state}
   end
 
-  def via_tuple(player_id) do
-    Pulk.Registry.via_tuple({__MODULE__, player_id})
+  @impl true
+  def handle_info(:timer_tick, %{board: board, player: player} = state) do
+    # Move blocks by one down
+    tick_delay = Gravity.calculate(Board.level(board))
+    Process.send_after(self(), :timer_tick, round(:timer.seconds(tick_delay)))
+    Logger.debug("Tick for player #{player.player_id}: #{tick_delay}")
+    {:noreply, state}
   end
 end

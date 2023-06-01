@@ -45,7 +45,7 @@ defmodule Pulk.Room.RoomManager do
     GenServer.call(pid, {:update_status, status})
   end
 
-  def recalculate_room_status(%Player{room_id: room_id}) do
+  def recalculate_room_status(room_id) do
     recalculate_room_status(via_tuple(room_id))
   end
 
