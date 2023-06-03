@@ -14,7 +14,7 @@ defmodule Pulk.Room.GameMode do
 
   @default_game_mode %{
     type: :line_goal,
-    args: %{line_goal: 3}
+    args: %{line_goal: 40}
   }
 
   @game_modes %{
@@ -22,9 +22,9 @@ defmodule Pulk.Room.GameMode do
   }
 
   typedstruct enforce: true do
-    field :module, module()
-    field :type, mode_type()
-    field :state, term(), default: %{}
+    field(:module, module())
+    field(:type, mode_type())
+    field(:state, term(), default: %{})
   end
 
   @spec new!(mode_type :: mode_type()) :: t()
