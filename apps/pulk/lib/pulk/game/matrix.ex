@@ -12,7 +12,7 @@ defmodule Pulk.Game.Matrix do
   @type matrix :: [line()]
 
   typedstruct do
-    field :value, matrix(), enforce: true
+    field(:value, matrix(), enforce: true)
   end
 
   @spec new!(pos_integer(), pos_integer()) :: t()
@@ -52,6 +52,19 @@ defmodule Pulk.Game.Matrix do
   def is_complete?(%__MODULE__{value: matrix}) do
     matrix
     |> Enum.all?(&line_not_empty?/1)
+  end
+
+  def to_map(%__MODULE__{value: matrix}) do
+    matrix
+    |> Enum.with_index()
+    |> Enum.flat_map(fn {line, column_idx} ->
+      line
+      |> Enum.with_index()
+      |> Enum.map(fn {cell, row_idx} ->
+        {{row_idx, column_idx}, cell}
+      end)
+    end)
+    |> Map.new()
   end
 
   @spec remove_filled_lines(t()) :: {t(), non_neg_integer()}

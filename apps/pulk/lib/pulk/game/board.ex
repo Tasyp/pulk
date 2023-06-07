@@ -6,6 +6,7 @@ defmodule Pulk.Game.Board do
   use TypedStruct
   use Domo, gen_constructor_name: :_new
 
+  alias Pulk.Game.PiecePositionUpdate
   alias Pulk.Game.Piece
   alias Pulk.Game.Matrix
   alias Pulk.Game.BoardUpdate
@@ -17,18 +18,18 @@ defmodule Pulk.Game.Board do
   @type status() :: :initial | :ongoing | :complete
 
   typedstruct enforce: true do
-    field :size_x, pos_integer()
-    field :size_y, pos_integer()
-    field :score, non_neg_integer(), default: 0
-    field :cleared_lines_count, non_neg_integer(), default: 0
-    field :piece_in_hold, Piece.t(), enforce: false
+    field(:size_x, pos_integer())
+    field(:size_y, pos_integer())
+    field(:score, non_neg_integer(), default: 0)
+    field(:cleared_lines_count, non_neg_integer(), default: 0)
+    field(:piece_in_hold, Piece.t(), enforce: false)
     # TODO: Replace with :initial when start logic is implemented
-    field :status, status(), default: :ongoing
-    field :placement, pos_integer(), enforce: false
+    field(:status, status(), default: :ongoing)
+    field(:placement, pos_integer(), enforce: false)
 
-    field :active_piece, PositionedPiece.t(), enforce: false
+    field(:active_piece, PositionedPiece.t(), enforce: false)
 
-    field :matrix, Matrix.t()
+    field(:matrix, Matrix.t())
   end
 
   @spec new(pos_integer(), pos_integer()) :: {:ok, t()} | {:error, term()}
@@ -80,17 +81,55 @@ defmodule Pulk.Game.Board do
     recalculate? = Keyword.get(opts, :recalculate?, false)
 
     next_board =
-      %{
-        board
-        | piece_in_hold: board_update.piece_in_hold,
-          active_piece: board_update.active_piece,
-          matrix: board_update.matrix
-      }
+      board
+      |> set_piece_in_hold(board_update)
+      |> move_active_piece(board_update.active_piece_update)
       |> maybe_recalculate(recalculate?)
 
     case ensure_type(next_board) do
       {:ok, board} -> {:ok, board}
       {:error, _} -> {:error, :invalid_update}
+    end
+  end
+
+  @spec move_active_piece(t(), PiecePositionUpdate.t() | nil) ::
+          {:ok, t()} | {:error, :invalid_move}
+  def move_active_piece(%__MODULE__{} = board, nil) do
+    board
+  end
+
+  def move_active_piece(%__MODULE__{} = board, %PiecePositionUpdate{} = piece_position_update) do
+    active_piece =
+      case piece_position_update.update_type do
+        :simple ->
+          {:ok, positioned_piece} =
+            cond do
+              piece_position_update.direction != nil ->
+                PositionedPiece.move(board.active_piece, piece_position_update.direction)
+
+              piece_position_update.rotation != nil ->
+                PositionedPiece.rotate(board.active_piece, piece_position_update.rotation)
+            end
+
+          positioned_piece
+
+        :soft_drop_start ->
+          PositionedPiece.move(board.active_piece, :down)
+
+        :hard_drop ->
+          do_hard_drop(board)
+
+        :soft_drop_stop ->
+          board.active_piece
+      end
+
+    if can_insert_peace?(board, active_piece) do
+      case ensure_type(%{board | active_piece: active_piece}) do
+        {:ok, board} -> {:ok, board}
+        {:error, _} -> {:error, :invalid_move}
+      end
+    else
+      {:error, :invalid_move}
     end
   end
 
@@ -146,6 +185,41 @@ defmodule Pulk.Game.Board do
   @spec set_placement(t(), placement :: pos_integer()) :: {:ok, t()} | {:error, term()}
   def set_placement(%__MODULE__{} = board, placement) do
     ensure_type(%{board | status: :complete, placement: placement})
+  end
+
+  @spec set_piece_in_hold(t(), BoardUpdate.t()) :: t()
+  defp set_piece_in_hold(%__MODULE__{} = board, %BoardUpdate{} = board_update) do
+    %{
+      board
+      | piece_in_hold: board_update.piece_in_hold || board.piece_in_hold
+    }
+  end
+
+  defp can_insert_peace?(%__MODULE__{} = board, %PositionedPiece{coordinates: coordinates}) do
+    matrix_map = Matrix.to_map(board.matrix)
+
+    coordinates
+    |> Enum.all?(fn coordinates ->
+      matrix_map
+      |> Map.get(coordinates, Piece.new!())
+      |> Piece.is_empty?()
+    end)
+  end
+
+  defp do_hard_drop(%__MODULE__{} = board, %PositionedPiece{} = positioned_piece \\ nil) do
+    current_piece = positioned_piece || board.active_piece
+
+    case PositionedPiece.move(current_piece, :down) do
+      {:ok, positioned_piece} ->
+        if can_insert_peace?(board, positioned_piece) do
+          do_hard_drop(board, positioned_piece)
+        else
+          positioned_piece
+        end
+
+      {:error, :invalid_move} ->
+        current_piece
+    end
   end
 
   @spec maybe_recalculate(t(), boolean()) :: t()

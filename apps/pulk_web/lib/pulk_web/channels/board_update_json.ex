@@ -5,33 +5,28 @@ defmodule PulkWeb.BoardUpdateJSON do
   alias PulkWeb.MatrixJSON
   alias PulkWeb.PieceJSON
   alias PulkWeb.PositionedPieceJSON
+  alias PulkWeb.PiecePositionUpdateJSON
 
   @type board_update_json :: %{
           piece_in_hold: String.t() | nil,
-          active_piece: PositionedPieceJSON.positioned_piece_json(),
-          matrix: MatrixJSON.matrix_json()
+          active_piece_update: PiecePositionUpdateJSON.piece_position_update_json()
         }
 
   @spec from_json(map()) ::
           {:ok, BoardUpdate.t()}
+          | {:error, :invalid_piece}
+          | {:error, :invalid_update_type}
+          | {:error, :invalid_rotation}
+          | {:error, :invalid_direction}
           | {:error, :malformed}
-          | {:error, :invalid_figure}
-          | {:error, :invalid_matrix}
-          | {:error, :invalid_positioned_piece}
   def from_json(%{
-        "matrix" => matrix,
         "piece_in_hold" => piece_in_hold,
-        "active_piece" => active_piece
+        "active_piece_update" => active_piece_update
       }) do
-    with {:ok, matrix} <- MatrixJSON.from_json(matrix),
-         {:ok, piece_in_hold} <- PieceJSON.from_json(piece_in_hold),
-         {:ok, active_piece} <- PositionedPieceJSON.from_json(active_piece),
+    with {:ok, piece_in_hold} <- PieceJSON.from_json(piece_in_hold),
+         {:ok, active_piece_update} <- PiecePositionUpdateJSON.from_json(active_piece_update),
          {:ok, board_update} <-
-           BoardUpdate.new(
-             matrix: matrix,
-             piece_in_hold: piece_in_hold,
-             active_piece: active_piece
-           ) do
+           BoardUpdate.new(piece_in_hold: piece_in_hold, active_piece_update: active_piece_update) do
       {:ok, board_update}
     else
       {:error, reason} when is_list(reason) ->
