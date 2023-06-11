@@ -119,17 +119,17 @@ export const useRoom = ({
       channel,
       RoomIncomingEventType.BOARD_UPDATE,
       (response) => {
-        console.log("BOARD UPDATE");
         setPlayerBoard((board) =>
           board !== null
             ? {
-                ...board,
-                placement: response.placement,
-                matrix: response.matrix,
-                score: response.score,
-                level: response.level,
-                status: response.status,
-              }
+              ...board,
+              activePiece: response.active_piece,
+              placement: response.placement,
+              matrix: response.matrix,
+              score: response.score,
+              level: response.level,
+              status: response.status,
+            }
             : null
         );
       }
@@ -147,21 +147,21 @@ export const useRoom = ({
         channel,
         RoomOutgoingEventType.BOARD_UPDATE,
         {
-          matrix: boardUpdate.matrix,
-          active_piece: boardUpdate.activePiece,
+          active_piece_update: boardUpdate.activePieceUpdate,
           piece_in_hold: boardUpdate.pieceInHold,
         },
         (response) => {
           setPlayerBoard((board) =>
             board !== null
               ? {
-                  ...board,
-                  placement: response.placement,
-                  matrix: response.matrix,
-                  score: response.score,
-                  level: response.level,
-                  status: response.status,
-                }
+                ...board,
+                activePiece: response.active_piece,
+                placement: response.placement,
+                matrix: response.matrix,
+                score: response.score,
+                level: response.level,
+                status: response.status,
+              }
               : null
           );
         }

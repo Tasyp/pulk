@@ -17,6 +17,7 @@ defimpl Jason.Encoder, for: [Pulk.Game.Board] do
       |> Map.from_struct()
       |> Map.take(@visible_fields)
       |> Map.put(:level, Board.level(struct))
+      |> Map.put(:piece_queue, Board.piece_queue(struct))
 
     Jason.Encode.map(next_struct, opts)
   end

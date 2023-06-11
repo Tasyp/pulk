@@ -41,8 +41,8 @@ defmodule Pulk.Player.PlayerManager do
     GenServer.call(pid, :get_board)
   end
 
-  def update_board(pid, board_update, opts \\ []) do
-    GenServer.call(pid, {:update_board, board_update, opts})
+  def update_board(pid, board_update) do
+    GenServer.call(pid, {:update_board, board_update})
   end
 
   def update_board_status(pid, board_status) do
@@ -62,7 +62,7 @@ defmodule Pulk.Player.PlayerManager do
   end
 
   def publish_board(pid) do
-    GenServer.cast(pid, {:publish_board})
+    GenServer.cast(pid, :publish_board)
   end
 
   def lookup(player_id) do
@@ -76,9 +76,9 @@ defmodule Pulk.Player.PlayerManager do
     Pulk.Registry.via_tuple({__MODULE__, player_id})
   end
 
-  defp do_update_board(board, board_update, room_id, recalculate? \\ true) do
+  defp do_update_board(board, board_update, room_id) do
     # TODO: Detect if there is a need to start lock timer or soft timer
-    case Board.update(board, board_update, recalculate?: recalculate?) do
+    case Board.update(board, board_update) do
       {:ok, board} ->
         RoomManager.recalculate_room_status(room_id)
 
@@ -108,6 +108,9 @@ defmodule Pulk.Player.PlayerManager do
         Process.cancel_timer(state.soft_drop_timer)
 
         %{state | soft_drop_timer: nil}
+
+      true ->
+        state
     end
   end
 
@@ -122,8 +125,8 @@ defmodule Pulk.Player.PlayerManager do
     {size_x, size_y} = room.board_size
     {:ok, board} = Board.new(size_x, size_y)
 
-    # TODO: Start tick timer when board is actually completed
-    Process.send_after(self(), :timer_tick, :timer.seconds(5))
+    # TODO: Start tick timer when board is actually started
+    Process.send_after(self(), :timer_tick, :timer.seconds(1))
 
     {:ok, %{player: player, board: board, soft_drop_timer: nil}}
   end
@@ -151,14 +154,12 @@ defmodule Pulk.Player.PlayerManager do
 
   @impl true
   def handle_call(
-        {:update_board, board_update, opts},
+        {:update_board, board_update},
         _from,
         %{board: board, player: player} = state
       ) do
-    recalculate? = Keyword.get(opts, :recalculate?, false)
-
     {response, state} =
-      case do_update_board(board, board_update, player.room_id, recalculate?) do
+      case do_update_board(board, board_update, player.room_id) do
         {:ok, board} ->
           {{:ok, board}, %{state | board: board}}
 
@@ -189,7 +190,7 @@ defmodule Pulk.Player.PlayerManager do
   end
 
   @impl true
-  def handle_cast({:publish_board}, %{board: board, player: player} = state) do
+  def handle_cast(:publish_board, %{board: board, player: player} = state) do
     case PubSub.broadcast(
            Pulk.PubSub,
            "player:#{player.player_id}:board",
@@ -218,8 +219,8 @@ defmodule Pulk.Player.PlayerManager do
         %{board: board, player: player, soft_drop_timer: soft_drop_timer} = state
       ) do
     state =
-      case soft_drop_timer do
-        nil ->
+      cond do
+        soft_drop_timer == nil && board.active_piece !== nil ->
           board_update =
             BoardUpdate.new!(
               active_piece_update:
@@ -234,11 +235,11 @@ defmodule Pulk.Player.PlayerManager do
               state
           end
 
-        _ ->
+        true ->
           state
       end
 
-    send(self(), :publish_board)
+    publish_board(self())
 
     tick_delay = Gravity.calculate(Board.level(board))
     Process.send_after(self(), :timer_tick, round(:timer.seconds(tick_delay)))

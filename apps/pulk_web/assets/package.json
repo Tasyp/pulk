@@ -11,7 +11,8 @@
     "phoenix_live_view": "../../../deps/phoenix_live_view",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-tetris": "tasyp/react-tetris#0bd715",
+    "react-hotkeys-hook": "^4.4.0",
+    "react-tetris": "tasyp/react-tetris#f97d142",
     "swr": "^2.1.5",
     "wouter": "^2.10.1"
   },

@@ -3,10 +3,13 @@ defmodule Pulk.Game.Matrix do
   Entity that represenets game field
   """
 
+  require Logger
+
   use TypedStruct
   use Domo, gen_constructor_name: :_new
 
   alias Pulk.Game.Piece
+  alias Pulk.Game.PositionedPiece
 
   @type line :: [Piece.t()]
   @type matrix :: [line()]
@@ -65,6 +68,32 @@ defmodule Pulk.Game.Matrix do
       end)
     end)
     |> Map.new()
+  end
+
+  def add_piece(
+        %__MODULE__{} = matrix,
+        %PositionedPiece{piece: piece, coordinates: coordinates}
+      ) do
+    coordinates_set =
+      coordinates
+      |> MapSet.new()
+
+    matrix_value =
+      matrix.value
+      |> Enum.with_index()
+      |> Enum.map(fn {column, column_idx} ->
+        column
+        |> Enum.with_index()
+        |> Enum.map(fn {row, row_index} ->
+          if MapSet.member?(coordinates_set, {row_index, column_idx}) do
+            piece
+          else
+            row
+          end
+        end)
+      end)
+
+    %{matrix | value: matrix_value}
   end
 
   @spec remove_filled_lines(t()) :: {t(), non_neg_integer()}

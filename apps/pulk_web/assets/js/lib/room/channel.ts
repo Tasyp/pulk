@@ -57,14 +57,50 @@ export enum RoomOutgoingEventType {
   BOARD_UPDATE = "board_update",
 }
 
+// @type direction() :: :down | :left | :right
+
+// @type update_type() :: :simple | :soft_drop_start | :soft_drop_stop | :hard_drop
+
+export enum UpdateType {
+  SIMPLE = "simple",
+  SOFT_DROP_START = "soft_drop_start",
+  SOFT_DROP_STOP = "soft_drop_stop",
+  HARD_DROP = "hard_drop",
+}
+
+export enum Rotation {
+  SPAWN_STATE = "O", // spawn state
+  CLOCKWISE = "R", // state resulting from a clockwise rotation ("right") from spawn
+  COUNTER_CLOCKWISE = "L", // state resulting from a counter-clockwise ("left") rotation from spawn
+  DOUBLE = "TWO", // state resulting from 2 successive rotations in either direction from spawn.
+}
+
+export enum Direction {
+  DOWN = "down",
+  LEFT = "left",
+  RIGHT = "right",
+}
+
+export type PiecePositionUpdate =
+  | {
+      piece: Piece;
+      update_type: UpdateType.SIMPLE;
+      rotation: Rotation;
+    }
+  | {
+      piece: Piece;
+      update_type: UpdateType.SIMPLE;
+      direction: Direction;
+    }
+  | {
+      piece: Piece;
+      update_type: Exclude<UpdateType, UpdateType.SIMPLE>;
+    };
+
 export type RoomOutgoingMessagePayload = {
   [RoomOutgoingEventType.BOARD_UPDATE]: {
     payload: {
-      matrix: Matrix;
-      active_piece: {
-        piece: Piece;
-        coordinates: [x: number, y: number][];
-      } | null;
+      active_piece_update: PiecePositionUpdate;
       piece_in_hold: Piece | null;
     };
     success: {

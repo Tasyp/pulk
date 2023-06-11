@@ -1,5 +1,8 @@
 defmodule PulkWeb.PiecePositionUpdateJSON do
+  require Logger
+
   alias Pulk.Game.PiecePositionUpdate
+  alias PulkWeb.PieceJSON
 
   @type piece_position_update_json :: %{
           piece: String.t(),
@@ -19,16 +22,16 @@ defmodule PulkWeb.PiecePositionUpdateJSON do
     {:ok, nil}
   end
 
-  def from_json(%{
-        "piece" => piece,
-        "update_type" => update_type,
-        "rotation" => rotation,
-        "direction" => direction
-      }) do
+  def from_json(
+        %{
+          "piece" => piece,
+          "update_type" => update_type
+        } = input
+      ) do
     with {:ok, piece} <- PieceJSON.from_json(piece),
          {:ok, update_type} <- parse_update_type(update_type),
-         {:ok, rotation} <- parse_rotation(rotation),
-         {:ok, direction} <- parse_direction(direction),
+         {:ok, rotation} <- parse_rotation(Map.get(input, "rotation")),
+         {:ok, direction} <- parse_direction(Map.get(input, "direction")),
          {:ok, piece_update} <-
            PiecePositionUpdate.new(
              piece: piece,
@@ -116,7 +119,7 @@ end
 defimpl Jason.Encoder, for: [Pulk.Game.PiecePositionUpdate] do
   def encode(struct, opts) do
     Jason.Encode.map(
-      %{Map.from_struct(struct)},
+      Map.from_struct(struct),
       opts
     )
   end

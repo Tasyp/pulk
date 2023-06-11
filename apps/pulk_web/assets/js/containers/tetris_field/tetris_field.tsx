@@ -1,20 +1,9 @@
 import React from "react";
-import Tetris from "react-tetris";
+import { useHotkeys } from "react-hotkeys-hook";
 
-import { styled } from "goober";
-
-import { GameMatrixObserver } from "./game_matrix_observer";
-import {
-  Board,
-  BoardStatus,
-  BoardUpdate,
-  composeTetrisMatrix,
-} from "../../lib/board";
+import { Board, BoardStatus, BoardUpdate } from "../../lib/board";
 import { BoardSnapshotView } from "../../components";
-
-const Container = styled("div")`
-  display: flex;
-`;
+import { Direction, UpdateType } from "../../lib/room";
 
 interface Props {
   board?: Board;
@@ -25,15 +14,6 @@ export const TetrisField: React.FunctionComponent<Props> = ({
   board,
   setBoard,
 }) => {
-  const tetrisMatrix = React.useMemo(() => {
-    if (board === undefined) {
-      return { matrix: undefined };
-    }
-
-    const nextMatrix = composeTetrisMatrix(board.matrix);
-    return { matrix: nextMatrix };
-  }, [board?.matrix]);
-
   if (
     board !== undefined &&
     (board?.status === BoardStatus.COMPLETE || board?.placement !== null)
@@ -46,38 +26,89 @@ export const TetrisField: React.FunctionComponent<Props> = ({
     );
   }
 
+  useHotkeys(
+    "down",
+    () => {
+      if (board === undefined || board.activePiece == undefined) {
+        return;
+      }
+
+      setBoard({
+        activePieceUpdate: {
+          piece: board.activePiece.piece,
+          update_type: UpdateType.SIMPLE,
+          direction: Direction.DOWN,
+        },
+        pieceInHold: null,
+      });
+    },
+    { preventDefault: true },
+    [board]
+  );
+  useHotkeys(
+    "left",
+    () => {
+      if (board === undefined || board.activePiece == undefined) {
+        return;
+      }
+
+      setBoard({
+        activePieceUpdate: {
+          piece: board.activePiece.piece,
+          update_type: UpdateType.SIMPLE,
+          direction: Direction.LEFT,
+        },
+        pieceInHold: null,
+      });
+    },
+    { preventDefault: true },
+    [board]
+  );
+  useHotkeys(
+    "right",
+    () => {
+      if (board === undefined || board.activePiece == undefined) {
+        return;
+      }
+
+      setBoard({
+        activePieceUpdate: {
+          piece: board.activePiece.piece,
+          update_type: UpdateType.SIMPLE,
+          direction: Direction.RIGHT,
+        },
+        pieceInHold: null,
+      });
+    },
+    { preventDefault: true },
+    [board]
+  );
+  useHotkeys(
+    "space",
+    () => {
+      if (board === undefined || board.activePiece == undefined) {
+        return;
+      }
+
+      setBoard({
+        activePieceUpdate: {
+          piece: board.activePiece.piece,
+          update_type: UpdateType.HARD_DROP,
+        },
+        pieceInHold: null,
+      });
+    },
+    { preventDefault: true },
+    [board]
+  );
+
+  if (board === undefined) {
+    return null;
+  }
+
   return (
-    <Tetris
-      key={JSON.stringify(tetrisMatrix.matrix)}
-      matrix={tetrisMatrix.matrix}
-      keyboardControls={{
-        // Default values shown here. These will be used if no
-        // `keyboardControls` prop is provided.
-        down: "MOVE_DOWN",
-        left: "MOVE_LEFT",
-        right: "MOVE_RIGHT",
-        space: "HARD_DROP",
-        z: "FLIP_COUNTERCLOCKWISE",
-        x: "FLIP_CLOCKWISE",
-        up: "FLIP_CLOCKWISE",
-        p: "TOGGLE_PAUSE",
-        c: "HOLD",
-        shift: "HOLD",
-      }}
-    >
-      {({ Gameboard, state, controller }) => (
-        <Container>
-          <GameMatrixObserver setBoard={setBoard} />
-          <Gameboard />
-          {/* <PieceQueue /> */}
-          {state === "LOST" && (
-            <div>
-              <h2>Game Over</h2>
-              <button onClick={controller.restart}>New game</button>
-            </div>
-          )}
-        </Container>
-      )}
-    </Tetris>
+    <div>
+      <BoardSnapshotView snapshot={board} hasActivePiece />
+    </div>
   );
 };

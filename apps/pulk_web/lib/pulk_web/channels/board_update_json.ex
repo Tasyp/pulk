@@ -2,9 +2,7 @@ defmodule PulkWeb.BoardUpdateJSON do
   require Logger
 
   alias Pulk.Game.BoardUpdate
-  alias PulkWeb.MatrixJSON
   alias PulkWeb.PieceJSON
-  alias PulkWeb.PositionedPieceJSON
   alias PulkWeb.PiecePositionUpdateJSON
 
   @type board_update_json :: %{

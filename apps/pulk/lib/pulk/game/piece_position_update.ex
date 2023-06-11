@@ -3,6 +3,7 @@ defmodule Pulk.Game.PiecePositionUpdate do
   use Domo
 
   alias Pulk.Game.Piece
+  alias Pulk.Game.PositionedPiece
   alias Pulk.Game.Board
 
   @type direction() :: :down | :left | :right
@@ -28,7 +29,9 @@ defmodule Pulk.Game.PiecePositionUpdate do
 
   @spec update_active_piece(Board.t(), update_type()) :: t()
   @spec update_active_piece(Board.t(), update_type(), map()) :: t()
-  def update_active_piece(%Board{active_piece: piece}, :simple, %{rotation: rotation}) do
+  def update_active_piece(%Board{active_piece: %PositionedPiece{piece: piece}}, :simple, %{
+        rotation: rotation
+      }) do
     new!(
       piece: piece,
       update_type: :simple,
@@ -36,7 +39,9 @@ defmodule Pulk.Game.PiecePositionUpdate do
     )
   end
 
-  def update_active_piece(%Board{active_piece: piece}, :simple, %{direction: direction}) do
+  def update_active_piece(%Board{active_piece: %PositionedPiece{piece: piece}}, :simple, %{
+        direction: direction
+      }) do
     new!(
       piece: piece,
       update_type: :simple,
@@ -44,7 +49,7 @@ defmodule Pulk.Game.PiecePositionUpdate do
     )
   end
 
-  def update_active_piece(%Board{active_piece: piece}, update_type) do
+  def update_active_piece(%Board{active_piece: %PositionedPiece{piece: piece}}, update_type) do
     new!(
       piece: piece,
       update_type: update_type
