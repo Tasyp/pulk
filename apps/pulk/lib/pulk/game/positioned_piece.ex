@@ -56,7 +56,7 @@ defmodule Pulk.Game.PositionedPiece do
 
         :left ->
           coordinates
-          |> Enum.map(fn {x, y} -> {Enum.max([x - 1, 0]), y} end)
+          |> Enum.map(fn {x, y} -> {x - 1, y} end)
 
         :right ->
           coordinates

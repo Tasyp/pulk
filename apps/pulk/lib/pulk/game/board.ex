@@ -125,7 +125,7 @@ defmodule Pulk.Game.Board do
     active_piece =
       case piece_position_update.update_type do
         :simple ->
-          {:ok, positioned_piece} =
+          result =
             cond do
               piece_position_update.direction != nil ->
                 PositionedPiece.move(board.active_piece, piece_position_update.direction)
@@ -134,12 +134,22 @@ defmodule Pulk.Game.Board do
                 PositionedPiece.rotate(board.active_piece, piece_position_update.rotation)
             end
 
-          positioned_piece
+          case result do
+            {:ok, positioned_piece} ->
+              positioned_piece
+
+            {:error, :invalid_move} ->
+              board.active_piece
+          end
 
         :soft_drop_start ->
-          {:ok, positioned_piece} = PositionedPiece.move(board.active_piece, :down)
+          case PositionedPiece.move(board.active_piece, :down) do
+            {:ok, positioned_piece} ->
+              positioned_piece
 
-          positioned_piece
+            {:error, :invalid_move} ->
+              board.active_piece
+          end
 
         :hard_drop ->
           do_hard_drop(board)

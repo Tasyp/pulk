@@ -122,14 +122,14 @@ export const useRoom = ({
         setPlayerBoard((board) =>
           board !== null
             ? {
-              ...board,
-              activePiece: response.active_piece,
-              placement: response.placement,
-              matrix: response.matrix,
-              score: response.score,
-              level: response.level,
-              status: response.status,
-            }
+                ...board,
+                activePiece: response.active_piece,
+                placement: response.placement,
+                matrix: response.matrix,
+                score: response.score,
+                level: response.level,
+                status: response.status,
+              }
             : null
         );
       }
@@ -143,14 +143,10 @@ export const useRoom = ({
 
   const setBoard = useCallback(
     (boardUpdate: BoardUpdate): void => {
-      pushRoomMessage(
-        channel,
-        RoomOutgoingEventType.BOARD_UPDATE,
-        {
-          active_piece_update: boardUpdate.activePieceUpdate,
-          piece_in_hold: boardUpdate.pieceInHold,
-        }
-      );
+      pushRoomMessage(channel, RoomOutgoingEventType.BOARD_UPDATE, {
+        active_piece_update: boardUpdate.activePieceUpdate,
+        piece_in_hold: boardUpdate.pieceInHold,
+      });
     },
     [channel, setPlayerBoard]
   );
