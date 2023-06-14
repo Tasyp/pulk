@@ -7,7 +7,7 @@ defmodule PulkWeb.PiecePositionUpdateJSON do
   @type piece_position_update_json :: %{
           piece: String.t(),
           update_type: String.t(),
-          rotation: String.t() | nil,
+          relative_rotation: String.t() | nil,
           direction: String.t() | nil
         }
 
@@ -30,13 +30,13 @@ defmodule PulkWeb.PiecePositionUpdateJSON do
       ) do
     with {:ok, piece} <- PieceJSON.from_json(piece),
          {:ok, update_type} <- parse_update_type(update_type),
-         {:ok, rotation} <- parse_rotation(Map.get(input, "rotation")),
+         {:ok, relative_rotation} <- parse_rotation(Map.get(input, "relative_rotation")),
          {:ok, direction} <- parse_direction(Map.get(input, "direction")),
          {:ok, piece_update} <-
            PiecePositionUpdate.new(
              piece: piece,
              update_type: update_type,
-             rotation: rotation,
+             relative_rotation: relative_rotation,
              direction: direction
            ) do
       {:ok, piece_update}
@@ -74,19 +74,13 @@ defmodule PulkWeb.PiecePositionUpdateJSON do
     end
   end
 
-  defp parse_rotation(rotation) do
-    case rotation do
-      "O" ->
-        {:ok, :O}
+  defp parse_rotation(relative_rotation) do
+    case relative_rotation do
+      "left" ->
+        {:ok, :left}
 
-      "R" ->
-        {:ok, :R}
-
-      "L" ->
-        {:ok, :L}
-
-      "two" ->
-        {:ok, :two}
+      "right" ->
+        {:ok, :right}
 
       nil ->
         {:ok, nil}

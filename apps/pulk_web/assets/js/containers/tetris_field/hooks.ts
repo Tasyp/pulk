@@ -2,7 +2,7 @@ import React from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 import { Board, BoardUpdate } from "../../lib/board";
-import { Direction, UpdateType } from "../../lib/room";
+import { Direction, RelativeRotation, UpdateType } from "../../lib/room";
 
 export const useKeyboard = (
   board: Board | undefined,
@@ -126,6 +126,46 @@ export const useKeyboard = (
         activePieceUpdate: {
           piece: board.activePiece.piece,
           update_type: UpdateType.HARD_DROP,
+        },
+        pieceInHold: null,
+      });
+    },
+    { preventDefault: true, keydown: false, keyup: true },
+    [board]
+  );
+
+  useHotkeys(
+    "z",
+    () => {
+      if (board?.activePiece == undefined) {
+        return;
+      }
+
+      setBoard({
+        activePieceUpdate: {
+          piece: board.activePiece.piece,
+          update_type: UpdateType.SIMPLE,
+          relative_rotation: RelativeRotation.LEFT,
+        },
+        pieceInHold: null,
+      });
+    },
+    { preventDefault: true, keydown: false, keyup: true },
+    [board]
+  );
+
+  useHotkeys(
+    "up",
+    () => {
+      if (board?.activePiece == undefined) {
+        return;
+      }
+
+      setBoard({
+        activePieceUpdate: {
+          piece: board.activePiece.piece,
+          update_type: UpdateType.SIMPLE,
+          relative_rotation: RelativeRotation.RIGHT,
         },
         pieceInHold: null,
       });

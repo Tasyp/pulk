@@ -130,8 +130,11 @@ defmodule Pulk.Game.Board do
               piece_position_update.direction != nil ->
                 PositionedPiece.move(board.active_piece, piece_position_update.direction)
 
-              piece_position_update.rotation != nil ->
-                PositionedPiece.rotate(board.active_piece, piece_position_update.rotation)
+              piece_position_update.relative_rotation != nil ->
+                PositionedPiece.rotate(
+                  board.active_piece,
+                  piece_position_update.relative_rotation
+                )
             end
 
           case result do

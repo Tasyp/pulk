@@ -68,11 +68,9 @@ export enum UpdateType {
   HARD_DROP = "hard_drop",
 }
 
-export enum Rotation {
-  SPAWN_STATE = "O", // spawn state
-  CLOCKWISE = "R", // state resulting from a clockwise rotation ("right") from spawn
-  COUNTER_CLOCKWISE = "L", // state resulting from a counter-clockwise ("left") rotation from spawn
-  DOUBLE = "TWO", // state resulting from 2 successive rotations in either direction from spawn.
+export enum RelativeRotation {
+  LEFT = "left",
+  RIGHT = "right",
 }
 
 export enum Direction {
@@ -85,7 +83,7 @@ export type PiecePositionUpdate =
   | {
       piece: Piece;
       update_type: UpdateType.SIMPLE;
-      rotation: Rotation;
+      relative_rotation: RelativeRotation;
     }
   | {
       piece: Piece;
