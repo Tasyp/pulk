@@ -1,9 +1,8 @@
 import React from "react";
-import { useHotkeys } from "react-hotkeys-hook";
 
 import { Board, BoardStatus, BoardUpdate } from "../../lib/board";
 import { BoardSnapshotView } from "../../components";
-import { Direction, UpdateType } from "../../lib/room";
+import { useKeyboard } from "./hooks";
 
 interface Props {
   board?: Board;
@@ -14,6 +13,8 @@ export const TetrisField: React.FunctionComponent<Props> = ({
   board,
   setBoard,
 }) => {
+  useKeyboard(board, setBoard);
+
   if (
     board !== undefined &&
     (board?.status === BoardStatus.COMPLETE || board?.placement !== null)
@@ -25,82 +26,6 @@ export const TetrisField: React.FunctionComponent<Props> = ({
       </div>
     );
   }
-
-  useHotkeys(
-    "down",
-    () => {
-      if (board === undefined || board.activePiece == undefined) {
-        return;
-      }
-
-      setBoard({
-        activePieceUpdate: {
-          piece: board.activePiece.piece,
-          update_type: UpdateType.SIMPLE,
-          direction: Direction.DOWN,
-        },
-        pieceInHold: null,
-      });
-    },
-    { preventDefault: true },
-    [board]
-  );
-  useHotkeys(
-    "left",
-    () => {
-      if (board === undefined || board.activePiece == undefined) {
-        return;
-      }
-
-      setBoard({
-        activePieceUpdate: {
-          piece: board.activePiece.piece,
-          update_type: UpdateType.SIMPLE,
-          direction: Direction.LEFT,
-        },
-        pieceInHold: null,
-      });
-    },
-    { preventDefault: true },
-    [board]
-  );
-  useHotkeys(
-    "right",
-    () => {
-      if (board === undefined || board.activePiece == undefined) {
-        return;
-      }
-
-      setBoard({
-        activePieceUpdate: {
-          piece: board.activePiece.piece,
-          update_type: UpdateType.SIMPLE,
-          direction: Direction.RIGHT,
-        },
-        pieceInHold: null,
-      });
-    },
-    { preventDefault: true },
-    [board]
-  );
-  useHotkeys(
-    "space",
-    () => {
-      if (board === undefined || board.activePiece == undefined) {
-        return;
-      }
-
-      setBoard({
-        activePieceUpdate: {
-          piece: board.activePiece.piece,
-          update_type: UpdateType.HARD_DROP,
-        },
-        pieceInHold: null,
-      });
-    },
-    { preventDefault: true },
-    [board]
-  );
 
   if (board === undefined) {
     return null;

@@ -149,21 +149,6 @@ export const useRoom = ({
         {
           active_piece_update: boardUpdate.activePieceUpdate,
           piece_in_hold: boardUpdate.pieceInHold,
-        },
-        (response) => {
-          setPlayerBoard((board) =>
-            board !== null
-              ? {
-                ...board,
-                activePiece: response.active_piece,
-                placement: response.placement,
-                matrix: response.matrix,
-                score: response.score,
-                level: response.level,
-                status: response.status,
-              }
-              : null
-          );
         }
       );
     },

@@ -170,6 +170,8 @@ defmodule Pulk.Player.PlayerManager do
     state = process_soft_drop_change(state, board_update)
     # TODO: Detect if there is a need to start lock timer
 
+    publish_board(self())
+
     {:reply, response, state}
   end
 
@@ -243,7 +245,7 @@ defmodule Pulk.Player.PlayerManager do
 
     tick_delay = Gravity.calculate(Board.level(board))
     Process.send_after(self(), :timer_tick, round(:timer.seconds(tick_delay)))
-    Logger.debug("Tick for player #{player.player_id}: #{tick_delay}")
+    # Logger.debug("Tick for player #{player.player_id}: #{tick_delay}")
     {:noreply, state}
   end
 
@@ -265,6 +267,8 @@ defmodule Pulk.Player.PlayerManager do
         {:error, _reason} ->
           %{state | soft_drop_timer: nil}
       end
+
+    publish_board(self())
 
     {:noreply, state}
   end

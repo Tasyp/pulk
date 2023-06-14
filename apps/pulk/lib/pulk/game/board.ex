@@ -137,7 +137,9 @@ defmodule Pulk.Game.Board do
           positioned_piece
 
         :soft_drop_start ->
-          PositionedPiece.move(board.active_piece, :down)
+          {:ok, positioned_piece} = PositionedPiece.move(board.active_piece, :down)
+
+          positioned_piece
 
         :hard_drop ->
           do_hard_drop(board)

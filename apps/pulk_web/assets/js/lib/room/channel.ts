@@ -83,19 +83,19 @@ export enum Direction {
 
 export type PiecePositionUpdate =
   | {
-      piece: Piece;
-      update_type: UpdateType.SIMPLE;
-      rotation: Rotation;
-    }
+    piece: Piece;
+    update_type: UpdateType.SIMPLE;
+    rotation: Rotation;
+  }
   | {
-      piece: Piece;
-      update_type: UpdateType.SIMPLE;
-      direction: Direction;
-    }
+    piece: Piece;
+    update_type: UpdateType.SIMPLE;
+    direction: Direction;
+  }
   | {
-      piece: Piece;
-      update_type: Exclude<UpdateType, UpdateType.SIMPLE>;
-    };
+    piece: Piece;
+    update_type: Exclude<UpdateType, UpdateType.SIMPLE>;
+  };
 
 export type RoomOutgoingMessagePayload = {
   [RoomOutgoingEventType.BOARD_UPDATE]: {
@@ -119,13 +119,15 @@ export type RoomOutgoingMessagePayload = {
   };
 };
 
+const noOp = () => { };
+
 export const pushRoomMessage = <T extends RoomOutgoingEventType>(
   channel: Channel,
   messageType: T,
   payload: RoomOutgoingMessagePayload[T]["payload"],
-  onSuccess: (payload: RoomOutgoingMessagePayload[T]["success"]) => void
+  onSuccess?: (payload: RoomOutgoingMessagePayload[T]["success"]) => void
 ) => {
-  channel.push(messageType, payload).receive("ok", onSuccess);
+  channel.push(messageType, payload).receive("ok", onSuccess ?? noOp);
 };
 
 export enum RoomIncomingEventType {
