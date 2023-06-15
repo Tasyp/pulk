@@ -1,4 +1,8 @@
 defmodule Pulk.Game.BoardSnapshot do
+  @moduledoc """
+  Entity that is used to display board state to an observer (anyone who is not the player itself)
+  """
+
   use TypedStruct
   use Domo
 

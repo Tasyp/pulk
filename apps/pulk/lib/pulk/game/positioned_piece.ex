@@ -1,4 +1,8 @@
 defmodule Pulk.Game.PositionedPiece do
+  @moduledoc """
+  Entity that represents positioned piece
+  """
+
   use TypedStruct
   use Domo
 

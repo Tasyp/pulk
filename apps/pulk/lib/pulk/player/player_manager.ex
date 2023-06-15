@@ -1,4 +1,8 @@
 defmodule Pulk.Player.PlayerManager do
+  @moduledoc """
+  GenServer that keeps state of an active player
+  """
+
   use GenServer
 
   require Logger

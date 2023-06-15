@@ -50,7 +50,8 @@ defmodule PulkWeb.MixProject do
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
       {:typed_struct, "~> 0.3.0"},
-      {:domo, "~> 1.5"}
+      {:domo, "~> 1.5"},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end
 
@@ -60,8 +61,9 @@ defmodule PulkWeb.MixProject do
   defp aliases do
     [
       setup: ["deps.get", "assets.setup", "assets.build"],
-      test: ["test"],
-      format: ["format", "cmd --cd assets yarn format"],
+      "format.all": ["format", "format.js"],
+      "format.js": "cmd --cd assets yarn format",
+      lint: ["format --check-formatted", "cmd --cd assets yarn lint", "credo"],
       "assets.setup": [
         "cmd --cd assets yarn",
         "esbuild.install --if-missing"

@@ -1,4 +1,8 @@
 defmodule Pulk.Game.Matrix do
+  @moduledoc """
+  Entity that represenets game field
+  """
+
   use TypedStruct
   use Domo, gen_constructor_name: :_new
 

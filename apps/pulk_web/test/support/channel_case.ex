@@ -28,8 +28,7 @@ defmodule PulkWeb.ChannelCase do
     end
   end
 
-  setup tags do
-    PulkWeb.DataCase.setup_sandbox(tags)
+  setup do
     :ok
   end
 end

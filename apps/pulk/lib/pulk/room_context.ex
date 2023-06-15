@@ -1,4 +1,15 @@
 defmodule Pulk.RoomContext do
+  @moduledoc """
+  A context to manipulate rooms. It is intended to be the only publicly available way to do it.
+
+  Containts a collection of method to operatate on rooms.
+
+  ## Examples
+
+      iex> {:ok, room} = RoomContext.create_room(Pulk.Room.new!())
+      iex> {:ok, player} = RoomContext.add_player(room, Pulk.Player.new!())
+
+  """
   alias Pulk.PlayerContext
   alias Pulk.Room.RoomManager
   alias Pulk.Room

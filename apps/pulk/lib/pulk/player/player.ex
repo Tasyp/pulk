@@ -1,4 +1,8 @@
 defmodule Pulk.Player do
+  @moduledoc """
+  Entity that keeps information about a player
+  """
+
   use TypedStruct
   use Domo, gen_constructor_name: :_new
 

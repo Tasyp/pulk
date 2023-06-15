@@ -42,12 +42,15 @@ defmodule Pulk.MixProject do
       {:typed_struct, "~> 0.3.0"},
       {:domo, "~> 1.5"},
       {:friendlyid, "~> 0.2.0"},
-      {:nanoid, "~> 2.0.5"}
+      {:nanoid, "~> 2.0.5"},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end
 
   defp aliases do
     [
+      "format.all": "format",
+      lint: ["format --check-formatted", "credo"],
       setup: ["deps.get"],
       test: ["test"]
     ]

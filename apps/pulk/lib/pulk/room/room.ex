@@ -1,4 +1,8 @@
 defmodule Pulk.Room do
+  @moduledoc """
+  Entity that keeps information about a game room that players can enter to play game.
+  """
+
   use TypedStruct
   use Domo, gen_constructor_name: :_new
 

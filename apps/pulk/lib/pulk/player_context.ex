@@ -1,4 +1,10 @@
 defmodule Pulk.PlayerContext do
+  @moduledoc """
+  A context to manipulate players. It is intended to be the only publicly available way to do it.
+
+  Containts a collection of method to operatate on players.
+  """
+
   alias Pulk.Player.PlayerManager
   alias Pulk.Game.Board
   alias Pulk.Game.Matrix

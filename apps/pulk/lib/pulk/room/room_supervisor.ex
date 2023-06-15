@@ -1,4 +1,8 @@
 defmodule Pulk.Room.RoomSupervisor do
+  @moduledoc """
+  Supervisor that controls room related gen servers
+  """
+
   use Supervisor, restart: :permanent
 
   def start_link(init_arg) do

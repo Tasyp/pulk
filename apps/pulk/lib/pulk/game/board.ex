@@ -1,4 +1,8 @@
 defmodule Pulk.Game.Board do
+  @moduledoc """
+  Entity that is used to represent all metadata about the game field required to display it
+  """
+
   use TypedStruct
   use Domo, gen_constructor_name: :_new
 
@@ -141,9 +145,7 @@ defmodule Pulk.Game.Board do
 
   @spec set_placement(t(), placement :: pos_integer()) :: {:ok, t()} | {:error, term()}
   def set_placement(%__MODULE__{} = board, placement) do
-    with {:ok, board} <- ensure_type(%{board | status: :complete, placement: placement}) do
-      {:ok, board}
-    end
+    ensure_type(%{board | status: :complete, placement: placement})
   end
 
   @spec maybe_recalculate(t(), boolean()) :: t()
