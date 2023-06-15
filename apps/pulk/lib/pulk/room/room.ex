@@ -17,7 +17,7 @@ defmodule Pulk.Room do
     field :room_id, String.t()
     field :started_at, DateTime.t(), enforce: false
     field :max_player_limit, pos_integer(), default: 4
-    field :board_size, coordinates(), default: {10, 20}
+    field :board_size, coordinates(), default: {10, 22}
   end
 
   @spec new!(map()) :: t()

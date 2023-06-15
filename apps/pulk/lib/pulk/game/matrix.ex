@@ -11,6 +11,7 @@ defmodule Pulk.Game.Matrix do
   alias Pulk.Game.Piece
   alias Pulk.Game.PositionedPiece
 
+  @buffer_zone_lines 2
   @type line :: [Piece.t()]
   @type matrix :: [line()]
 
@@ -34,6 +35,11 @@ defmodule Pulk.Game.Matrix do
 
   def new(matrix) do
     _new(value: matrix)
+  end
+
+  @spec get_matrix_lines(t()) :: matrix()
+  def get_matrix_lines(%__MODULE__{value: matrix}) do
+    matrix
   end
 
   @spec has_matching_size?(t(), {pos_integer(), pos_integer()}) ::
@@ -100,6 +106,12 @@ defmodule Pulk.Game.Matrix do
   def remove_filled_lines(%__MODULE__{value: matrix}) do
     {matrix, filled_lines_count} = do_remove_filled_lines(matrix)
     {new!(matrix), filled_lines_count}
+  end
+
+  @spec remove_buffer_zone(t()) :: t()
+  def remove_buffer_zone(%__MODULE__{value: matrix}) do
+    {_dropped_lines, matrix} = Enum.split(matrix, @buffer_zone_lines)
+    new!(matrix)
   end
 
   @spec do_remove_filled_lines(matrix()) :: {matrix(), non_neg_integer()}

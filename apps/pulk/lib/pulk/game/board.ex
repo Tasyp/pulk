@@ -66,7 +66,11 @@ defmodule Pulk.Game.Board do
 
   @spec to_snapshot(t()) :: BoardSnapshot.t()
   def to_snapshot(%__MODULE__{active_piece: active_piece, matrix: matrix, status: status}) do
-    BoardSnapshot.new!(active_piece: active_piece, matrix: matrix, status: status)
+    BoardSnapshot.new!(
+      active_piece: active_piece,
+      matrix: Matrix.remove_buffer_zone(matrix),
+      status: status
+    )
   end
 
   @spec update_status(t(), state :: status()) :: {:ok, t()}
