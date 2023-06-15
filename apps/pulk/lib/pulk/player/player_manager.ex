@@ -221,24 +221,22 @@ defmodule Pulk.Player.PlayerManager do
         %{board: board, player: player, soft_drop_timer: soft_drop_timer} = state
       ) do
     state =
-      cond do
-        soft_drop_timer == nil && board.active_piece !== nil ->
-          board_update =
-            BoardUpdate.new!(
-              active_piece_update:
-                PiecePositionUpdate.update_active_piece(board, :simple, %{direction: :down})
-            )
+      if soft_drop_timer == nil && board.active_piece !== nil do
+        board_update =
+          BoardUpdate.new!(
+            active_piece_update:
+              PiecePositionUpdate.update_active_piece(board, :simple, %{direction: :down})
+          )
 
-          case do_update_board(board, board_update, player.room_id) do
-            {:ok, board} ->
-              %{state | board: board}
+        case do_update_board(board, board_update, player.room_id) do
+          {:ok, board} ->
+            %{state | board: board}
 
-            {:error, _reason} ->
-              state
-          end
-
-        true ->
-          state
+          {:error, _reason} ->
+            state
+        end
+      else
+        state
       end
 
     publish_board(self())

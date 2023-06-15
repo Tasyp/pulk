@@ -26,13 +26,13 @@ defmodule Pulk.Game.PositionedPiece do
   ]
 
   typedstruct enforce: true do
-    field(:piece, Piece.t())
+    field :piece, Piece.t()
 
-    field(:rotation, rotation(), default: :O)
+    field :rotation, rotation(), default: :O
 
-    field(:base_point, {non_neg_integer(), non_neg_integer()})
+    field :base_point, {non_neg_integer(), non_neg_integer()}
 
-    field(:coordinates, [{non_neg_integer(), non_neg_integer()}])
+    field :coordinates, [{non_neg_integer(), non_neg_integer()}]
   end
 
   @spec new_initial_piece!(Piece.t(), {pos_integer(), pos_integer()}) :: t()

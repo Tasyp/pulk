@@ -10,9 +10,9 @@ defmodule Pulk.Game.BoardUpdate do
   alias Pulk.Game.PiecePositionUpdate
 
   typedstruct do
-    field(:piece_in_hold, Piece.t())
+    field :piece_in_hold, Piece.t()
 
-    field(:active_piece_update, PiecePositionUpdate.t())
+    field :active_piece_update, PiecePositionUpdate.t()
   end
 
   def has_piece_update_type?(%{active_piece_update: nil}, _update_type) do

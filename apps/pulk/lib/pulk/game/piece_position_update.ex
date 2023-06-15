@@ -1,4 +1,8 @@
 defmodule Pulk.Game.PiecePositionUpdate do
+  @moduledoc """
+  An entity that is used to describe piece position change
+  """
+
   use TypedStruct
   use Domo
 
@@ -13,13 +17,13 @@ defmodule Pulk.Game.PiecePositionUpdate do
   @type relative_rotation() :: :left | :right
 
   typedstruct enforce: true do
-    field(:piece, Piece.t())
+    field :piece, Piece.t()
 
-    field(:update_type, update_type())
+    field :update_type, update_type()
 
     # Either of these must be present for a simple update
-    field(:relative_rotation, relative_rotation(), enforce: false)
-    field(:direction, direction(), enforce: false)
+    field :relative_rotation, relative_rotation(), enforce: false
+    field :direction, direction(), enforce: false
   end
 
   @spec update_active_piece(Board.t(), update_type()) :: t()

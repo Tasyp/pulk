@@ -1,4 +1,8 @@
 defmodule Pulk.Game.Gravity do
+  @moduledoc """
+  Provides function to calculate game field gravity
+  """
+
   @spec calculate(pos_integer()) :: float()
   def calculate(level) do
     # https://harddrop.com/wiki/Tetris_Worlds#Gravity

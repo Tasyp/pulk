@@ -16,7 +16,7 @@ defmodule Pulk.Game.Matrix do
   @type matrix :: [line()]
 
   typedstruct do
-    field(:value, matrix(), enforce: true)
+    field :value, matrix(), enforce: true
   end
 
   @spec new!(pos_integer(), pos_integer()) :: t()
@@ -76,6 +76,23 @@ defmodule Pulk.Game.Matrix do
     |> Map.new()
   end
 
+  @spec map_rows(
+          t(),
+          callback :: (Piece.t(), {non_neg_integer(), non_neg_integer()} -> Piece.t())
+        ) :: t()
+  def map_rows(%__MODULE__{} = matrix, callback) do
+    matrix_value =
+      matrix.value
+      |> Enum.with_index()
+      |> Enum.map(fn {column, column_idx} ->
+        column
+        |> Enum.with_index()
+        |> Enum.map(fn {row, row_idx} -> callback.(row, {column_idx, row_idx}) end)
+      end)
+
+    %{matrix | value: matrix_value}
+  end
+
   def add_piece(
         %__MODULE__{} = matrix,
         %PositionedPiece{piece: piece, coordinates: coordinates}
@@ -84,22 +101,14 @@ defmodule Pulk.Game.Matrix do
       coordinates
       |> MapSet.new()
 
-    matrix_value =
-      matrix.value
-      |> Enum.with_index()
-      |> Enum.map(fn {column, column_idx} ->
-        column
-        |> Enum.with_index()
-        |> Enum.map(fn {row, row_index} ->
-          if MapSet.member?(coordinates_set, {row_index, column_idx}) do
-            piece
-          else
-            row
-          end
-        end)
-      end)
-
-    %{matrix | value: matrix_value}
+    matrix
+    |> map_rows(fn row_value, {column_idx, row_idx} ->
+      if MapSet.member?(coordinates_set, {row_idx, column_idx}) do
+        piece
+      else
+        row_value
+      end
+    end)
   end
 
   @spec remove_filled_lines(t()) :: {t(), non_neg_integer()}
