@@ -57,10 +57,6 @@ export enum RoomOutgoingEventType {
   BOARD_UPDATE = "board_update",
 }
 
-// @type direction() :: :down | :left | :right
-
-// @type update_type() :: :simple | :soft_drop_start | :soft_drop_stop | :hard_drop
-
 export enum UpdateType {
   SIMPLE = "simple",
   SOFT_DROP_START = "soft_drop_start",
