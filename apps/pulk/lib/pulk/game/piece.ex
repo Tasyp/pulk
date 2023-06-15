@@ -1,4 +1,8 @@
 defmodule Pulk.Game.Piece do
+  @moduledoc """
+  Entity that represenets game piece type
+  """
+
   use TypedStruct
   use Domo, gen_constructor_name: :_new
 

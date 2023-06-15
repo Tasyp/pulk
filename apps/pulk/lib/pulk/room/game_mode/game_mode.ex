@@ -1,4 +1,8 @@
 defmodule Pulk.Room.GameMode do
+  @moduledoc """
+  Context that provides common interface over all available game modes
+  """
+
   require Logger
 
   use TypedStruct

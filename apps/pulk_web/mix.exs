@@ -61,8 +61,9 @@ defmodule PulkWeb.MixProject do
   defp aliases do
     [
       setup: ["deps.get", "assets.setup", "assets.build"],
-      test: ["test"],
-      format: ["format", "cmd --cd assets yarn format"],
+      "format.all": ["format", "format.js"],
+      "format.js": "cmd --cd assets yarn format",
+      lint: ["format --check-formatted", "cmd --cd assets yarn lint", "credo"],
       "assets.setup": [
         "cmd --cd assets yarn",
         "esbuild.install --if-missing"

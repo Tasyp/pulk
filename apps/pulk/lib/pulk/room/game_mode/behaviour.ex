@@ -1,4 +1,8 @@
 defmodule Pulk.Room.GameMode.Behaviour do
+  @moduledoc """
+  Generic behaviour for game modes
+  """
+
   alias Pulk.Room
 
   @callback init(init_args :: term()) :: {:ok, state :: term} | {:error, reason :: atom}

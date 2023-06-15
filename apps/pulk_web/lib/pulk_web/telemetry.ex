@@ -1,4 +1,8 @@
 defmodule PulkWeb.Telemetry do
+  @moduledoc """
+  Umbrella module for observability related setup
+  """
+
   use Supervisor
   import Telemetry.Metrics
 

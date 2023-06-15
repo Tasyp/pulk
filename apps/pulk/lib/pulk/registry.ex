@@ -1,4 +1,8 @@
 defmodule Pulk.Registry do
+  @moduledoc """
+  Registry used in all Pulk modules
+  """
+
   def start_link do
     Registry.start_link(keys: :unique, name: __MODULE__)
   end

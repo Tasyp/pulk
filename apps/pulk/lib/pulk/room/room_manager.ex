@@ -1,4 +1,7 @@
 defmodule Pulk.Room.RoomManager do
+  @moduledoc """
+  GenServer that keeps state of an active room
+  """
   require Logger
 
   alias Pulk.Room

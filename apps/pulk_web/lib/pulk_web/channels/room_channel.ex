@@ -1,4 +1,7 @@
 defmodule PulkWeb.RoomChannel do
+  @moduledoc """
+  Channel used to communicate with frontend about game room changes
+  """
   require Logger
 
   use PulkWeb, :channel
@@ -25,9 +28,8 @@ defmodule PulkWeb.RoomChannel do
     response =
       with {:ok, player} <- player,
            {:ok, room} <- RoomContext.get_room(room_id),
-           {:ok, _player} <- RoomContext.add_player(room, player),
-           {:ok, room_boards} <- RoomContext.get_room_boards(room) do
-        {:ok, room_boards}
+           {:ok, _player} <- RoomContext.add_player(room, player) do
+        RoomContext.get_room_boards(room)
       end
 
     socket =

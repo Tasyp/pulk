@@ -1,4 +1,8 @@
 defmodule Pulk.Game.BoardUpdate do
+  @moduledoc """
+  Entity that is used to update board state from outisde
+  """
+
   use TypedStruct
   use Domo
 

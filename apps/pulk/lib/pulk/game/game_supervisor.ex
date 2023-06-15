@@ -1,4 +1,8 @@
 defmodule Pulk.Game.GameSupervisor do
+  @moduledoc """
+  Root supervisor that controls all game rooms
+  """
+
   use DynamicSupervisor, restart: :permanent
 
   def start_link(_init_arg) do

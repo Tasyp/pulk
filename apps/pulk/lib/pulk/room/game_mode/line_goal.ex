@@ -1,4 +1,11 @@
 defmodule Pulk.Room.GameMode.LineGoal do
+  @moduledoc """
+  A game mode with a end goal to clean a predefined lines count.
+
+  The game ends as soon as any of the participating players reach the goal. Remaining players receive places according
+  to their last known line clear count. If there are no active players, the game ends on its own.
+  """
+
   use TypedStruct
 
   alias Pulk.Room.GameMode
@@ -38,7 +45,7 @@ defmodule Pulk.Room.GameMode.LineGoal do
       end
 
     get_player_placements(next_room, players_boards)
-    |> Enum.map(fn {player, placement} ->
+    |> Enum.each(fn {player, placement} ->
       set_player_placement_and_notify(player, placement)
     end)
 

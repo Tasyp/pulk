@@ -49,6 +49,8 @@ defmodule Pulk.MixProject do
 
   defp aliases do
     [
+      "format.all": "format",
+      lint: ["format --check-formatted", "credo"],
       setup: ["deps.get"],
       test: ["test"]
     ]
