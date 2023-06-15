@@ -81,17 +81,18 @@ defmodule Pulk.Game.MatrixTest do
       piece_to_add =
         PositionedPiece.new!(
           piece: Piece.new!("O"),
+          base_point: {0, 0},
           coordinates: [
-            {2, 0},
-            {2, 1}
+            {0, 0},
+            {1, 0}
           ]
         )
 
       expected_matrix =
         Matrix.new!([
+          [p("O"), p("O"), p()],
           [p(), p(), p()],
-          [p(), p(), p()],
-          [p("O"), p("O"), p()]
+          [p(), p(), p()]
         ])
 
       matrix = Matrix.add_piece(matrix, piece_to_add)
