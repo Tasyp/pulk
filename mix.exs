@@ -50,8 +50,8 @@ defmodule Pulk.Umbrella.MixProject do
   # and cannot be accessed from applications inside the apps/ folder.
   defp aliases do
     [
-      # run `mix setup` in all child apps
       format: ["cmd mix format"],
+      # run `mix setup` in all child apps
       setup: ["cmd mix setup"]
     ]
   end
