@@ -184,7 +184,7 @@ defmodule Pulk.Game.Board do
       board
       |> remove_filled_lines()
       |> detect_end_state()
-      |> maybe_rotate_active_piece()
+      |> maybe_change_active_piece()
 
     {:ok, next_board}
   end
@@ -226,16 +226,16 @@ defmodule Pulk.Game.Board do
     end
   end
 
-  @spec maybe_rotate_active_piece(t()) :: t()
-  def maybe_rotate_active_piece(%__MODULE__{} = board) do
+  @spec maybe_change_active_piece(t()) :: t()
+  def maybe_change_active_piece(%__MODULE__{} = board) do
     if can_update_active_piece?(board) do
       board
     else
-      rotate_active_piece(board)
+      change_active_piece(board)
     end
   end
 
-  def rotate_active_piece(
+  def change_active_piece(
         %__MODULE__{piece_bag: piece_bag, size_x: size_x, size_y: size_y} = board
       ) do
     {piece_bag, active_piece} = PieceBag.get_piece(piece_bag, {size_x, size_y})
