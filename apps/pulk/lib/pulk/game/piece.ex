@@ -15,8 +15,9 @@ defmodule Pulk.Game.Piece do
     "J",
     "L"
   ]
-  @special_values ["", "X"]
-  @supported_values MapSet.new(@pieces_types ++ @special_values)
+  @ghost_type "X"
+  @empty_value ""
+  @supported_values MapSet.new(@pieces_types ++ [@ghost_type, @empty_value])
 
   @type piece_type :: String.t()
   precond piece_type: &is_supported_piece?/1
@@ -39,6 +40,10 @@ defmodule Pulk.Game.Piece do
 
   def pieces() do
     @pieces_types |> Enum.map(&new!(&1))
+  end
+
+  def ghost_piece() do
+    new!(@ghost_type)
   end
 
   @spec is_supported_piece?(String.t()) :: :ok | {:error, :invalid_piece}

@@ -1,6 +1,6 @@
 import { PiecePositionUpdate } from "../room";
 
-export type Piece = "" | "I" | "O" | "T" | "S" | "Z" | "J" | "L";
+export type Piece = "" | "I" | "O" | "T" | "S" | "Z" | "J" | "L" | "X";
 
 export type Matrix = Piece[][];
 

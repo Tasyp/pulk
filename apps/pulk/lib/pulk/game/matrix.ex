@@ -10,6 +10,7 @@ defmodule Pulk.Game.Matrix do
 
   alias Pulk.Game.Piece
   alias Pulk.Game.PositionedPiece
+  alias Pulk.Game.Coordinates
 
   @buffer_zone_lines 2
   @type line :: [Piece.t()]
@@ -93,13 +94,12 @@ defmodule Pulk.Game.Matrix do
     %{matrix | value: matrix_value}
   end
 
+  @spec add_piece(t(), PositionedPiece.t()) :: t()
   def add_piece(
         %__MODULE__{} = matrix,
         %PositionedPiece{piece: piece, coordinates: coordinates}
       ) do
-    coordinates_set =
-      coordinates
-      |> MapSet.new()
+    coordinates_set = Coordinates.to_set(coordinates)
 
     matrix
     |> map_rows(fn row_value, {column_idx, row_idx} ->
@@ -109,6 +109,50 @@ defmodule Pulk.Game.Matrix do
         row_value
       end
     end)
+  end
+
+  @spec add_ghost_piece(t(), PositionedPiece.t()) :: t()
+  def add_ghost_piece(%__MODULE__{} = matrix, %PositionedPiece{} = positioned_piece) do
+    %PositionedPiece{coordinates: coordinates} = do_hard_drop(matrix, positioned_piece)
+    coordinates_set = Coordinates.to_set(coordinates)
+
+    matrix
+    |> map_rows(fn row_value, {column_idx, row_idx} ->
+      if MapSet.member?(coordinates_set, {row_idx, column_idx}) do
+        Piece.ghost_piece()
+      else
+        row_value
+      end
+    end)
+  end
+
+  @spec can_insert_peace?(t(), PositionedPiece.t()) :: boolean()
+  def can_insert_peace?(%__MODULE__{} = matrix, %PositionedPiece{coordinates: coordinates}) do
+    matrix_map = to_map(matrix)
+
+    coordinates
+    |> Enum.all?(fn coordinates ->
+      current_value =
+        matrix_map
+        |> Map.get(coordinates)
+
+      current_value !== nil && Piece.is_empty?(current_value)
+    end)
+  end
+
+  @spec do_hard_drop(t(), PositionedPiece.t()) :: t()
+  def do_hard_drop(%__MODULE__{} = matrix, %PositionedPiece{} = current_piece) do
+    case PositionedPiece.move(current_piece, :down) do
+      {:ok, positioned_piece} ->
+        if can_insert_peace?(matrix, positioned_piece) do
+          do_hard_drop(matrix, positioned_piece)
+        else
+          current_piece
+        end
+
+      {:error, :invalid_move} ->
+        current_piece
+    end
   end
 
   @spec remove_filled_lines(t()) :: {t(), non_neg_integer()}

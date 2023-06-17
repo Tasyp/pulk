@@ -8,6 +8,8 @@ export const composeTetrisMatrix = (matrix: Matrix): TetrisMatrix => {
       switch (value) {
         case "":
           return null;
+        case "X":
+          return "ghost";
         default:
           return value;
       }
