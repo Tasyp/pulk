@@ -4,8 +4,15 @@ defmodule Pulk.Game.Coordinates do
   """
 
   @type t() :: {x :: integer(), y :: integer()}
+  @type collection() :: [t()]
 
-  @spec get_coordinates_width(list(t())) :: non_neg_integer()
+  @spec to_set(collection()) :: MapSet.t(t())
+  def to_set(coordinates) do
+    coordinates
+    |> MapSet.new()
+  end
+
+  @spec get_coordinates_width(collection()) :: non_neg_integer()
   def get_coordinates_width(coordinates) do
     x_coordinates =
       coordinates
@@ -22,7 +29,7 @@ defmodule Pulk.Game.Coordinates do
     {x + shift_x, y + shift_y}
   end
 
-  @spec shift_coordinates_by(list(t()), shift_by :: {integer(), integer()}) :: list(t)
+  @spec shift_coordinates_by(list(t()), shift_by :: {integer(), integer()}) :: collection()
   def shift_coordinates_by(coordinates, shift_by) do
     coordinates
     |> Enum.map(&shift_point_by(&1, shift_by))

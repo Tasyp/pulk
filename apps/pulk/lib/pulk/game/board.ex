@@ -64,6 +64,11 @@ defmodule Pulk.Game.Board do
     PieceBag.get_queue_preview(piece_bag)
   end
 
+  @spec matrix(t()) :: Matrix.t()
+  def matrix(%__MODULE__{matrix: matrix, active_piece: active_piece}) do
+    Matrix.add_ghost_piece(matrix, active_piece)
+  end
+
   @spec to_snapshot(t()) :: BoardSnapshot.t()
   def to_snapshot(%__MODULE__{active_piece: active_piece, matrix: matrix, status: status}) do
     BoardSnapshot.new!(
@@ -174,7 +179,7 @@ defmodule Pulk.Game.Board do
          %__MODULE__{} = board,
          %PiecePositionUpdate{update_type: :hard_drop}
        ) do
-    active_piece = do_hard_drop(board)
+    active_piece = Matrix.do_hard_drop(board.matrix, board.active_piece)
     {:ok, active_piece}
   end
 
@@ -268,7 +273,7 @@ defmodule Pulk.Game.Board do
   end
 
   defp set_active_piece(%__MODULE__{} = board, active_piece) do
-    if can_insert_peace?(board, active_piece) do
+    if Matrix.can_insert_peace?(board.matrix, active_piece) do
       case ensure_type(%{board | active_piece: active_piece}) do
         {:ok, board} -> {:ok, board}
         {:error, _} -> {:error, :invalid_move}
@@ -285,35 +290,6 @@ defmodule Pulk.Game.Board do
          ) do
       {:ok, _board} -> true
       {:error, _reason} -> false
-    end
-  end
-
-  defp can_insert_peace?(%__MODULE__{} = board, %PositionedPiece{coordinates: coordinates}) do
-    matrix_map = Matrix.to_map(board.matrix)
-
-    coordinates
-    |> Enum.all?(fn coordinates ->
-      current_value =
-        matrix_map
-        |> Map.get(coordinates)
-
-      current_value !== nil && Piece.is_empty?(current_value)
-    end)
-  end
-
-  defp do_hard_drop(%__MODULE__{} = board, positioned_piece \\ nil) do
-    current_piece = positioned_piece || board.active_piece
-
-    case PositionedPiece.move(current_piece, :down) do
-      {:ok, positioned_piece} ->
-        if can_insert_peace?(board, positioned_piece) do
-          do_hard_drop(board, positioned_piece)
-        else
-          current_piece
-        end
-
-      {:error, :invalid_move} ->
-        current_piece
     end
   end
 end

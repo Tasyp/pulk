@@ -6,7 +6,6 @@ defimpl Jason.Encoder, for: [Pulk.Game.Board] do
     :cleared_lines_count,
     :piece_in_hold,
     :active_piece,
-    :matrix,
     :status,
     :placement
   ]
@@ -18,6 +17,7 @@ defimpl Jason.Encoder, for: [Pulk.Game.Board] do
       |> Map.take(@visible_fields)
       |> Map.put(:level, Board.level(struct))
       |> Map.put(:piece_queue, Board.piece_queue(struct))
+      |> Map.put(:matrix, Board.matrix(struct))
 
     Jason.Encode.map(next_struct, opts)
   end
