@@ -57,14 +57,44 @@ export enum RoomOutgoingEventType {
   BOARD_UPDATE = "board_update",
 }
 
+export enum UpdateType {
+  SIMPLE = "simple",
+  SOFT_DROP_START = "soft_drop_start",
+  SOFT_DROP_STOP = "soft_drop_stop",
+  HARD_DROP = "hard_drop",
+}
+
+export enum RelativeRotation {
+  LEFT = "left",
+  RIGHT = "right",
+}
+
+export enum Direction {
+  DOWN = "down",
+  LEFT = "left",
+  RIGHT = "right",
+}
+
+export type PiecePositionUpdate =
+  | {
+      piece: Piece;
+      update_type: UpdateType.SIMPLE;
+      relative_rotation: RelativeRotation;
+    }
+  | {
+      piece: Piece;
+      update_type: UpdateType.SIMPLE;
+      direction: Direction;
+    }
+  | {
+      piece: Piece;
+      update_type: Exclude<UpdateType, UpdateType.SIMPLE>;
+    };
+
 export type RoomOutgoingMessagePayload = {
   [RoomOutgoingEventType.BOARD_UPDATE]: {
     payload: {
-      matrix: Matrix;
-      active_piece: {
-        piece: Piece;
-        coordinates: [x: number, y: number][];
-      } | null;
+      active_piece_update: PiecePositionUpdate;
       piece_in_hold: Piece | null;
     };
     success: {
@@ -83,13 +113,15 @@ export type RoomOutgoingMessagePayload = {
   };
 };
 
+const noOp = () => {};
+
 export const pushRoomMessage = <T extends RoomOutgoingEventType>(
   channel: Channel,
   messageType: T,
   payload: RoomOutgoingMessagePayload[T]["payload"],
-  onSuccess: (payload: RoomOutgoingMessagePayload[T]["success"]) => void
+  onSuccess?: (payload: RoomOutgoingMessagePayload[T]["success"]) => void
 ) => {
-  channel.push(messageType, payload).receive("ok", onSuccess);
+  channel.push(messageType, payload).receive("ok", onSuccess ?? noOp);
 };
 
 export enum RoomIncomingEventType {

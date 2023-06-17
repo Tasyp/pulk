@@ -6,7 +6,6 @@ defmodule Pulk.Room.RoomManager do
 
   alias Pulk.Room
   alias Pulk.Room.GameMode
-  alias Pulk.Player
 
   use GenServer, restart: :permanent
 
@@ -45,12 +44,8 @@ defmodule Pulk.Room.RoomManager do
     GenServer.call(pid, {:update_status, status})
   end
 
-  def recalculate_room_status(%Player{room_id: room_id}) do
-    recalculate_room_status(via_tuple(room_id))
-  end
-
-  def recalculate_room_status(pid) do
-    GenServer.cast(pid, :recalculate_room_status)
+  def recalculate_room_status(room_id) do
+    GenServer.cast(via_tuple(room_id), :recalculate_room_status)
   end
 
   def get_all_room_managers() do

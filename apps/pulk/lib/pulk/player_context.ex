@@ -34,14 +34,14 @@ defmodule Pulk.PlayerContext do
     end
   end
 
-  @spec update_board(String.t(), BoardUpdate.t(), keyword()) ::
+  @spec update_board(String.t(), BoardUpdate.t()) ::
           {:ok, Board.t()}
           | {:error, :unknown_player}
           | {:error, :invalid_update}
           | {:error, :board_complete}
-  def update_board(player_id, board_update, opts \\ []) do
+  def update_board(player_id, board_update) do
     with :ok <- PlayerManager.is_player_present?(player_id) do
-      PlayerManager.update_board(PlayerManager.via_tuple(player_id), board_update, opts)
+      PlayerManager.update_board(PlayerManager.via_tuple(player_id), board_update)
     end
   end
 

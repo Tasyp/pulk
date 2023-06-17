@@ -3,6 +3,7 @@ defmodule Pulk.Game.MatrixTest do
 
   alias Pulk.Game.Matrix
   alias Pulk.Game.Piece
+  alias Pulk.Game.PositionedPiece
 
   describe "Matrix.remove_filled_lines/1" do
     test "it should remove filled lines and shift existing ones when only the top is incomplete" do
@@ -70,6 +71,33 @@ defmodule Pulk.Game.MatrixTest do
 
       assert matrix == expected_matrix
       assert cleared_lines_count == 1
+    end
+  end
+
+  describe "Matrix.add_piece/1" do
+    test "it should add piece" do
+      matrix = Matrix.new!(3, 3)
+
+      piece_to_add =
+        PositionedPiece.new!(
+          piece: Piece.new!("O"),
+          base_point: {0, 0},
+          coordinates: [
+            {0, 0},
+            {1, 0}
+          ]
+        )
+
+      expected_matrix =
+        Matrix.new!([
+          [p("O"), p("O"), p()],
+          [p(), p(), p()],
+          [p(), p(), p()]
+        ])
+
+      matrix = Matrix.add_piece(matrix, piece_to_add)
+
+      assert matrix == expected_matrix
     end
   end
 

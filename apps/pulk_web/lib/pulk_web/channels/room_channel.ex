@@ -54,8 +54,7 @@ defmodule PulkWeb.RoomChannel do
       with {:ok, player} <- PlayerContext.get_player(socket.assigns.player_id),
            {:ok, board_update} <- PulkWeb.BoardUpdateJSON.from_json(board_update_json),
            {:ok, board} <-
-             PlayerContext.update_board(player.player_id, board_update, recalculate?: true) do
-        send_board_to_others(socket, board)
+             PlayerContext.update_board(player.player_id, board_update) do
         {:ok, board}
       else
         {:error, reason} ->

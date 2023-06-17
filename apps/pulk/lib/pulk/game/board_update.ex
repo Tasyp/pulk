@@ -7,14 +7,19 @@ defmodule Pulk.Game.BoardUpdate do
   use Domo
 
   alias Pulk.Game.Piece
-  alias Pulk.Game.Matrix
-  alias Pulk.Game.PositionedPiece
+  alias Pulk.Game.PiecePositionUpdate
 
   typedstruct do
     field :piece_in_hold, Piece.t()
 
-    field :active_piece, PositionedPiece.t()
+    field :active_piece_update, PiecePositionUpdate.t()
+  end
 
-    field :matrix, Matrix.t(), enforce: true
+  def has_piece_update_type?(%{active_piece_update: nil}, _update_type) do
+    false
+  end
+
+  def has_piece_update_type?(board_update, update_type) do
+    board_update.active_piece_update.update_type == update_type
   end
 end

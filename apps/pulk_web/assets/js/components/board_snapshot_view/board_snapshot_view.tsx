@@ -17,6 +17,7 @@ export const BoardSnapshotView: React.FunctionComponent<Props> = ({
       ? addPiece(inputMatrix, activePiece)
       : inputMatrix
   );
+
   return (
     <table className="game-board">
       <tbody>

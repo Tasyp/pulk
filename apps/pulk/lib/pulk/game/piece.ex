@@ -6,7 +6,17 @@ defmodule Pulk.Game.Piece do
   use TypedStruct
   use Domo, gen_constructor_name: :_new
 
-  @supported_pieces MapSet.new(["", "I", "O", "T", "S", "Z", "J", "L", "X"])
+  @pieces_types [
+    "I",
+    "O",
+    "T",
+    "S",
+    "Z",
+    "J",
+    "L"
+  ]
+  @special_values ["", "X"]
+  @supported_values MapSet.new(@pieces_types ++ @special_values)
 
   @type piece_type :: String.t()
   precond piece_type: &is_supported_piece?/1
@@ -27,9 +37,13 @@ defmodule Pulk.Game.Piece do
     _new!(piece_type: piece_type)
   end
 
+  def pieces() do
+    @pieces_types |> Enum.map(&new!(&1))
+  end
+
   @spec is_supported_piece?(String.t()) :: :ok | {:error, :invalid_piece}
   def is_supported_piece?(raw_piece) do
-    if MapSet.member?(@supported_pieces, raw_piece) do
+    if MapSet.member?(@supported_values, raw_piece) do
       :ok
     else
       {:error, :invalid_piece}

@@ -55,9 +55,13 @@ defmodule PulkWeb.MatrixJSON do
 end
 
 defimpl Jason.Encoder, for: [Pulk.Game.Matrix] do
+  alias Pulk.Game.Matrix
+
   def encode(struct, opts) do
     Jason.Encode.list(
-      struct.value,
+      struct
+      |> Matrix.remove_buffer_zone()
+      |> Matrix.get_matrix_lines(),
       opts
     )
   end

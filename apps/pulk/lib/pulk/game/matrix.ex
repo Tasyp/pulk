@@ -3,11 +3,15 @@ defmodule Pulk.Game.Matrix do
   Entity that represenets game field
   """
 
+  require Logger
+
   use TypedStruct
   use Domo, gen_constructor_name: :_new
 
   alias Pulk.Game.Piece
+  alias Pulk.Game.PositionedPiece
 
+  @buffer_zone_lines 2
   @type line :: [Piece.t()]
   @type matrix :: [line()]
 
@@ -33,6 +37,11 @@ defmodule Pulk.Game.Matrix do
     _new(value: matrix)
   end
 
+  @spec get_matrix_lines(t()) :: matrix()
+  def get_matrix_lines(%__MODULE__{value: matrix}) do
+    matrix
+  end
+
   @spec has_matching_size?(t(), {pos_integer(), pos_integer()}) ::
           :ok | {:error, :invalid_size}
   def has_matching_size?(%__MODULE__{value: matrix}, {size_x, size_y}) do
@@ -54,10 +63,64 @@ defmodule Pulk.Game.Matrix do
     |> Enum.all?(&line_not_empty?/1)
   end
 
+  def to_map(%__MODULE__{value: matrix}) do
+    matrix
+    |> Enum.with_index()
+    |> Enum.flat_map(fn {line, column_idx} ->
+      line
+      |> Enum.with_index()
+      |> Enum.map(fn {cell, row_idx} ->
+        {{row_idx, column_idx}, cell}
+      end)
+    end)
+    |> Map.new()
+  end
+
+  @spec map_rows(
+          t(),
+          callback :: (Piece.t(), {non_neg_integer(), non_neg_integer()} -> Piece.t())
+        ) :: t()
+  def map_rows(%__MODULE__{} = matrix, callback) do
+    matrix_value =
+      matrix.value
+      |> Enum.with_index()
+      |> Enum.map(fn {column, column_idx} ->
+        column
+        |> Enum.with_index()
+        |> Enum.map(fn {row, row_idx} -> callback.(row, {column_idx, row_idx}) end)
+      end)
+
+    %{matrix | value: matrix_value}
+  end
+
+  def add_piece(
+        %__MODULE__{} = matrix,
+        %PositionedPiece{piece: piece, coordinates: coordinates}
+      ) do
+    coordinates_set =
+      coordinates
+      |> MapSet.new()
+
+    matrix
+    |> map_rows(fn row_value, {column_idx, row_idx} ->
+      if MapSet.member?(coordinates_set, {row_idx, column_idx}) do
+        piece
+      else
+        row_value
+      end
+    end)
+  end
+
   @spec remove_filled_lines(t()) :: {t(), non_neg_integer()}
   def remove_filled_lines(%__MODULE__{value: matrix}) do
     {matrix, filled_lines_count} = do_remove_filled_lines(matrix)
     {new!(matrix), filled_lines_count}
+  end
+
+  @spec remove_buffer_zone(t()) :: t()
+  def remove_buffer_zone(%__MODULE__{value: matrix}) do
+    {_dropped_lines, matrix} = Enum.split(matrix, @buffer_zone_lines)
+    new!(matrix)
   end
 
   @spec do_remove_filled_lines(matrix()) :: {matrix(), non_neg_integer()}
