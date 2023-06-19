@@ -11,6 +11,7 @@ export enum RoomErrorType {
 export type IncomingBoardSnapshot = {
   matrix: Matrix;
   status: BoardStatus;
+  buffer_zone_size: number;
   active_piece: {
     piece: Piece;
     coordinates: [x: number, y: number][];
@@ -23,6 +24,7 @@ export type RoomJoinPayload = {
     score: number;
     level: number;
     placement: number | null;
+    buffer_zone_size: number;
     status: BoardStatus;
     active_piece: {
       piece: Piece;
@@ -97,19 +99,7 @@ export type RoomOutgoingMessagePayload = {
       active_piece_update: PiecePositionUpdate;
       piece_in_hold: Piece | null;
     };
-    success: {
-      matrix: Matrix;
-      active_piece: {
-        piece: Piece;
-        coordinates: [x: number, y: number][];
-      } | null;
-      piece_in_hold: Piece | null;
-      score: number;
-      status: BoardStatus;
-      cleared_lines_count: number;
-      level: number;
-      placement: number;
-    };
+    success: {};
   };
 };
 

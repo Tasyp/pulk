@@ -2,6 +2,10 @@ import { Matrix as TetrisMatrix } from "react-tetris/lib/models/Matrix";
 
 import { Matrix, PositionedPiece } from "./board";
 
+export const hideBufferZone = (matrix: Matrix, bufferZoneSize: number) => {
+  return matrix.filter((_value, idx) => idx + 1 > bufferZoneSize);
+};
+
 export const composeTetrisMatrix = (matrix: Matrix): TetrisMatrix => {
   return matrix.map((row) =>
     row.map((value) => {

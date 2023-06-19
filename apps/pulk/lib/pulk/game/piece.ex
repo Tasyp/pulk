@@ -68,6 +68,12 @@ end
 
 defimpl Inspect, for: Pulk.Game.Piece do
   def inspect(piece, _opts) do
-    piece.piece_type
+    case piece.piece_type do
+      "" ->
+        " "
+
+      value ->
+        value
+    end
   end
 end

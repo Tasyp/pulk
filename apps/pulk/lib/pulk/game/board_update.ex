@@ -1,6 +1,6 @@
 defmodule Pulk.Game.BoardUpdate do
   @moduledoc """
-  Entity that is used to update board state from outisde
+  Entity that is used to update board state via public interfaces
   """
 
   use TypedStruct
