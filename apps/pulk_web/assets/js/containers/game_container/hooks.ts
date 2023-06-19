@@ -54,6 +54,7 @@ export const useRoom = ({
                 {
                   matrix: snapshot.matrix,
                   activePiece: snapshot.active_piece,
+                  bufferZoneSize: snapshot.buffer_zone_size,
                   status: snapshot.status,
                 },
               ]
@@ -69,6 +70,7 @@ export const useRoom = ({
           level: level,
           status: status,
           placement: placement,
+          buffer_zone_size: bufferZoneSize,
         } = payload.player_board;
 
         setPlayerBoard({
@@ -78,7 +80,8 @@ export const useRoom = ({
           score,
           level,
           status,
-          placement: placement,
+          placement,
+          bufferZoneSize,
         });
         setRoomJoinState("ok");
       },
@@ -109,6 +112,7 @@ export const useRoom = ({
                 matrix: board_snapshot.matrix,
                 activePiece: board_snapshot.active_piece,
                 status: board_snapshot.status,
+                bufferZoneSize: board_snapshot.buffer_zone_size,
               })
             )
         );

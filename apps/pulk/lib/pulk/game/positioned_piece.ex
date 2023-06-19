@@ -52,20 +52,33 @@ defmodule Pulk.Game.PositionedPiece do
 
   @spec move(t(), direction()) :: {:ok, t()} | {:error, :invalid_move}
   def move(
-        %__MODULE__{coordinates: coordinates, base_point: base_point} = positioned_piece,
+        %__MODULE__{} = positioned_piece,
         direction
       ) do
-    apply_shift = fn {x, y} ->
+    shift =
       case direction do
         :down ->
-          {x, y + 1}
+          {0, 1}
 
         :left ->
-          {x - 1, y}
+          {-1, 0}
 
         :right ->
-          {x + 1, y}
+          {1, 0}
       end
+
+    move_by(positioned_piece, shift)
+  end
+
+  @spec move_by(t(), {non_neg_integer(), non_neg_integer()}) ::
+          {:ok, t()} | {:error, :invalid_move}
+  def move_by(
+        %__MODULE__{coordinates: coordinates, base_point: base_point} = positioned_piece,
+        {shift_x, shift_y}
+      )
+      when is_integer(shift_x) and is_integer(shift_y) do
+    apply_shift = fn {x, y} ->
+      {x + shift_x, y + shift_y}
     end
 
     updated_coordinates = coordinates |> Enum.map(&apply_shift.(&1))

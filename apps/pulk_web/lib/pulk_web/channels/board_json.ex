@@ -6,6 +6,7 @@ defimpl Jason.Encoder, for: [Pulk.Game.Board] do
     :cleared_lines_count,
     :piece_in_hold,
     :active_piece,
+    :buffer_zone_size,
     :status,
     :placement
   ]

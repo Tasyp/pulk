@@ -23,6 +23,7 @@ defmodule Pulk.Game.Board do
   typedstruct enforce: true do
     field :size_x, pos_integer()
     field :size_y, pos_integer()
+    field :buffer_zone_size, non_neg_integer(), default: 2
     field :score, non_neg_integer(), default: 0
     field :cleared_lines_count, non_neg_integer(), default: 0
     field :piece_in_hold, Piece.t(), enforce: false
@@ -70,10 +71,16 @@ defmodule Pulk.Game.Board do
   end
 
   @spec to_snapshot(t()) :: BoardSnapshot.t()
-  def to_snapshot(%__MODULE__{active_piece: active_piece, matrix: matrix, status: status}) do
+  def to_snapshot(%__MODULE__{
+        active_piece: active_piece,
+        matrix: matrix,
+        status: status,
+        buffer_zone_size: buffer_zone_size
+      }) do
     BoardSnapshot.new!(
       active_piece: active_piece,
-      matrix: Matrix.remove_buffer_zone(matrix),
+      buffer_zone_size: buffer_zone_size,
+      matrix: matrix,
       status: status
     )
   end

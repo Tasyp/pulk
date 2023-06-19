@@ -1,7 +1,12 @@
 import React from "react";
 import { getClassName } from "react-tetris/lib/models/Piece";
 
-import { BoardSnapshot, addPiece, composeTetrisMatrix } from "../../lib/board";
+import {
+  BoardSnapshot,
+  addPiece,
+  composeTetrisMatrix,
+  hideBufferZone,
+} from "../../lib/board";
 
 interface Props {
   snapshot: BoardSnapshot;
@@ -9,13 +14,16 @@ interface Props {
 }
 
 export const BoardSnapshotView: React.FunctionComponent<Props> = ({
-  snapshot: { matrix: inputMatrix, activePiece },
+  snapshot: { matrix: inputMatrix, activePiece, bufferZoneSize },
   hasActivePiece = true,
 }) => {
   const matrix = composeTetrisMatrix(
-    hasActivePiece && activePiece !== null
-      ? addPiece(inputMatrix, activePiece)
-      : inputMatrix
+    hideBufferZone(
+      hasActivePiece && activePiece !== null
+        ? addPiece(inputMatrix, activePiece)
+        : inputMatrix,
+      bufferZoneSize
+    )
   );
 
   return (

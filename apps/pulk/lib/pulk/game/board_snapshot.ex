@@ -13,6 +13,8 @@ defmodule Pulk.Game.BoardSnapshot do
   typedstruct do
     field :active_piece, PositionedPiece.t()
 
+    field :buffer_zone_size, non_neg_integer(), default: 2
+
     field :matrix, Matrix.t(), enforce: true
 
     field :status, Board.status(), enforce: true

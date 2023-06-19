@@ -16,6 +16,7 @@ export type BoardUpdate = {
 
 export type Board = {
   matrix: Matrix;
+  bufferZoneSize: number;
   score: number;
   level: number;
   placement: number | null;
@@ -26,6 +27,7 @@ export type Board = {
 
 export type BoardSnapshot = {
   matrix: Matrix;
+  bufferZoneSize: number;
   status: BoardStatus;
   activePiece: PositionedPiece | null;
 };

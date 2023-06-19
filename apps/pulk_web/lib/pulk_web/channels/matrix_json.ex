@@ -60,7 +60,6 @@ defimpl Jason.Encoder, for: [Pulk.Game.Matrix] do
   def encode(struct, opts) do
     Jason.Encode.list(
       struct
-      |> Matrix.remove_buffer_zone()
       |> Matrix.get_matrix_lines(),
       opts
     )
