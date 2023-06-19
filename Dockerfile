@@ -31,8 +31,9 @@ RUN mix local.hex --force && \
     mix local.rebar --force
 
 # set build ENV
+ARG EXTERNAL_HOSTNAME
+ENV EXTERNAL_HOSTNAME=${EXTERNAL_HOSTNAME}
 ENV MIX_ENV="prod"
-ENV EXTERNAL_HOSTNAME="pulk.io"
 
 # install mix dependencies
 COPY mix.exs mix.lock ./
@@ -92,8 +93,6 @@ ENV MIX_ENV="prod"
 COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/pulk ./
 
 USER nobody
-
-ENV SECRET_KEY_BASE="vwu54ioyHEMupK8h4My1JjdWYQ2Z7J7xeYDfeBmgt8szV+ILzeTAenGdjb9ayaZx"
 
 CMD [ "/app/bin/server" ]
 
