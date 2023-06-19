@@ -115,7 +115,7 @@ defmodule Pulk.Player.PlayerManager do
   end
 
   defp schedule_soft_drop_tick(board) do
-    tick_delay = Gravity.calculate(Board.level(board)) / 2
+    tick_delay = Gravity.calculate(Board.level(board)) / 16
 
     Process.send_after(self(), :soft_drop_tick, round(:timer.seconds(tick_delay)))
   end
