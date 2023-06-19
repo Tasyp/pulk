@@ -23,7 +23,7 @@ defmodule Pulk.Game.Board do
   typedstruct enforce: true do
     field :size_x, pos_integer()
     field :size_y, pos_integer()
-    field :buffer_zone_size, non_neg_integer(), default: 2
+    field :buffer_zone_size, non_neg_integer(), default: 1
     field :score, non_neg_integer(), default: 0
     field :cleared_lines_count, non_neg_integer(), default: 0
     field :piece_in_hold, Piece.t(), enforce: false
