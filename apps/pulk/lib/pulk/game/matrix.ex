@@ -57,12 +57,6 @@ defmodule Pulk.Game.Matrix do
     end
   end
 
-  @spec is_complete?(t()) :: boolean()
-  def is_complete?(%__MODULE__{value: matrix}) do
-    matrix
-    |> Enum.all?(&line_not_empty?/1)
-  end
-
   def to_map(%__MODULE__{value: matrix}) do
     matrix
     |> Enum.with_index()
@@ -110,7 +104,11 @@ defmodule Pulk.Game.Matrix do
     end)
   end
 
-  @spec add_ghost_piece(t(), PositionedPiece.t()) :: t()
+  @spec add_ghost_piece(t(), PositionedPiece.t() | nil) :: t()
+  def add_ghost_piece(%__MODULE__{} = matrix, nil) do
+    matrix
+  end
+
   def add_ghost_piece(%__MODULE__{} = matrix, %PositionedPiece{} = positioned_piece) do
     %PositionedPiece{coordinates: coordinates} = do_hard_drop(matrix, positioned_piece)
     coordinates_set = Coordinates.to_set(coordinates)
@@ -202,11 +200,6 @@ defmodule Pulk.Game.Matrix do
   defp create_empty_line(line) do
     line
     |> Enum.map(fn _ -> Piece.new!() end)
-  end
-
-  @spec line_not_empty?(line()) :: boolean()
-  defp line_not_empty?(line) do
-    Enum.any?(line, &Kernel.not(Piece.is_empty?(&1)))
   end
 
   @spec line_filled?(line()) :: boolean()
