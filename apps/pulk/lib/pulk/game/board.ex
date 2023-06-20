@@ -195,8 +195,8 @@ defmodule Pulk.Game.Board do
     next_board =
       board
       |> remove_filled_lines()
-      |> detect_end_state()
       |> maybe_change_active_piece()
+      |> detect_end_state()
 
     {:ok, next_board}
   end
@@ -230,11 +230,11 @@ defmodule Pulk.Game.Board do
   end
 
   @spec detect_end_state(t()) :: t()
-  def detect_end_state(%__MODULE__{} = board) do
-    if Matrix.is_complete?(board.matrix) do
-      %{board | status: :complete}
-    else
+  def detect_end_state(%__MODULE__{matrix: matrix, active_piece: active_piece} = board) do
+    if Matrix.can_insert_peace?(matrix, active_piece) do
       board
+    else
+      %{board | status: :complete, active_piece: nil}
     end
   end
 
