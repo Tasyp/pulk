@@ -24,6 +24,7 @@ defmodule Pulk.Game.Board do
     field :size_x, pos_integer()
     field :size_y, pos_integer()
     field :buffer_zone_size, non_neg_integer(), default: 1
+    field :lock_delay, pos_integer(), default: 500
     field :score, non_neg_integer(), default: 0
     field :cleared_lines_count, non_neg_integer(), default: 0
     field :piece_in_hold, Piece.t(), enforce: false
@@ -111,14 +112,18 @@ defmodule Pulk.Game.Board do
           | {:error, :board_complete}
           | {:error, :invalid_move}
 
-  def update(%__MODULE__{status: :complete}, %BoardUpdate{}) do
+  def update(board, board_update, opts \\ [])
+
+  def update(%__MODULE__{status: :complete}, %BoardUpdate{}, _opts) do
     {:error, :board_complete}
   end
 
-  def update(%__MODULE__{} = board, %BoardUpdate{} = board_update) do
+  def update(%__MODULE__{} = board, %BoardUpdate{} = board_update, opts) do
+    recalculate? = Keyword.get(opts, :recalculate?, true)
+
     with {:ok, board} <- set_piece_in_hold(board, board_update),
          {:ok, board} <- update_active_piece(board, board_update.active_piece_update),
-         {:ok, board} <- recalculate(board),
+         {:ok, board} <- maybe_recalculate(board, recalculate?),
          {:ok, board} <-
            ensure_type(board) do
       {:ok, board}
@@ -190,12 +195,20 @@ defmodule Pulk.Game.Board do
     {:ok, active_piece}
   end
 
+  def maybe_recalculate(%__MODULE__{} = board, false) do
+    {:ok, board}
+  end
+
+  def maybe_recalculate(%__MODULE__{} = board, true) do
+    recalculate(board)
+  end
+
   @spec recalculate(t()) :: t()
   def recalculate(%__MODULE__{} = board) do
     next_board =
       board
-      |> remove_filled_lines()
       |> maybe_change_active_piece()
+      |> remove_filled_lines()
       |> detect_end_state()
 
     {:ok, next_board}
@@ -290,7 +303,7 @@ defmodule Pulk.Game.Board do
     end
   end
 
-  defp can_update_active_piece?(%__MODULE__{} = board) do
+  def can_update_active_piece?(%__MODULE__{} = board) do
     case update_active_piece(
            board,
            PiecePositionUpdate.update_active_piece(board, :simple, %{direction: :down})
