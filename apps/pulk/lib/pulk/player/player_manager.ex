@@ -76,9 +76,21 @@ defmodule Pulk.Player.PlayerManager do
     Pulk.Registry.via_tuple({__MODULE__, player_id})
   end
 
-  defp do_update_board(board, board_update, room_id) do
-    # TODO: Detect if there is a need to start lock timer or soft timer
-    case Board.update(board, board_update) do
+  defp do_update_board(board, board_update, room_id, opts \\ []) do
+    recalculate? =
+      cond do
+        Keyword.has_key?(opts, :recalculate?) ->
+          Keyword.fetch!(opts, :recalculate?)
+
+        BoardUpdate.has_piece_update_type?(board_update, :hard_drop) ->
+          true
+
+        true ->
+          # By default, let's not recalculate board
+          false
+      end
+
+    case Board.update(board, board_update, Keyword.merge(opts, recalculate?: recalculate?)) do
       {:ok, board} ->
         RoomManager.recalculate_room_status(room_id)
 
@@ -114,6 +126,23 @@ defmodule Pulk.Player.PlayerManager do
     end
   end
 
+  defp process_lock_delay(%{board: board, lock_delay_timer: lock_delay_timer} = state) do
+    if Board.can_update_active_piece?(board) do
+      state
+    else
+      if lock_delay_timer != nil do
+        Process.cancel_timer(lock_delay_timer)
+      end
+
+      lock_delay_timer = schedule_lock_delay_tick(board.lock_delay)
+      %{state | lock_delay_timer: lock_delay_timer}
+    end
+  end
+
+  defp schedule_lock_delay_tick(lock_delay) do
+    Process.send_after(self(), :lock_delay_tick, lock_delay)
+  end
+
   defp schedule_soft_drop_tick(board) do
     tick_delay = Gravity.calculate(Board.level(board)) / 16
 
@@ -128,7 +157,7 @@ defmodule Pulk.Player.PlayerManager do
     # TODO: Start tick timer when board is actually started
     Process.send_after(self(), :timer_tick, :timer.seconds(1))
 
-    {:ok, %{player: player, board: board, soft_drop_timer: nil}}
+    {:ok, %{player: player, board: board, soft_drop_timer: nil, lock_delay_timer: nil}}
   end
 
   @impl true
@@ -161,14 +190,19 @@ defmodule Pulk.Player.PlayerManager do
     {response, state} =
       case do_update_board(board, board_update, player.room_id) do
         {:ok, board} ->
-          {{:ok, board}, %{state | board: board}}
+          state =
+            %{state | board: board}
+            |> process_lock_delay()
+
+          {{:ok, board}, state}
 
         {:error, reason} ->
           {{:error, reason}, state}
       end
 
-    state = process_soft_drop_change(state, board_update)
-    # TODO: Detect if there is a need to start lock timer
+    state =
+      state
+      |> process_soft_drop_change(board_update)
 
     publish_board(self())
 
@@ -218,19 +252,25 @@ defmodule Pulk.Player.PlayerManager do
   @impl true
   def handle_info(
         :timer_tick,
-        %{board: board, player: player, soft_drop_timer: soft_drop_timer} = state
+        %{
+          board: board,
+          player: player,
+          soft_drop_timer: soft_drop_timer,
+          lock_delay_timer: lock_delay_timer
+        } = state
       ) do
     state =
-      if soft_drop_timer == nil && board.active_piece !== nil do
+      if soft_drop_timer == nil && lock_delay_timer == nil && board.active_piece !== nil do
         board_update =
           BoardUpdate.new!(
             active_piece_update:
               PiecePositionUpdate.update_active_piece(board, :simple, %{direction: :down})
           )
 
-        case do_update_board(board, board_update, player.room_id) do
+        case do_update_board(board, board_update, player.room_id, recalculate?: false) do
           {:ok, board} ->
             %{state | board: board}
+            |> process_lock_delay()
 
           {:error, _reason} ->
             state
@@ -256,14 +296,33 @@ defmodule Pulk.Player.PlayerManager do
       )
 
     state =
-      case do_update_board(board, board_update, player.room_id) do
+      case do_update_board(board, board_update, player.room_id, recalculate?: false) do
         {:ok, board} ->
           soft_drop_timer = schedule_soft_drop_tick(board)
 
           %{state | board: board, soft_drop_timer: soft_drop_timer}
+          |> process_lock_delay()
 
         {:error, _reason} ->
           %{state | soft_drop_timer: nil}
+      end
+
+    publish_board(self())
+
+    {:noreply, state}
+  end
+
+  @impl true
+  def handle_info(:lock_delay_tick, %{board: board, player: player} = state) do
+    board_update = BoardUpdate.new!()
+
+    state =
+      case do_update_board(board, board_update, player.room_id, recalculate?: true) do
+        {:ok, board} ->
+          %{state | board: board, lock_delay_timer: nil}
+
+        {:error, _reason} ->
+          %{state | lock_delay_timer: nil}
       end
 
     publish_board(self())
