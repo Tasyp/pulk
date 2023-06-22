@@ -1,10 +1,10 @@
-defmodule PulkWeb.PiecePositionUpdateJSON do
+defmodule PulkWeb.PieceUpdateJSON do
   require Logger
 
-  alias Pulk.Game.PiecePositionUpdate
+  alias Pulk.Game.PieceUpdate
   alias PulkWeb.PieceJSON
 
-  @type piece_position_update_json :: %{
+  @type piece_update_json :: %{
           piece: String.t(),
           update_type: String.t(),
           relative_rotation: String.t() | nil,
@@ -12,7 +12,7 @@ defmodule PulkWeb.PiecePositionUpdateJSON do
         }
 
   @spec from_json(map() | nil) ::
-          {:ok, PiecePositionUpdate.t() | nil}
+          {:ok, PieceUpdate.t() | nil}
           | {:error, :invalid_piece}
           | {:error, :invalid_update_type}
           | {:error, :invalid_rotation}
@@ -33,7 +33,7 @@ defmodule PulkWeb.PiecePositionUpdateJSON do
          {:ok, relative_rotation} <- parse_rotation(Map.get(input, "relative_rotation")),
          {:ok, direction} <- parse_direction(Map.get(input, "direction")),
          {:ok, piece_update} <-
-           PiecePositionUpdate.new(
+           PieceUpdate.new(
              piece: piece,
              update_type: update_type,
              relative_rotation: relative_rotation,
@@ -42,7 +42,7 @@ defmodule PulkWeb.PiecePositionUpdateJSON do
       {:ok, piece_update}
     else
       {:error, reason} when is_list(reason) ->
-        Logger.debug("Piece position update was malformed: #{inspect(reason)} ")
+        Logger.debug("Piece update was malformed: #{inspect(reason)} ")
         {:error, :malformed}
 
       {:error, reason} ->
@@ -51,7 +51,7 @@ defmodule PulkWeb.PiecePositionUpdateJSON do
   end
 
   def from_json(_) do
-    Logger.debug("Piece position update has missing fields")
+    Logger.debug("Piece update has missing fields")
     {:error, :malformed}
   end
 
@@ -68,6 +68,9 @@ defmodule PulkWeb.PiecePositionUpdateJSON do
 
       "hard_drop" ->
         {:ok, :hard_drop}
+
+      "hold" ->
+        {:ok, :hold}
 
       _ ->
         {:error, :invalid_update_type}
@@ -110,7 +113,7 @@ defmodule PulkWeb.PiecePositionUpdateJSON do
   end
 end
 
-defimpl Jason.Encoder, for: [Pulk.Game.PiecePositionUpdate] do
+defimpl Jason.Encoder, for: [Pulk.Game.PieceUpdate] do
   def encode(struct, opts) do
     Jason.Encode.map(
       Map.from_struct(struct),

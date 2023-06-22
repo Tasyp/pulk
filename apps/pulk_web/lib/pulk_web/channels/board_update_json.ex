@@ -2,12 +2,10 @@ defmodule PulkWeb.BoardUpdateJSON do
   require Logger
 
   alias Pulk.Game.BoardUpdate
-  alias PulkWeb.PieceJSON
-  alias PulkWeb.PiecePositionUpdateJSON
+  alias PulkWeb.PieceUpdateJSON
 
   @type board_update_json :: %{
-          piece_in_hold: String.t() | nil,
-          active_piece_update: PiecePositionUpdateJSON.piece_position_update_json()
+          active_piece_update: PieceUpdateJSON.piece_position_update_json()
         }
 
   @spec from_json(map()) ::
@@ -18,13 +16,11 @@ defmodule PulkWeb.BoardUpdateJSON do
           | {:error, :invalid_direction}
           | {:error, :malformed}
   def from_json(%{
-        "piece_in_hold" => piece_in_hold,
         "active_piece_update" => active_piece_update
       }) do
-    with {:ok, piece_in_hold} <- PieceJSON.from_json(piece_in_hold),
-         {:ok, active_piece_update} <- PiecePositionUpdateJSON.from_json(active_piece_update),
+    with {:ok, active_piece_update} <- PieceUpdateJSON.from_json(active_piece_update),
          {:ok, board_update} <-
-           BoardUpdate.new(piece_in_hold: piece_in_hold, active_piece_update: active_piece_update) do
+           BoardUpdate.new(active_piece_update: active_piece_update) do
       {:ok, board_update}
     else
       {:error, reason} when is_list(reason) ->

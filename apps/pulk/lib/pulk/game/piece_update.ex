@@ -1,4 +1,4 @@
-defmodule Pulk.Game.PiecePositionUpdate do
+defmodule Pulk.Game.PieceUpdate do
   @moduledoc """
   An entity that is used to describe piece position change
   """
@@ -13,7 +13,7 @@ defmodule Pulk.Game.PiecePositionUpdate do
 
   @type direction() :: :down | :left | :right
 
-  @type update_type() :: :simple | :soft_drop_start | :soft_drop_stop | :hard_drop
+  @type update_type() :: :simple | :soft_drop_start | :soft_drop_stop | :hard_drop | :hold
 
   typedstruct enforce: true do
     field :piece, Piece.t()

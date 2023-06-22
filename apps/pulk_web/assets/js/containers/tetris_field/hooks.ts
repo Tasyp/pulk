@@ -36,7 +36,6 @@ export const useKeyboard = (
                 piece,
                 update_type: UpdateType.SOFT_DROP_START,
               },
-              pieceInHold: null,
             });
           }, 250);
           break;
@@ -54,7 +53,6 @@ export const useKeyboard = (
                 piece,
                 update_type: UpdateType.SOFT_DROP_STOP,
               },
-              pieceInHold: null,
             });
           } else {
             clearTimeout(softDropTimerId.current ?? undefined);
@@ -66,7 +64,6 @@ export const useKeyboard = (
                 update_type: UpdateType.SIMPLE,
                 direction: Direction.DOWN,
               },
-              pieceInHold: null,
             });
           }
 
@@ -90,7 +87,6 @@ export const useKeyboard = (
           update_type: UpdateType.SIMPLE,
           direction: Direction.LEFT,
         },
-        pieceInHold: null,
       });
     },
     { preventDefault: true, keydown: false, keyup: true },
@@ -109,7 +105,6 @@ export const useKeyboard = (
           update_type: UpdateType.SIMPLE,
           direction: Direction.RIGHT,
         },
-        pieceInHold: null,
       });
     },
     { preventDefault: true, keydown: false, keyup: true },
@@ -127,7 +122,6 @@ export const useKeyboard = (
           piece: board.activePiece.piece,
           update_type: UpdateType.HARD_DROP,
         },
-        pieceInHold: null,
       });
     },
     { preventDefault: true, keydown: false, keyup: true },
@@ -147,7 +141,24 @@ export const useKeyboard = (
           update_type: UpdateType.SIMPLE,
           relative_rotation: RelativeRotation.LEFT,
         },
-        pieceInHold: null,
+      });
+    },
+    { preventDefault: true, keydown: false, keyup: true },
+    [board]
+  );
+
+  useHotkeys(
+    "c",
+    () => {
+      if (board?.activePiece == undefined) {
+        return;
+      }
+
+      setBoard({
+        activePieceUpdate: {
+          piece: board.activePiece.piece,
+          update_type: UpdateType.HOLD,
+        },
       });
     },
     { preventDefault: true, keydown: false, keyup: true },
@@ -167,7 +178,6 @@ export const useKeyboard = (
           update_type: UpdateType.SIMPLE,
           relative_rotation: RelativeRotation.RIGHT,
         },
-        pieceInHold: null,
       });
     },
     { preventDefault: true, keydown: false, keyup: true },

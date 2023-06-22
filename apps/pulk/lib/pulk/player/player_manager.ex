@@ -10,7 +10,7 @@ defmodule Pulk.Player.PlayerManager do
   alias Phoenix.PubSub
   alias Pulk.Game.Board
   alias Pulk.Game.BoardUpdate
-  alias Pulk.Game.PiecePositionUpdate
+  alias Pulk.Game.PieceUpdate
   alias Pulk.Room.RoomManager
   alias Pulk.Game.Gravity
 
@@ -264,7 +264,7 @@ defmodule Pulk.Player.PlayerManager do
         board_update =
           BoardUpdate.new!(
             active_piece_update:
-              PiecePositionUpdate.update_active_piece(board, :simple, %{direction: :down})
+              PieceUpdate.update_active_piece(board, :simple, %{direction: :down})
           )
 
         case do_update_board(board, board_update, player.room_id, recalculate?: false) do
@@ -291,8 +291,7 @@ defmodule Pulk.Player.PlayerManager do
   def handle_info(:soft_drop_tick, %{board: board, player: player} = state) do
     board_update =
       BoardUpdate.new!(
-        active_piece_update:
-          PiecePositionUpdate.update_active_piece(board, :simple, %{direction: :down})
+        active_piece_update: PieceUpdate.update_active_piece(board, :simple, %{direction: :down})
       )
 
     state =
