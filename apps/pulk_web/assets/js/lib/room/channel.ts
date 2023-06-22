@@ -64,6 +64,7 @@ export enum UpdateType {
   SOFT_DROP_START = "soft_drop_start",
   SOFT_DROP_STOP = "soft_drop_stop",
   HARD_DROP = "hard_drop",
+  HOLD = "hold",
 }
 
 export enum RelativeRotation {
@@ -77,7 +78,7 @@ export enum Direction {
   RIGHT = "right",
 }
 
-export type PiecePositionUpdate =
+export type PieceUpdate =
   | {
       piece: Piece;
       update_type: UpdateType.SIMPLE;
@@ -96,8 +97,7 @@ export type PiecePositionUpdate =
 export type RoomOutgoingMessagePayload = {
   [RoomOutgoingEventType.BOARD_UPDATE]: {
     payload: {
-      active_piece_update: PiecePositionUpdate;
-      piece_in_hold: Piece | null;
+      active_piece_update: PieceUpdate;
     };
     success: {};
   };

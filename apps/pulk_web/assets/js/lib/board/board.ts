@@ -1,4 +1,4 @@
-import { PiecePositionUpdate } from "../room";
+import { PieceUpdate } from "../room";
 
 export type Piece = "" | "I" | "O" | "T" | "S" | "Z" | "J" | "L" | "X";
 
@@ -10,8 +10,7 @@ export type PositionedPiece = {
 };
 
 export type BoardUpdate = {
-  activePieceUpdate: PiecePositionUpdate;
-  pieceInHold: Piece | null;
+  activePieceUpdate: PieceUpdate;
 };
 
 export type Board = {

@@ -8,7 +8,7 @@ defmodule Pulk.Game.Board do
   use TypedStruct
   use Domo, gen_constructor_name: :_new
 
-  alias Pulk.Game.PiecePositionUpdate
+  alias Pulk.Game.PieceUpdate
   alias Pulk.Game.PieceBag
   alias Pulk.Game.Piece
   alias Pulk.Game.Matrix
@@ -121,8 +121,7 @@ defmodule Pulk.Game.Board do
   def update(%__MODULE__{} = board, %BoardUpdate{} = board_update, opts) do
     recalculate? = Keyword.get(opts, :recalculate?, true)
 
-    with {:ok, board} <- set_piece_in_hold(board, board_update),
-         {:ok, board} <- update_active_piece(board, board_update.active_piece_update),
+    with {:ok, board} <- update_active_piece(board, board_update.active_piece_update),
          {:ok, board} <- maybe_recalculate(board, recalculate?),
          {:ok, board} <-
            ensure_type(board) do
@@ -136,63 +135,84 @@ defmodule Pulk.Game.Board do
     end
   end
 
-  @spec update_active_piece(t(), PiecePositionUpdate.t() | nil) ::
+  @spec update_active_piece(t(), PieceUpdate.t() | nil) ::
           {:ok, t()} | {:error, :invalid_move}
-  def update_active_piece(%__MODULE__{} = board, piece_position_update) do
-    piece_update_result = do_update_active_piece(board, piece_position_update)
-
-    active_piece =
-      case piece_update_result do
-        {:ok, positioned_piece} ->
-          positioned_piece
-
-        {:error, :invalid_move} ->
-          board.active_piece
-      end
-
-    set_active_piece(board, active_piece)
+  def update_active_piece(%__MODULE__{} = board, nil) do
+    {:ok, board}
   end
 
-  defp do_update_active_piece(%__MODULE__{} = board, nil) do
-    {:ok, board.active_piece}
-  end
-
-  defp do_update_active_piece(
-         %__MODULE__{} = board,
-         %PiecePositionUpdate{update_type: :simple} = piece_position_update
-       ) do
-    cond do
-      piece_position_update.direction != nil ->
-        PositionedPiece.move(board.active_piece, piece_position_update.direction)
-
-      piece_position_update.relative_rotation != nil ->
-        PositionedPiece.rotate(
-          board.active_piece,
-          piece_position_update.relative_rotation
-        )
+  def update_active_piece(
+        %__MODULE__{active_piece: active_piece} = board,
+        %PieceUpdate{piece: piece} = piece_update
+      ) do
+    if PositionedPiece.has_piece_type?(active_piece, piece) do
+      do_update_active_piece(board, piece_update)
+    else
+      {:error, :invalid_move}
     end
   end
 
   defp do_update_active_piece(
          %__MODULE__{} = board,
-         %PiecePositionUpdate{update_type: :soft_drop_start}
+         %PieceUpdate{update_type: :simple} = piece_update
        ) do
-    PositionedPiece.move(board.active_piece, :down)
+    update_result =
+      cond do
+        piece_update.direction != nil ->
+          PositionedPiece.move(board.active_piece, piece_update.direction)
+
+        piece_update.relative_rotation != nil ->
+          PositionedPiece.rotate(
+            board.active_piece,
+            piece_update.relative_rotation
+          )
+      end
+
+    with {:ok, active_piece} <- update_result do
+      set_active_piece(board, active_piece)
+    end
+  end
+
+  defp do_update_active_piece(
+         %__MODULE__{active_piece: nil},
+         %PieceUpdate{update_type: :hold}
+       ) do
+    {:error, :invalid_move}
   end
 
   defp do_update_active_piece(
          %__MODULE__{} = board,
-         %PiecePositionUpdate{update_type: :soft_drop_stop}
+         %PieceUpdate{update_type: :hold}
        ) do
-    {:ok, board.active_piece}
+    {:ok, hold_active_piece(board)}
   end
 
   defp do_update_active_piece(
          %__MODULE__{} = board,
-         %PiecePositionUpdate{update_type: :hard_drop}
+         %PieceUpdate{update_type: :soft_drop_start}
+       ) do
+    next_piece =
+      board.active_piece
+      |> PositionedPiece.move(:down)
+
+    with {:ok, piece} <- next_piece do
+      set_active_piece(board, piece)
+    end
+  end
+
+  defp do_update_active_piece(
+         %__MODULE__{} = board,
+         %PieceUpdate{update_type: :soft_drop_stop}
+       ) do
+    {:ok, board}
+  end
+
+  defp do_update_active_piece(
+         %__MODULE__{} = board,
+         %PieceUpdate{update_type: :hard_drop}
        ) do
     active_piece = Matrix.do_hard_drop(board.matrix, board.active_piece)
-    {:ok, active_piece}
+    set_active_piece(board, active_piece)
   end
 
   def maybe_recalculate(%__MODULE__{} = board, false) do
@@ -261,15 +281,23 @@ defmodule Pulk.Game.Board do
   end
 
   def change_active_piece(
-        %__MODULE__{piece_bag: piece_bag, size_x: size_x, size_y: size_y} = board
+        %__MODULE__{piece_bag: piece_bag, size_x: size_x, size_y: size_y} = board,
+        opts \\ []
       ) do
+    add_to_matrix? = Keyword.get(opts, :add_to_matrix?, true)
+
     {piece_bag, active_piece} = PieceBag.get_piece(piece_bag, {size_x, size_y})
 
     %{
       board
       | active_piece: active_piece,
         piece_bag: piece_bag,
-        matrix: Matrix.add_piece(board.matrix, board.active_piece)
+        matrix:
+          if add_to_matrix? do
+            Matrix.add_piece(board.matrix, board.active_piece)
+          else
+            board.matrix
+          end
     }
   end
 
@@ -283,13 +311,30 @@ defmodule Pulk.Game.Board do
     ensure_type(%{board | status: :complete, placement: placement})
   end
 
-  @spec set_piece_in_hold(t(), BoardUpdate.t()) :: {:ok, t()}
-  defp set_piece_in_hold(%__MODULE__{} = board, %BoardUpdate{} = board_update) do
-    {:ok,
-     %{
-       board
-       | piece_in_hold: board_update.piece_in_hold || board.piece_in_hold
-     }}
+  @spec hold_active_piece(t()) :: t()
+  defp hold_active_piece(
+         %__MODULE__{active_piece: %PositionedPiece{piece: %Piece{} = piece}, piece_in_hold: nil} =
+           board
+       ) do
+    board
+    |> change_active_piece(add_to_matrix?: false)
+    |> Map.put(:piece_in_hold, piece)
+  end
+
+  @spec hold_active_piece(t()) :: t()
+  defp hold_active_piece(
+         %__MODULE__{
+           active_piece: %PositionedPiece{piece: %Piece{} = piece},
+           piece_in_hold: %Piece{} = piece_in_hold,
+           size_x: size_x,
+           size_y: size_y
+         } = board
+       ) do
+    positioned_piece = PositionedPiece.new_initial_piece!(piece_in_hold, {size_x, size_y})
+
+    board
+    |> Map.put(:active_piece, positioned_piece)
+    |> Map.put(:piece_in_hold, piece)
   end
 
   defp set_active_piece(%__MODULE__{} = board, active_piece) do
@@ -306,7 +351,7 @@ defmodule Pulk.Game.Board do
   def can_update_active_piece?(%__MODULE__{} = board) do
     case update_active_piece(
            board,
-           PiecePositionUpdate.update_active_piece(board, :simple, %{direction: :down})
+           PieceUpdate.update_active_piece(board, :simple, %{direction: :down})
          ) do
       {:ok, _board} -> true
       {:error, _reason} -> false

@@ -22,6 +22,10 @@ defmodule Pulk.Game.PositionedPiece do
     field :coordinates, [Coordinates.t()]
   end
 
+  def has_piece_type?(%__MODULE__{piece: piece}, %Piece{} = piece_to_compare) do
+    Piece.eq?(piece, piece_to_compare)
+  end
+
   @spec new_initial_piece!(Piece.t(), {pos_integer(), pos_integer()}) :: t()
   def new_initial_piece!(%Piece{} = piece, {size_x, size_y}) do
     {coordinates, base_point} = get_initial_coordinates(piece, {size_x, size_y})

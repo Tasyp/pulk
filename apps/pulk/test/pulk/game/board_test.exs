@@ -5,7 +5,7 @@ defmodule Pulk.Game.BoardTest do
   alias Pulk.Game.Board
   alias Pulk.Game.Matrix
   alias Pulk.Game.BoardUpdate
-  alias Pulk.Game.PiecePositionUpdate
+  alias Pulk.Game.PieceUpdate
   alias Pulk.Game.PositionedPiece
 
   describe "Board.update/2" do
@@ -60,9 +60,8 @@ defmodule Pulk.Game.BoardTest do
         Board.update(
           input_board,
           BoardUpdate.new!(
-            piece_in_hold: nil,
             active_piece_update:
-              PiecePositionUpdate.new!(
+              PieceUpdate.new!(
                 piece: Piece.new!("S"),
                 update_type: :simple,
                 relative_rotation: :left

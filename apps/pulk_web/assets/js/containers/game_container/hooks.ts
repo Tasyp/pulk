@@ -127,6 +127,7 @@ export const useRoom = ({
           board !== null
             ? {
                 ...board,
+                pieceInHold: response.piece_in_hold,
                 activePiece: response.active_piece,
                 placement: response.placement,
                 matrix: response.matrix,
@@ -149,7 +150,6 @@ export const useRoom = ({
     (boardUpdate: BoardUpdate): void => {
       pushRoomMessage(channel, RoomOutgoingEventType.BOARD_UPDATE, {
         active_piece_update: boardUpdate.activePieceUpdate,
-        piece_in_hold: boardUpdate.pieceInHold,
       });
     },
     [channel, setPlayerBoard]

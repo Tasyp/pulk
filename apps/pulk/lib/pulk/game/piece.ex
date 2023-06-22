@@ -46,6 +46,10 @@ defmodule Pulk.Game.Piece do
     new!(@ghost_type)
   end
 
+  def eq?(%__MODULE__{piece_type: left_piece}, %__MODULE__{piece_type: right_piece}) do
+    left_piece == right_piece
+  end
+
   @spec is_supported_piece?(String.t()) :: :ok | {:error, :invalid_piece}
   def is_supported_piece?(raw_piece) do
     if MapSet.member?(@supported_values, raw_piece) do

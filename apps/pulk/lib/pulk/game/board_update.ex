@@ -6,13 +6,10 @@ defmodule Pulk.Game.BoardUpdate do
   use TypedStruct
   use Domo
 
-  alias Pulk.Game.Piece
-  alias Pulk.Game.PiecePositionUpdate
+  alias Pulk.Game.PieceUpdate
 
   typedstruct do
-    field :piece_in_hold, Piece.t()
-
-    field :active_piece_update, PiecePositionUpdate.t()
+    field :active_piece_update, PieceUpdate.t()
   end
 
   def has_piece_update_type?(%{active_piece_update: nil}, _update_type) do
