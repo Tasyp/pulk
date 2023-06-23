@@ -1,4 +1,4 @@
-defmodule Pulk.Game.PieceUpdate do
+defmodule Pulk.Piece.PieceUpdate do
   @moduledoc """
   An entity that is used to describe piece position change
   """
@@ -6,10 +6,10 @@ defmodule Pulk.Game.PieceUpdate do
   use TypedStruct
   use Domo
 
-  alias Pulk.Game.Piece
-  alias Pulk.Game.PositionedPiece
-  alias Pulk.Game.Board
-  alias Pulk.Game.Rotation
+  alias Pulk.Piece
+  alias Pulk.Piece.PositionedPiece
+  alias Pulk.Board
+  alias Pulk.Piece.Rotation
 
   @type direction() :: :down | :left | :right
 

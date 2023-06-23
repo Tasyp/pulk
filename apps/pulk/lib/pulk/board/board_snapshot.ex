@@ -1,4 +1,4 @@
-defmodule Pulk.Game.BoardSnapshot do
+defmodule Pulk.Board.BoardSnapshot do
   @moduledoc """
   Entity that is used to display board state to an observer (anyone who is not the player itself)
   """
@@ -6,9 +6,9 @@ defmodule Pulk.Game.BoardSnapshot do
   use TypedStruct
   use Domo
 
-  alias Pulk.Game.PositionedPiece
-  alias Pulk.Game.Matrix
-  alias Pulk.Game.Board
+  alias Pulk.Piece.PositionedPiece
+  alias Pulk.Matrix
+  alias Pulk.Board
 
   typedstruct do
     field :active_piece, PositionedPiece.t()

@@ -1,4 +1,4 @@
-defmodule Pulk.Game.Coordinates do
+defmodule Pulk.Matrix.Coordinates do
   @moduledoc """
   Collection of helper methods to operate on coordinates
   """

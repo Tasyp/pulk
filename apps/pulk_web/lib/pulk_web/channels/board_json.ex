@@ -1,5 +1,5 @@
-defimpl Jason.Encoder, for: [Pulk.Game.Board] do
-  alias Pulk.Game.Board
+defimpl Jason.Encoder, for: [Pulk.Board] do
+  alias Pulk.Board
 
   @visible_fields [
     :score,

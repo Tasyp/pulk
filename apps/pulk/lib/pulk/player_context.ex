@@ -6,9 +6,9 @@ defmodule Pulk.PlayerContext do
   """
 
   alias Pulk.Player.PlayerManager
-  alias Pulk.Game.Board
-  alias Pulk.Game.Matrix
-  alias Pulk.Game.BoardUpdate
+  alias Pulk.Board
+  alias Pulk.Matrix
+  alias Pulk.Board.BoardUpdate
 
   @spec get_player(String.t()) :: {:error, :unknown_player} | {:ok, Pulk.Player.t()}
   def get_player(player_id) do

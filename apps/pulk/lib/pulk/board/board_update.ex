@@ -1,4 +1,4 @@
-defmodule Pulk.Game.BoardUpdate do
+defmodule Pulk.Board.BoardUpdate do
   @moduledoc """
   Entity that is used to update board state via public interfaces
   """
@@ -6,7 +6,7 @@ defmodule Pulk.Game.BoardUpdate do
   use TypedStruct
   use Domo
 
-  alias Pulk.Game.PieceUpdate
+  alias Pulk.Piece.PieceUpdate
 
   typedstruct do
     field :active_piece_update, PieceUpdate.t()

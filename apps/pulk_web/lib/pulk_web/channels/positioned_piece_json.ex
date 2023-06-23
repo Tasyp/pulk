@@ -1,4 +1,4 @@
-defimpl Jason.Encoder, for: [Pulk.Game.PositionedPiece] do
+defimpl Jason.Encoder, for: [Pulk.Piece.PositionedPiece] do
   def encode(struct, opts) do
     Jason.Encode.map(
       struct

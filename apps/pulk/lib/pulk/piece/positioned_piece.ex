@@ -1,4 +1,4 @@
-defmodule Pulk.Game.PositionedPiece do
+defmodule Pulk.Piece.PositionedPiece do
   @moduledoc """
   Entity that represents positioned piece
   """
@@ -6,9 +6,9 @@ defmodule Pulk.Game.PositionedPiece do
   use TypedStruct
   use Domo
 
-  alias Pulk.Game.Piece
-  alias Pulk.Game.Rotation
-  alias Pulk.Game.Coordinates
+  alias Pulk.Piece
+  alias Pulk.Piece.Rotation
+  alias Pulk.Matrix.Coordinates
 
   @type direction() :: :down | :left | :right
 

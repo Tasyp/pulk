@@ -8,11 +8,11 @@ defmodule Pulk.Player.PlayerManager do
   require Logger
 
   alias Phoenix.PubSub
-  alias Pulk.Game.Board
-  alias Pulk.Game.BoardUpdate
-  alias Pulk.Game.PieceUpdate
+  alias Pulk.Board
+  alias Pulk.Board.BoardUpdate
+  alias Pulk.Piece.PieceUpdate
   alias Pulk.Room.RoomManager
-  alias Pulk.Game.Gravity
+  alias Pulk.Board.Gravity
 
   def start_link(init_args) do
     player = Keyword.fetch!(init_args, :player)

@@ -1,4 +1,4 @@
-defmodule Pulk.Game.Board do
+defmodule Pulk.Board do
   @moduledoc """
   Entity that is used to represent all metadata about the game field required to display it
   """
@@ -8,13 +8,13 @@ defmodule Pulk.Game.Board do
   use TypedStruct
   use Domo, gen_constructor_name: :_new
 
-  alias Pulk.Game.PieceUpdate
-  alias Pulk.Game.PieceBag
-  alias Pulk.Game.Piece
-  alias Pulk.Game.Matrix
-  alias Pulk.Game.BoardUpdate
-  alias Pulk.Game.BoardSnapshot
-  alias Pulk.Game.PositionedPiece
+  alias Pulk.Piece.PieceUpdate
+  alias Pulk.Piece.PieceBag
+  alias Pulk.Piece
+  alias Pulk.Matrix
+  alias Pulk.Board.BoardUpdate
+  alias Pulk.Board.BoardSnapshot
+  alias Pulk.Piece.PositionedPiece
 
   @points_per_line 100
 

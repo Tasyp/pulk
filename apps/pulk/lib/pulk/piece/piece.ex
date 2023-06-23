@@ -1,4 +1,4 @@
-defmodule Pulk.Game.Piece do
+defmodule Pulk.Piece do
   @moduledoc """
   Entity that represenets game piece type
   """
@@ -70,7 +70,7 @@ defmodule Pulk.Game.Piece do
   end
 end
 
-defimpl Inspect, for: Pulk.Game.Piece do
+defimpl Inspect, for: Pulk.Piece do
   def inspect(piece, _opts) do
     case piece.piece_type do
       "" ->

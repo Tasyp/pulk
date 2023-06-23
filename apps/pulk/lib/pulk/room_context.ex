@@ -18,7 +18,7 @@ defmodule Pulk.RoomContext do
   @spec create_room(Room.t()) :: {:ok, Room.t()} | {:error, :already_started}
   def create_room(%Room{} = room) do
     case DynamicSupervisor.start_child(
-           Pulk.Game.GameSupervisor,
+           Pulk.GameSupervisor,
            {Room.RoomSupervisor, [room: room]}
          ) do
       {:ok, _} -> {:ok, room}

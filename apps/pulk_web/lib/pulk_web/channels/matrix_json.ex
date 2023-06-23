@@ -1,6 +1,6 @@
 defmodule PulkWeb.MatrixJSON do
-  alias Pulk.Game.Matrix
-  alias Pulk.Game.Piece
+  alias Pulk.Matrix
+  alias Pulk.Piece
 
   @type matrix_json :: list(list(String.t()))
 
@@ -54,8 +54,8 @@ defmodule PulkWeb.MatrixJSON do
   end
 end
 
-defimpl Jason.Encoder, for: [Pulk.Game.Matrix] do
-  alias Pulk.Game.Matrix
+defimpl Jason.Encoder, for: [Pulk.Matrix] do
+  alias Pulk.Matrix
 
   def encode(struct, opts) do
     Jason.Encode.list(

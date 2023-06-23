@@ -2,7 +2,7 @@ defmodule Pulk.Room.GameMode.LineGoalTest do
   use ExUnit.Case, async: true
 
   alias Pulk.Room.GameMode.LineGoal
-  alias Pulk.Game.Board
+  alias Pulk.Board
   alias Pulk.Room
   alias Pulk.Player
 

@@ -1,7 +1,7 @@
 defmodule PulkWeb.PieceUpdateJSON do
   require Logger
 
-  alias Pulk.Game.PieceUpdate
+  alias Pulk.Piece.PieceUpdate
   alias PulkWeb.PieceJSON
 
   @type piece_update_json :: %{
@@ -113,7 +113,7 @@ defmodule PulkWeb.PieceUpdateJSON do
   end
 end
 
-defimpl Jason.Encoder, for: [Pulk.Game.PieceUpdate] do
+defimpl Jason.Encoder, for: [Pulk.Piece.PieceUpdate] do
   def encode(struct, opts) do
     Jason.Encode.map(
       Map.from_struct(struct),

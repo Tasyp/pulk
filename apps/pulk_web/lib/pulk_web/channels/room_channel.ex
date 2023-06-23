@@ -8,8 +8,8 @@ defmodule PulkWeb.RoomChannel do
 
   alias Pulk.RoomContext
   alias Pulk.PlayerContext
-  alias Pulk.Game.Board
-  alias Pulk.Game.BoardSnapshot
+  alias Pulk.Board
+  alias Pulk.Board.BoardSnapshot
 
   @impl true
   def join("room:" <> room_id, %{"player_id" => player_id}, socket) do

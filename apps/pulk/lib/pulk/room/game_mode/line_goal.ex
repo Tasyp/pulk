@@ -11,7 +11,7 @@ defmodule Pulk.Room.GameMode.LineGoal do
   alias Pulk.Room.GameMode
   alias Pulk.Room
   alias Pulk.RoomContext
-  alias Pulk.Game.Board
+  alias Pulk.Board
   alias Pulk.Player.PlayerManager
 
   @behaviour GameMode.Behaviour

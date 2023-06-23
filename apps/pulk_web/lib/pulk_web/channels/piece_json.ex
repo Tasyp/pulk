@@ -1,5 +1,5 @@
 defmodule PulkWeb.PieceJSON do
-  alias Pulk.Game.Piece
+  alias Pulk.Piece
 
   @spec from_json(String.t() | nil) :: {:ok, Piece.t() | nil} | {:error, :invalid_figure}
 
@@ -19,8 +19,8 @@ defmodule PulkWeb.PieceJSON do
   end
 end
 
-defimpl Jason.Encoder, for: [Pulk.Game.Piece] do
-  alias Pulk.Game.Piece
+defimpl Jason.Encoder, for: [Pulk.Piece] do
+  alias Pulk.Piece
 
   def encode(struct, opts) do
     Jason.Encode.string(

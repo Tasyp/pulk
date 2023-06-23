@@ -1,4 +1,4 @@
-defmodule Pulk.Game.Matrix do
+defmodule Pulk.Matrix do
   @moduledoc """
   Entity that represenets game field
   """
@@ -8,9 +8,9 @@ defmodule Pulk.Game.Matrix do
   use TypedStruct
   use Domo, gen_constructor_name: :_new
 
-  alias Pulk.Game.Piece
-  alias Pulk.Game.PositionedPiece
-  alias Pulk.Game.Coordinates
+  alias Pulk.Piece
+  alias Pulk.Piece.PositionedPiece
+  alias Pulk.Matrix.Coordinates
 
   @type line :: [Piece.t()]
   @type matrix :: [line()]

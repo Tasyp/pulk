@@ -1,4 +1,4 @@
-defmodule Pulk.Game.Gravity do
+defmodule Pulk.Board.Gravity do
   @moduledoc """
   Provides function to calculate game field gravity
   """
