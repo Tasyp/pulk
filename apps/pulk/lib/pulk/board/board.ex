@@ -36,6 +36,9 @@ defmodule Pulk.Board do
     field :active_piece, PositionedPiece.t(), enforce: false
 
     field :matrix, Matrix.t()
+
+    field :soft_drop_timer, reference(), enforce: false,
+    field :lock_delay_timer, reference(), enforce: false,
   end
 
   @spec new(pos_integer(), pos_integer()) :: {:ok, t()} | {:error, term()}
