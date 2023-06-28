@@ -36,8 +36,8 @@ defmodule Pulk.Room.RoomManager do
     Pulk.Registry.via_tuple({__MODULE__, room_id})
   end
 
-  def get_room(pid) do
-    GenServer.call(pid, :get_room)
+  def get_room(room_id) when is_bitstring(room_id) do
+    GenServer.call(via_tuple(room_id), :get_room)
   end
 
   def update_status(pid, status) do

@@ -142,9 +142,8 @@ defmodule Pulk.Room.GameMode.LineGoal do
   end
 
   defp set_player_placement_and_notify(player, placement) do
-    {:ok, _board} =
-      PlayerManager.set_placement(PlayerManager.via_tuple(player.player_id), placement)
+    {:ok, _board} = PlayerManager.set_placement(PlayerManager.via(player.player_id), placement)
 
-    PlayerManager.publish_board(PlayerManager.via_tuple(player.player_id))
+    PlayerManager.publish_board(PlayerManager.via(player.player_id))
   end
 end

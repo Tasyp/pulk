@@ -21,7 +21,7 @@ defmodule Pulk.Player.PlayerManager do
     GenServer.start_link(
       __MODULE__,
       %{player: player, room: room},
-      name: via_tuple(player.player_id)
+      name: via(player.player_id)
     )
   end
 
@@ -33,7 +33,11 @@ defmodule Pulk.Player.PlayerManager do
     end
   end
 
-  def get_player(pid) do
+  def get_player(player_id) when is_bitstring(player_id) do
+    GenServer.call(via(player_id), :get_player)
+  end
+
+  def get_player(pid) when is_pid(pid) do
     GenServer.call(pid, :get_player)
   end
 
@@ -72,7 +76,7 @@ defmodule Pulk.Player.PlayerManager do
     end
   end
 
-  def via_tuple(player_id) do
+  def via(player_id) do
     Pulk.Registry.via_tuple({__MODULE__, player_id})
   end
 

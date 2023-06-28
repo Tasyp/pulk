@@ -81,7 +81,7 @@ defmodule Pulk.RoomContext do
     end
   end
 
-  @spec get_available_room() :: {:ok, Room.t()} | {:error, :all_rooms_busy}
+  @spec get_available_room() :: {:ok, Room.t()} | {:error, term()}
   def get_available_room() do
     room_managers = RoomManager.get_all_room_managers()
 
@@ -106,7 +106,7 @@ defmodule Pulk.RoomContext do
 
     case available_room do
       %{room: %Room{} = room} -> {:ok, room}
-      _ -> {:error, :all_rooms_busy}
+      _ -> create_room(Room.new!())
     end
   end
 
@@ -129,7 +129,7 @@ defmodule Pulk.RoomContext do
   @spec get_room(String.t()) :: {:error, :unknown_room} | {:ok, Room.t()}
   def get_room(room_id) do
     with :ok <- RoomManager.is_room_present?(room_id) do
-      RoomManager.get_room(RoomManager.via_tuple(room_id))
+      RoomManager.get_room(room_id)
     end
   end
 
