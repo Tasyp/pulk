@@ -4,6 +4,10 @@ defmodule PulkWeb.PieceUpdateJSON do
   alias Pulk.Piece.PieceUpdate
   alias PulkWeb.PieceJSON
 
+  @update_types ~w[simple soft_drop_start soft_drop_stop hard_drop hold]
+  @directions ~w[left right down]
+  @rotations ~w[left right]
+
   @type piece_update_json :: %{
           piece: String.t(),
           update_type: String.t(),
@@ -13,11 +17,7 @@ defmodule PulkWeb.PieceUpdateJSON do
 
   @spec from_json(map() | nil) ::
           {:ok, PieceUpdate.t() | nil}
-          | {:error, :invalid_piece}
-          | {:error, :invalid_update_type}
-          | {:error, :invalid_rotation}
-          | {:error, :invalid_direction}
-          | {:error, :malformed}
+          | {:error, term()}
   def from_json(nil) do
     {:ok, nil}
   end
@@ -50,74 +50,25 @@ defmodule PulkWeb.PieceUpdateJSON do
     end
   end
 
-  def from_json(_) do
-    Logger.debug("Piece update has missing fields")
-    {:error, :malformed}
+  def from_json(_), do: {:error, :malformed}
+
+  defp parse_update_type(update_type) when update_type in @update_types do
+    {:ok, String.to_existing_atom(update_type)}
   end
 
-  defp parse_update_type(update_type) do
-    case update_type do
-      "simple" ->
-        {:ok, :simple}
+  defp parse_update_type(_), do: {:error, :invalid_update_type}
 
-      "soft_drop_start" ->
-        {:ok, :soft_drop_start}
-
-      "soft_drop_stop" ->
-        {:ok, :soft_drop_stop}
-
-      "hard_drop" ->
-        {:ok, :hard_drop}
-
-      "hold" ->
-        {:ok, :hold}
-
-      _ ->
-        {:error, :invalid_update_type}
-    end
+  defp parse_rotation(relative_rotation) when relative_rotation in @rotations do
+    {:ok, String.to_existing_atom(relative_rotation)}
   end
 
-  defp parse_rotation(relative_rotation) do
-    case relative_rotation do
-      "left" ->
-        {:ok, :left}
+  defp parse_rotation(nil), do: {:ok, nil}
+  defp parse_rotation(_), do: {:error, :invalid_rotation}
 
-      "right" ->
-        {:ok, :right}
-
-      nil ->
-        {:ok, nil}
-
-      _ ->
-        {:error, :invalid_rotation}
-    end
+  defp parse_direction(direction) when direction in @directions do
+    {:ok, String.to_existing_atom(direction)}
   end
 
-  defp parse_direction(direction) do
-    case direction do
-      "down" ->
-        {:ok, :down}
-
-      "left" ->
-        {:ok, :left}
-
-      "right" ->
-        {:ok, :right}
-
-      nil ->
-        {:ok, nil}
-
-      _ ->
-        {:error, :invalid_direction}
-    end
-  end
-end
-
-defimpl Jason.Encoder, for: [Pulk.Piece.PieceUpdate] do
-  def encode(struct, opts) do
-    Jason.Encode.map(
-      Map.from_struct(struct),
-      opts
-    )
-  end
+  defp parse_direction(nil), do: {:ok, nil}
+  defp parse_direction(_), do: {:error, :invalid_direction}
 end

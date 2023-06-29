@@ -9,12 +9,7 @@ defmodule PulkWeb.BoardUpdateJSON do
         }
 
   @spec from_json(map()) ::
-          {:ok, BoardUpdate.t()}
-          | {:error, :invalid_piece}
-          | {:error, :invalid_update_type}
-          | {:error, :invalid_rotation}
-          | {:error, :invalid_direction}
-          | {:error, :malformed}
+          {:ok, BoardUpdate.t()} | {:error, term()}
   def from_json(%{
         "active_piece_update" => active_piece_update
       }) do
@@ -35,17 +30,5 @@ defmodule PulkWeb.BoardUpdateJSON do
     end
   end
 
-  def from_json(_) do
-    Logger.debug("Board update has missing fields")
-    {:error, :malformed}
-  end
-end
-
-defimpl Jason.Encoder, for: [Pulk.Board.BoardUpdate] do
-  def encode(struct, opts) do
-    Jason.Encode.map(
-      Map.from_struct(struct),
-      opts
-    )
-  end
+  def from_json(_), do: {:error, :malformed}
 end

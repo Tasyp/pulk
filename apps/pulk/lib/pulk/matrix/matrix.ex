@@ -207,3 +207,15 @@ defmodule Pulk.Matrix do
     Enum.all?(line, &Kernel.not(Piece.is_empty?(&1)))
   end
 end
+
+defimpl Jason.Encoder, for: [Pulk.Matrix] do
+  alias Pulk.Matrix
+
+  def encode(struct, opts) do
+    Jason.Encode.list(
+      struct
+      |> Matrix.get_matrix_lines(),
+      opts
+    )
+  end
+end

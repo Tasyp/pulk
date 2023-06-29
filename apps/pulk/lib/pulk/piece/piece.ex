@@ -81,3 +81,14 @@ defimpl Inspect, for: Pulk.Piece do
     end
   end
 end
+
+defimpl Jason.Encoder, for: [Pulk.Piece] do
+  alias Pulk.Piece
+
+  def encode(struct, opts) do
+    Jason.Encode.string(
+      Piece.to_string(struct),
+      opts
+    )
+  end
+end

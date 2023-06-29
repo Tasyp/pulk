@@ -20,3 +20,12 @@ defmodule Pulk.Board.BoardUpdate do
     board_update.active_piece_update.update_type == update_type
   end
 end
+
+defimpl Jason.Encoder, for: [Pulk.Board.BoardUpdate] do
+  def encode(struct, opts) do
+    Jason.Encode.map(
+      Map.from_struct(struct),
+      opts
+    )
+  end
+end
