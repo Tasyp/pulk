@@ -5,6 +5,7 @@ defmodule Pulk.Room.RoomManager do
   require Logger
 
   alias Pulk.Room
+  alias Pulk.Player
   alias Pulk.Room.GameMode
 
   use GenServer, restart: :permanent
@@ -36,12 +37,132 @@ defmodule Pulk.Room.RoomManager do
     Pulk.Registry.via_tuple({__MODULE__, room_id})
   end
 
-  def get_room(room_id) when is_bitstring(room_id) do
-    GenServer.call(via_tuple(room_id), :get_room)
+  @spec create_room(Room.t()) :: {:ok, Room.t()} | {:error, term()}
+  def create_room(%Room{} = room) do
+    case DynamicSupervisor.start_child(
+           Pulk.GameSupervisor,
+           {Room.RoomSupervisor, [room: room]}
+         ) do
+      {:ok, _} -> {:ok, room}
+      {:error, {:already_started, _}} -> {:error, :already_started}
+    end
   end
 
-  def update_status(pid, status) do
-    GenServer.call(pid, {:update_status, status})
+  @spec add_player(Room.t(), Player.t()) :: {:ok, Player.t()} | {:error, term()}
+  def add_player(%Room{room_id: room_id}, %Player{room_id: player_room_id} = player)
+      when room_id == player_room_id,
+      do: {:ok, player}
+
+  def add_player(
+        %Room{} = room,
+        %Player{} = player
+      ) do
+    room_player = Player.assign_room(player, room)
+
+    case DynamicSupervisor.start_child(
+           Room.PlayersSupervisor.via_tuple(room),
+           {Player.PlayerManager, [player: room_player, room: room]}
+         ) do
+      {:ok, _} -> {:ok, room_player}
+      {:error, {:already_started, _}} -> {:error, :already_added}
+      {:error, :max_children} -> {:error, :too_many_players}
+    end
+  end
+
+  @spec remove_player(Room.t(), Player.t()) :: :ok | {:error, term()}
+  def remove_player(
+        %Room{room_id: room_id},
+        %Pulk.Player{player_id: player_id}
+      ) do
+    with {:ok, player_pid} <- Player.PlayerManager.lookup(player_id) do
+      DynamicSupervisor.terminate_child(
+        Room.PlayersSupervisor.via_tuple(room_id),
+        player_pid
+      )
+    end
+  end
+
+  @spec get_players(Room.t()) :: {:ok, list(Player.t())} | {:error, term()}
+  def get_players(%Room{} = room) do
+    with :ok <- is_room_present?(room.room_id) do
+      players =
+        DynamicSupervisor.which_children(Room.PlayersSupervisor.via_tuple(room))
+        |> Enum.filter(fn
+          {:undefined, :restarting, _, _} -> false
+          {:undefined, _pid, :worker, _} -> true
+          _ -> false
+        end)
+        |> Enum.map(fn {_id, pid, _type, _module} ->
+          case Player.PlayerManager.fetch_player(pid) do
+            {:ok, player} -> player
+            _ -> nil
+          end
+        end)
+        |> Enum.filter(&(&1 != nil))
+
+      {:ok, players}
+    end
+  end
+
+  @spec fetch_room_boards(Room.t()) ::
+          {:ok, list({Player.t(), Pulk.Game.Board.t()})} | {:error, term()}
+  def fetch_room_boards(%Room{} = room) do
+    with {:ok, players} <- get_players(room) do
+      room_boards =
+        players
+        |> Enum.map(fn %Player{player_id: player_id} = player ->
+          case Player.PlayerManager.get_board(player_id) do
+            {:ok, board} -> {player, board}
+            {:error, reason} -> {:error, reason}
+          end
+        end)
+
+      error =
+        Enum.find(room_boards, fn
+          {:error, _reason} -> true
+          _ -> false
+        end)
+
+      if error != nil do
+        error
+      else
+        {:ok, room_boards}
+      end
+    end
+  end
+
+  @spec fetch_available_room() :: {:ok, Room.t()} | {:error, term()}
+  def fetch_available_room() do
+    available_room =
+      get_all_room_managers()
+      |> Enum.map(
+        &Task.Supervisor.async_nolink(Pulk.TaskSupervisor, fn ->
+          get_availability(&1)
+        end)
+      )
+      |> Task.yield_many(:timer.seconds(2))
+      |> Enum.map(fn {task, res} ->
+        res || Task.shutdown(task, :brutal_kill)
+      end)
+      |> Enum.filter(fn
+        {:ok, {:ok, %{is_available: true}}} -> true
+        _ -> false
+      end)
+      |> Enum.map(fn {:ok, {:ok, response}} -> response end)
+      |> Enum.sort_by(fn %{player_count: player_count} -> player_count end, :desc)
+      |> List.first()
+
+    case available_room do
+      %{room: %Room{} = room} -> {:ok, room}
+      _ -> create_room(Room.new!())
+    end
+  end
+
+  @spec fetch_room(String.t()) :: {:ok, Room.t()} | {:error, term()}
+  def fetch_room(room_id) do
+    with :ok <- is_room_present?(room_id) do
+      GenServer.call(via_tuple(room_id), :get_room)
+    end
   end
 
   def recalculate_room_status(room_id) do
@@ -82,12 +203,6 @@ defmodule Pulk.Room.RoomManager do
   @impl true
   def handle_call(:get_room, _from, %{room: room} = state) do
     {:reply, {:ok, room}, state}
-  end
-
-  @impl true
-  def handle_call({:update_status, status}, _from, %{room: room} = state) do
-    {:ok, room} = Room.update_status(room, status)
-    {:reply, {:ok, room}, %{state | room: room}}
   end
 
   @impl true

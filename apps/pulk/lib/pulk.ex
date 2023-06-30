@@ -1,14 +1,14 @@
 defmodule Pulk do
   require Logger
 
-  alias Pulk.Board.BoardSnapshot
-  alias Pulk.RoomContext
-  alias Pulk.Player.PlayerManager
+  alias Pulk.Room.RoomManager
   alias Pulk.Player
+  alias Pulk.Player.PlayerManager
+  alias Pulk.Board
   alias Pulk.Board.BoardUpdate
+  alias Pulk.Board.BoardSnapshot
   alias Pulk.Piece
   alias Pulk.Piece.PieceUpdate
-  alias Pulk.Board
 
   @doc """
   Returns `Pulk.Player` by an id.
@@ -47,11 +47,11 @@ defmodule Pulk do
   def fetch_player_room(player \\ nil)
 
   def fetch_player_room(%Player{room_id: room_id}) when is_bitstring(room_id) do
-    RoomContext.get_room(room_id)
+    RoomManager.fetch_room(room_id)
   end
 
   def fetch_player_room(_) do
-    RoomContext.get_available_room()
+    RoomManager.fetch_available_room()
   end
 
   @doc """
@@ -59,7 +59,7 @@ defmodule Pulk do
   """
   @spec fetch_room(room_id :: String.t()) :: {:ok, Room.t()} | {:error, term()}
   def fetch_room(room_id) when is_bitstring(room_id) do
-    RoomContext.get_room(room_id)
+    RoomManager.fetch_room(room_id)
   end
 
   def fetch_room(_), do: {:error, :unknown_room}
@@ -76,9 +76,9 @@ defmodule Pulk do
           {:ok, list({Player.t(), Board.t()})} | {:error, term()}
   def join_room(player_id, room_id) do
     with {:ok, player} <- PlayerManager.fetch_player_and_create_if_needed(player_id),
-         {:ok, room} <- fetch_room(room_id),
-         {:ok, _assigned_player} <- RoomContext.add_player(room, player),
-         {:ok, room_boards} <- RoomContext.get_room_boards(room) do
+         {:ok, room} <- RoomManager.fetch_room(room_id),
+         {:ok, _assigned_player} <- RoomManager.add_player(room, player),
+         {:ok, room_boards} <- RoomManager.fetch_room_boards(room) do
       {:ok, room_boards}
     end
   end
