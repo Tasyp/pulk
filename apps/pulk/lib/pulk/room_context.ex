@@ -11,6 +11,7 @@ defmodule Pulk.RoomContext do
 
   """
   alias Pulk.PlayerContext
+  alias Pulk.Player.PlayerManager
   alias Pulk.Room.RoomManager
   alias Pulk.Room
   alias Pulk.Player
@@ -71,7 +72,7 @@ defmodule Pulk.RoomContext do
         _ -> false
       end)
       |> Enum.map(fn {_id, pid, _type, _module} ->
-        Pulk.Player.PlayerManager.get_player(pid)
+        Pulk.Player.PlayerManager.fetch_player(pid)
       end)
       |> Enum.filter(fn
         {:ok, _player} -> true
@@ -140,7 +141,7 @@ defmodule Pulk.RoomContext do
       room
       |> get_players()
       |> Enum.map(fn player ->
-        {:ok, board} = PlayerContext.get_board(player.player_id)
+        {:ok, board} = PlayerManager.get_board(player.player_id)
         {player, board}
       end)
 

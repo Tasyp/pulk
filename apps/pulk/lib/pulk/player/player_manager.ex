@@ -8,6 +8,7 @@ defmodule Pulk.Player.PlayerManager do
   require Logger
 
   alias Phoenix.PubSub
+  alias Pulk.Player
   alias Pulk.Board
   alias Pulk.Board.BoardUpdate
   alias Pulk.Piece.PieceUpdate
@@ -33,25 +34,61 @@ defmodule Pulk.Player.PlayerManager do
     end
   end
 
-  def get_player(player_id) when is_bitstring(player_id) do
-    GenServer.call(via(player_id), :get_player)
+  @spec fetch_player(String.t() | pid()) :: {:error, :unknown_player} | {:ok, Pulk.t()}
+  def fetch_player(player_id) when is_bitstring(player_id) do
+    with :ok <- is_player_present?(player_id) do
+      GenServer.call(via(player_id), :fetch_player)
+    end
   end
 
-  def get_player(pid) when is_pid(pid) do
-    GenServer.call(pid, :get_player)
+  def fetch_player(pid) when is_pid(pid) do
+    GenServer.call(pid, :fetch_player)
   end
 
-  def get_board(pid) do
+  def fetch_player(_), do: {:error, :unknown_player}
+
+  @spec fetch_player_and_create_if_needed(player_id :: String.t()) ::
+          {:ok, Player.t()} | {:error, :invalid_player_id}
+  def fetch_player_and_create_if_needed(player_id) when is_bitstring(player_id) do
+    case fetch_player(player_id) do
+      {:ok, player} ->
+        {:ok, player}
+
+      {:error, :unknown_player} ->
+        case Player.new(%{player_id: player_id}) do
+          {:ok, player} -> {:ok, player}
+          {:error, _reason} -> {:error, :invalid_player_id}
+        end
+    end
+  end
+
+  def fetch_player_and_create_if_needed(_), do: {:error, :invalid_player_id}
+
+  @spec get_board(String.t() | pid()) :: {:ok, Board.t()} | {:error, :unknown_player}
+  def get_board(player_id) when is_bitstring(player_id) do
+    with :ok <- is_player_present?(player_id) do
+      GenServer.call(via(player_id), :get_board)
+    end
+  end
+
+  def get_board(pid) when is_pid(pid) do
     GenServer.call(pid, :get_board)
   end
 
-  def update_board(pid, board_update) do
+  def get_board(_), do: {:error, :unknown_player}
+
+  @spec update_board(String.t() | pid(), BoardUpdate.t()) :: {:ok, Board.t()} | {:error, term()}
+  def update_board(player_id, %BoardUpdate{} = board_update) when is_bitstring(player_id) do
+    with :ok <- is_player_present?(player_id) do
+      GenServer.call(via(player_id), {:update_board, board_update})
+    end
+  end
+
+  def update_board(pid, %BoardUpdate{} = board_update) when is_pid(pid) do
     GenServer.call(pid, {:update_board, board_update})
   end
 
-  def update_board_status(pid, board_status) do
-    GenServer.call(pid, {:update_board_status, board_status})
-  end
+  def update_board(_, _), do: {:error, :invalid_update}
 
   def update_matrix(pid, raw_matrix) do
     GenServer.call(pid, {:update_matrix, raw_matrix})
@@ -61,9 +98,12 @@ defmodule Pulk.Player.PlayerManager do
     GenServer.call(pid, {:set_placement, placement})
   end
 
-  def subscribe_to_board_updates(player_id) do
+  @spec subscribe_to_board_updates(String.t()) :: :ok | {:error, term()}
+  def subscribe_to_board_updates(player_id) when is_bitstring(player_id) do
     PubSub.subscribe(Pulk.PubSub, "player:#{player_id}:board")
   end
+
+  def subscribe_to_board_updates(_), do: {:error, :invalid_player_id}
 
   def publish_board(pid) do
     GenServer.cast(pid, :publish_board)
@@ -165,7 +205,7 @@ defmodule Pulk.Player.PlayerManager do
   end
 
   @impl true
-  def handle_call(:get_player, _from, %{player: player} = state) do
+  def handle_call(:fetch_player, _from, %{player: player} = state) do
     {:reply, {:ok, player}, state}
   end
 
@@ -211,16 +251,6 @@ defmodule Pulk.Player.PlayerManager do
     publish_board(self())
 
     {:reply, response, state}
-  end
-
-  @impl true
-  def handle_call(
-        {:update_board_status, board_status},
-        _from,
-        %{board: board} = state
-      ) do
-    {:ok, board} = Board.update_status(board, board_status)
-    {:reply, {:ok, board}, %{state | board: board}}
   end
 
   @impl true
