@@ -27,10 +27,10 @@ defmodule PulkWeb.RoomChannel do
   @impl true
   def handle_in("board_update", board_update_json, socket) do
     player_id = socket_player_id(socket)
+    board_update = PulkWeb.BoardUpdateJSON.from_json(board_update_json)
 
     response =
-      with {:ok, board_update} <- PulkWeb.BoardUpdateJSON.from_json(board_update_json),
-           {:ok, board} <- Pulk.update_board(player_id, board_update) do
+      with {:ok, board} <- Pulk.update_board(player_id, board_update) do
         {:ok, board}
       else
         {:error, reason} ->

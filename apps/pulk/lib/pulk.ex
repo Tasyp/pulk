@@ -1,9 +1,12 @@
 defmodule Pulk do
+  require Logger
   alias Pulk.Board.BoardSnapshot
   alias Pulk.RoomContext
   alias Pulk.PlayerContext
   alias Pulk.Player
   alias Pulk.Board.BoardUpdate
+  alias Pulk.Piece
+  alias Pulk.Piece.PieceUpdate
   alias Pulk.Board
   alias Pulk.BoardSnapshot
 
@@ -55,10 +58,37 @@ defmodule Pulk do
     end
   end
 
-  @spec update_board(player_id :: String.t(), board_update :: BoardUpdate.t()) ::
+  @spec update_board(player_id :: String.t(), BoardUpdate.t() | map()) ::
           {:ok, Board.t()} | {:error, term()}
   def update_board(player_id, %BoardUpdate{} = board_update) when is_bitstring(player_id) do
     PlayerContext.update_board(player_id, board_update)
+  end
+
+  def update_board(player_id, %{
+        piece: piece,
+        update_type: update_type,
+        relative_rotation: relative_rotation,
+        direction: direction
+      })
+      when is_bitstring(player_id) do
+    with {:ok, piece} <- Piece.new(piece),
+         {:ok, piece_update} <-
+           PieceUpdate.new(
+             piece: piece,
+             update_type: update_type,
+             relative_rotation: relative_rotation,
+             direction: direction
+           ),
+         {:ok, board_update} <- BoardUpdate.new(active_piece_update: piece_update) do
+      update_board(player_id, board_update)
+    else
+      {:error, reason} when is_list(reason) ->
+        Logger.debug("Board update was rejected. Reason: #{inspect(reason)}")
+        {:error, :invalid_update}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
   end
 
   def update_board(_player_id, %BoardUpdate{} = _board_update), do: {:error, :unknown_player}
