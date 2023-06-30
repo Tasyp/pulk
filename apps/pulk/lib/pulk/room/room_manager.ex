@@ -85,49 +85,44 @@ defmodule Pulk.Room.RoomManager do
   @spec get_players(Room.t()) :: {:ok, list(Player.t())} | {:error, term()}
   def get_players(%Room{} = room) do
     with :ok <- is_room_present?(room.room_id) do
-      players =
-        DynamicSupervisor.which_children(Room.PlayersSupervisor.via_tuple(room))
-        |> Enum.filter(fn
-          {:undefined, :restarting, _, _} -> false
-          {:undefined, _pid, :worker, _} -> true
-          _ -> false
-        end)
-        |> Enum.map(fn {_id, pid, _type, _module} ->
-          case Player.PlayerManager.fetch_player(pid) do
-            {:ok, player} -> player
-            _ -> nil
-          end
-        end)
-        |> Enum.filter(&(&1 != nil))
-
-      {:ok, players}
+      DynamicSupervisor.which_children(Room.PlayersSupervisor.via_tuple(room))
+      |> Enum.filter(fn
+        {:undefined, :restarting, _, _} -> false
+        {:undefined, _pid, :worker, _} -> true
+        _ -> false
+      end)
+      |> Enum.map(fn {_id, pid, _type, _module} ->
+        case Player.PlayerManager.fetch_player(pid) do
+          {:ok, player} -> player
+          error -> error
+        end
+      end)
+      |> take_error()
     end
   end
+
+  defp take_error(items) do
+    case Enum.find(items, &match_error/1) do
+      nil -> {:ok, items}
+      error -> error
+    end
+  end
+
+  defp match_error({:error, _}), do: true
+  defp match_error(_), do: false
 
   @spec fetch_room_boards(Room.t()) ::
           {:ok, list({Player.t(), Pulk.Game.Board.t()})} | {:error, term()}
   def fetch_room_boards(%Room{} = room) do
     with {:ok, players} <- get_players(room) do
-      room_boards =
-        players
-        |> Enum.map(fn %Player{player_id: player_id} = player ->
-          case Player.PlayerManager.get_board(player_id) do
-            {:ok, board} -> {player, board}
-            {:error, reason} -> {:error, reason}
-          end
-        end)
-
-      error =
-        Enum.find(room_boards, fn
-          {:error, _reason} -> true
-          _ -> false
-        end)
-
-      if error != nil do
-        error
-      else
-        {:ok, room_boards}
-      end
+      players
+      |> Enum.map(fn %Player{player_id: player_id} = player ->
+        case Player.PlayerManager.get_board(player_id) do
+          {:ok, board} -> {player, board}
+          {:error, reason} -> {:error, reason}
+        end
+      end)
+      |> take_error()
     end
   end
 
