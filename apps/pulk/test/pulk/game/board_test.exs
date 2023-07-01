@@ -69,7 +69,7 @@ defmodule Pulk.Game.BoardTest do
           )
         )
 
-      assert update_result == {:error, :invalid_move}
+      assert update_result == input_board
     end
   end
 

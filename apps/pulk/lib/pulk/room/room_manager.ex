@@ -16,7 +16,7 @@ defmodule Pulk.Room.RoomManager do
     GenServer.start_link(
       __MODULE__,
       %{room: room},
-      name: via_tuple(room.room_id)
+      name: via(room.room_id)
     )
   end
 
@@ -26,14 +26,14 @@ defmodule Pulk.Room.RoomManager do
 
   @spec is_room_present?(String.t()) :: :ok | {:error, :unknown_room}
   def is_room_present?(room_id) do
-    case Pulk.Registry.lookup({__MODULE__, room_id}) do
-      [] -> {:error, :unknown_room}
+    case GenServer.whereis(via(room_id)) do
+      nil -> {:error, :unknown_room}
       _ -> :ok
     end
   end
 
-  @spec via_tuple(String.t()) :: {:via, Registry, {Pulk.Registry, any}}
-  def via_tuple(room_id) do
+  @spec via(String.t()) :: {:via, Registry, {Pulk.Registry, any}}
+  def via(room_id) do
     Pulk.Registry.via_tuple({__MODULE__, room_id})
   end
 
@@ -60,7 +60,7 @@ defmodule Pulk.Room.RoomManager do
     room_player = Player.assign_room(player, room)
 
     case DynamicSupervisor.start_child(
-           Room.PlayersSupervisor.via_tuple(room),
+           Room.PlayersSupervisor.via(room),
            {Player.PlayerManager, [player: room_player, room: room]}
          ) do
       {:ok, _} -> {:ok, room_player}
@@ -71,27 +71,17 @@ defmodule Pulk.Room.RoomManager do
 
   @spec remove_player(Room.t(), Player.t()) :: :ok | {:error, term()}
   def remove_player(
-        %Room{room_id: room_id},
+        _room,
         %Pulk.Player{player_id: player_id}
       ) do
-    with {:ok, player_pid} <- Player.PlayerManager.lookup(player_id) do
-      DynamicSupervisor.terminate_child(
-        Room.PlayersSupervisor.via_tuple(room_id),
-        player_pid
-      )
-    end
+    Player.PlayerManager.remove_player(player_id)
   end
 
   @spec get_players(Room.t()) :: {:ok, list(Player.t())} | {:error, term()}
-  def get_players(%Room{} = room) do
+  def get_players(%Room{room_id: room_id} = room) do
     with :ok <- is_room_present?(room.room_id) do
-      DynamicSupervisor.which_children(Room.PlayersSupervisor.via_tuple(room))
-      |> Enum.filter(fn
-        {:undefined, :restarting, _, _} -> false
-        {:undefined, _pid, :worker, _} -> true
-        _ -> false
-      end)
-      |> Enum.map(fn {_id, pid, _type, _module} ->
+      get_players_pids(room_id)
+      |> Enum.map(fn pid ->
         case Player.PlayerManager.fetch_player(pid) do
           {:ok, player} -> player
           error -> error
@@ -99,6 +89,10 @@ defmodule Pulk.Room.RoomManager do
       end)
       |> take_error()
     end
+  end
+
+  defp get_players_pids(room_id) do
+    :pg.get_members({Player.PlayerManager, room_id})
   end
 
   defp take_error(items) do
@@ -126,6 +120,12 @@ defmodule Pulk.Room.RoomManager do
     end
   end
 
+  @doc """
+  Fetches any available room.
+
+  It requests availability from all active rooms and waits 2 seconds for 
+  responses to arrive. After that, it kills remaining  requests
+  """
   @spec fetch_available_room() :: {:ok, Room.t()} | {:error, term()}
   def fetch_available_room() do
     available_room =
@@ -154,14 +154,15 @@ defmodule Pulk.Room.RoomManager do
   end
 
   @spec fetch_room(String.t()) :: {:ok, Room.t()} | {:error, term()}
-  def fetch_room(room_id) do
+  def fetch_room(room_id) when is_bitstring(room_id) do
     with :ok <- is_room_present?(room_id) do
-      GenServer.call(via_tuple(room_id), :get_room)
+      GenServer.call(via(room_id), :get_room)
     end
   end
 
-  def recalculate_room_status(room_id) do
-    GenServer.cast(via_tuple(room_id), :recalculate_room_status)
+  @spec recalculate_room_status(String.t()) :: :ok
+  def recalculate_room_status(room_id) when is_bitstring(room_id) do
+    GenServer.cast(via(room_id), :recalculate_room_status)
   end
 
   def get_all_room_managers() do
@@ -182,9 +183,8 @@ defmodule Pulk.Room.RoomManager do
   end
 
   @impl true
-  def handle_call(:get_availability, _from, %{room: room} = state) do
-    %{specs: player_count} =
-      DynamicSupervisor.count_children(Pulk.Room.PlayersSupervisor.via_tuple(room))
+  def handle_call(:get_availability, _from, %{room: %Room{room_id: room_id} = room} = state) do
+    player_count = get_players_pids(room_id)
 
     response = %{
       room: room,

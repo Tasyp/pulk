@@ -34,6 +34,13 @@ defmodule Pulk.Player.PlayerManager do
     end
   end
 
+  @spec remove_player(String.t()) :: :ok | {:error, :unknown_player}
+  def remove_player(player_id) when is_bitstring(player_id) do
+    with :ok <- is_player_present?(player_id) do
+      GenServer.call(via(player_id), :remove_player)
+    end
+  end
+
   @spec fetch_player(String.t() | pid()) :: {:error, :unknown_player} | {:ok, Pulk.t()}
   def fetch_player(player_id) when is_bitstring(player_id) do
     with :ok <- is_player_present?(player_id) do
@@ -115,7 +122,9 @@ defmodule Pulk.Player.PlayerManager do
   end
 
   @impl true
-  def init(%{room: %Pulk.Room{} = room, player: %Pulk.Player{} = player}) do
+  def init(%{room: %Pulk.Room{room_id: room_id} = room, player: %Pulk.Player{} = player}) do
+    :pg.join({__MODULE__, room_id}, self())
+
     {size_x, size_y} = room.board_size
     {:ok, board} = Board.new(size_x, size_y)
 
@@ -130,6 +139,11 @@ defmodule Pulk.Player.PlayerManager do
   @impl true
   def handle_call(:fetch_player, _from, %{player: player} = state) do
     {:reply, {:ok, player}, state}
+  end
+
+  @impl true
+  def handle_call(:remove_player, _from, state) do
+    {:stop, :normal, :ok, state}
   end
 
   @impl true
