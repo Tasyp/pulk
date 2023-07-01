@@ -337,6 +337,12 @@ defmodule Pulk.Board do
     end
   end
 
+  defp calculate_can_update_active_piece(%__MODULE__{} = board) do
+    {:ok, %{board | can_update_active_piece?: can_update_active_piece?(board)}}
+  end
+
+  defp can_update_active_piece?(%__MODULE__{active_piece: nil}), do: false
+
   defp can_update_active_piece?(%__MODULE__{} = board) do
     case update_active_piece(
            board,
@@ -345,10 +351,6 @@ defmodule Pulk.Board do
       {:ok, _board} -> true
       {:error, _reason} -> false
     end
-  end
-
-  defp calculate_can_update_active_piece(%__MODULE__{} = board) do
-    {:ok, %{board | can_update_active_piece?: can_update_active_piece?(board)}}
   end
 end
 
