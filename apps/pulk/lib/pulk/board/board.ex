@@ -34,7 +34,7 @@ defmodule Pulk.Board do
     field :piece_bag, PieceBag.t(), enforce: true
 
     field :active_piece, PositionedPiece.t(), enforce: false
-
+    field :can_update_active_piece?, boolean(), default: true
     field :matrix, Matrix.t()
   end
 
@@ -86,52 +86,51 @@ defmodule Pulk.Board do
     )
   end
 
-  @spec update_status(t(), state :: status()) :: {:ok, t()}
-  def update_status(%__MODULE__{} = board, status) do
-    {:ok, ensure_type!(%{board | status: status})}
+  @spec set_placement(t(), placement :: pos_integer()) :: {:ok, t()} | {:error, term()}
+  def set_placement(%__MODULE__{} = board, placement) do
+    ensure_type(%{board | status: :complete, placement: placement})
   end
 
-  @spec update_matrix(t(), Matrix.t()) ::
-          {:ok, t()} | {:error, :invalid_size} | {:error, :invalid_matrix}
-  def update_matrix(%__MODULE__{} = board, matrix) do
-    with :ok <- Matrix.has_matching_size?(matrix, {board.size_x, board.size_y}),
-         {:ok, next_board} <- ensure_type(%{board | matrix: matrix}) do
-      {:ok, next_board}
-    else
-      {:error, list_reason} when is_list(list_reason) ->
-        {:error, :invalid_matrix}
-
-      {:error, reason} ->
-        {:error, reason}
-    end
+  @spec has_lines_cleared(t(), count :: non_neg_integer()) :: boolean()
+  def has_lines_cleared(%__MODULE__{} = board, count) do
+    board.cleared_lines_count >= count
   end
 
-  @spec update(t(), BoardUpdate.t()) ::
-          {:ok, t()}
-          | {:error, :invalid_update}
-          | {:error, :board_complete}
-          | {:error, :invalid_move}
+  @spec update(t(), BoardUpdate.t()) :: t()
 
   def update(board, board_update, opts \\ [])
 
-  def update(%__MODULE__{status: :complete}, %BoardUpdate{}, _opts) do
-    {:error, :board_complete}
+  def update(%__MODULE__{status: :complete} = board, %BoardUpdate{}, _opts) do
+    board
   end
 
   def update(%__MODULE__{} = board, %BoardUpdate{} = board_update, opts) do
-    recalculate? = Keyword.get(opts, :recalculate?, true)
+    recalculate? = should_recalculate?(board_update, opts)
 
     with {:ok, board} <- update_active_piece(board, board_update.active_piece_update),
          {:ok, board} <- maybe_recalculate(board, recalculate?),
-         {:ok, board} <-
-           ensure_type(board) do
-      {:ok, board}
+         {:ok, board} <- ensure_type(board),
+         {:ok, board} <- calculate_can_update_active_piece(board) do
+      board
     else
-      {:error, list_reason} when is_list(list_reason) ->
-        {:error, :invalid_update}
-
       {:error, reason} ->
-        {:error, reason}
+        Logger.debug("Board update failed. Reason: #{inspect(reason)}")
+
+        board
+    end
+  end
+
+  defp should_recalculate?(board_update, opts) do
+    cond do
+      Keyword.has_key?(opts, :recalculate?) ->
+        Keyword.fetch!(opts, :recalculate?)
+
+      BoardUpdate.has_piece_update_type?(board_update, :hard_drop) ->
+        true
+
+      true ->
+        # By default, let's not recalculate board
+        false
     end
   end
 
@@ -223,7 +222,7 @@ defmodule Pulk.Board do
     recalculate(board)
   end
 
-  @spec recalculate(t()) :: t()
+  @spec recalculate(t()) :: {:ok, t()}
   def recalculate(%__MODULE__{} = board) do
     next_board =
       board
@@ -232,6 +231,36 @@ defmodule Pulk.Board do
       |> detect_end_state()
 
     {:ok, next_board}
+  end
+
+  @spec maybe_change_active_piece(t()) :: t()
+  def maybe_change_active_piece(%__MODULE__{} = board) do
+    if can_update_active_piece?(board) do
+      board
+    else
+      change_active_piece(board)
+    end
+  end
+
+  def change_active_piece(
+        %__MODULE__{piece_bag: piece_bag, size_x: size_x, size_y: size_y} = board,
+        opts \\ []
+      ) do
+    add_to_matrix? = Keyword.get(opts, :add_to_matrix?, true)
+
+    {piece_bag, active_piece} = PieceBag.get_piece(piece_bag, {size_x, size_y})
+
+    %{
+      board
+      | active_piece: active_piece,
+        piece_bag: piece_bag,
+        matrix:
+          if add_to_matrix? do
+            Matrix.add_piece(board.matrix, board.active_piece)
+          else
+            board.matrix
+          end
+    }
   end
 
   @spec remove_filled_lines(t()) :: t()
@@ -271,46 +300,6 @@ defmodule Pulk.Board do
     end
   end
 
-  @spec maybe_change_active_piece(t()) :: t()
-  def maybe_change_active_piece(%__MODULE__{} = board) do
-    if can_update_active_piece?(board) do
-      board
-    else
-      change_active_piece(board)
-    end
-  end
-
-  def change_active_piece(
-        %__MODULE__{piece_bag: piece_bag, size_x: size_x, size_y: size_y} = board,
-        opts \\ []
-      ) do
-    add_to_matrix? = Keyword.get(opts, :add_to_matrix?, true)
-
-    {piece_bag, active_piece} = PieceBag.get_piece(piece_bag, {size_x, size_y})
-
-    %{
-      board
-      | active_piece: active_piece,
-        piece_bag: piece_bag,
-        matrix:
-          if add_to_matrix? do
-            Matrix.add_piece(board.matrix, board.active_piece)
-          else
-            board.matrix
-          end
-    }
-  end
-
-  @spec has_lines_cleared(t(), count :: non_neg_integer()) :: boolean()
-  def has_lines_cleared(%__MODULE__{} = board, count) do
-    board.cleared_lines_count >= count
-  end
-
-  @spec set_placement(t(), placement :: pos_integer()) :: {:ok, t()} | {:error, term()}
-  def set_placement(%__MODULE__{} = board, placement) do
-    ensure_type(%{board | status: :complete, placement: placement})
-  end
-
   @spec hold_active_piece(t()) :: t()
   defp hold_active_piece(
          %__MODULE__{active_piece: %PositionedPiece{piece: %Piece{} = piece}, piece_in_hold: nil} =
@@ -348,7 +337,7 @@ defmodule Pulk.Board do
     end
   end
 
-  def can_update_active_piece?(%__MODULE__{} = board) do
+  defp can_update_active_piece?(%__MODULE__{} = board) do
     case update_active_piece(
            board,
            PieceUpdate.update_active_piece(board, :simple, %{direction: :down})
@@ -356,6 +345,10 @@ defmodule Pulk.Board do
       {:ok, _board} -> true
       {:error, _reason} -> false
     end
+  end
+
+  defp calculate_can_update_active_piece(%__MODULE__{} = board) do
+    {:ok, %{board | can_update_active_piece?: can_update_active_piece?(board)}}
   end
 end
 

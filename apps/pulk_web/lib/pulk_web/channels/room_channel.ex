@@ -30,9 +30,13 @@ defmodule PulkWeb.RoomChannel do
     board_update = PulkWeb.BoardUpdateJSON.from_json(board_update_json)
 
     response =
-      with {:ok, board} <- Pulk.update_board(player_id, board_update),
-           do: {:ok, board},
-           else: ({:error, reason} -> {:error, %{reason: to_string(reason)}})
+      case Pulk.update_board(player_id, board_update) do
+        :ok ->
+          :ok
+
+        {:error, reason} ->
+          {:error, %{reason: to_string(reason)}}
+      end
 
     {:reply, response, socket}
   end

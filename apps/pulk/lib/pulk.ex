@@ -1,4 +1,9 @@
 defmodule Pulk do
+  @moduledoc """
+  A core logic module for Pulk.
+
+  Exposes functionality needed to operate a game.
+  """
   require Logger
 
   alias Pulk.Room.RoomManager
@@ -7,6 +12,7 @@ defmodule Pulk do
   alias Pulk.Board
   alias Pulk.Board.BoardUpdate
   alias Pulk.Board.BoardSnapshot
+  alias Pulk.Board.BoardSubscription
   alias Pulk.Piece
   alias Pulk.Piece.PieceUpdate
 
@@ -77,9 +83,8 @@ defmodule Pulk do
   def join_room(player_id, room_id) do
     with {:ok, player} <- PlayerManager.fetch_player_and_create_if_needed(player_id),
          {:ok, room} <- RoomManager.fetch_room(room_id),
-         {:ok, _assigned_player} <- RoomManager.add_player(room, player),
-         {:ok, room_boards} <- RoomManager.fetch_room_boards(room) do
-      {:ok, room_boards}
+         {:ok, _assigned_player} <- RoomManager.add_player(room, player) do
+      RoomManager.fetch_room_boards(room)
     end
   end
 
@@ -99,7 +104,7 @@ defmodule Pulk do
       {:ok, %Pulk.Board{}}
   """
   @spec update_board(player_id :: String.t(), BoardUpdate.t() | map()) ::
-          {:ok, Board.t()} | {:error, term()}
+          :ok | {:error, term()}
   def update_board(player_id, %BoardUpdate{} = board_update) when is_bitstring(player_id) do
     PlayerManager.update_board(player_id, board_update)
   end
@@ -142,7 +147,7 @@ defmodule Pulk do
   """
   @spec subscribe_to_board_updates(player_id :: String.t()) :: :ok | {:error, term()}
   def subscribe_to_board_updates(player_id) do
-    PlayerManager.subscribe_to_board_updates(player_id)
+    BoardSubscription.subscribe(player_id)
   end
 
   @doc """

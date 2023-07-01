@@ -36,10 +36,9 @@ defmodule PulkWeb.PieceUpdateJSON do
     input_value = Map.get(input, Atom.to_string(key))
 
     parsed_value =
-      cond do
-        Enum.member?(allowed_values, input_value) -> String.to_existing_atom(input_value)
-        true -> nil
-      end
+      if Enum.member?(allowed_values, input_value),
+        do: String.to_existing_atom(input_value),
+        else: nil
 
     Map.put(output, key, parsed_value)
   end
