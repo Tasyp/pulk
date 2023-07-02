@@ -176,6 +176,7 @@ defmodule Pulk.Player.PlayerManager do
       |> process_board_update(board_update)
       |> process_lock_delay()
       |> process_soft_drop(board_update)
+      |> extract_state()
 
     publish_board(self())
 
@@ -198,6 +199,7 @@ defmodule Pulk.Player.PlayerManager do
       |> process_board_update(board_update)
       |> process_lock_delay()
       |> process_soft_drop(board_update)
+      |> extract_state()
 
     publish_board(self())
 
@@ -219,6 +221,7 @@ defmodule Pulk.Player.PlayerManager do
       state
       |> maybe_process_timer_tick()
       |> schedule_timer_tick()
+      |> extract_state()
 
     publish_board(self())
 
@@ -234,6 +237,7 @@ defmodule Pulk.Player.PlayerManager do
       state
       |> process_board_update(board_update, recalculate?: true)
       |> clear_lock_delay()
+      |> extract_state()
 
     publish_board(self())
 
@@ -268,11 +272,18 @@ defmodule Pulk.Player.PlayerManager do
     # executed only after current board update is processed 
     RoomManager.recalculate_room_status(room_id)
 
-    next_board =
-      board
-      |> Board.update(board_update, opts)
+    case Board.update(board, board_update, opts) do
+      {:ok, board} ->
+        state
+        |> Map.put(:board, board)
+        |> Map.put(:update_metadata, %{success?: true})
 
-    %{state | board: next_board}
+      {:error, reason} ->
+        Logger.debug("Board update failed. Reason: #{inspect(reason)}")
+
+        state
+        |> Map.put(:update_metadata, %{success?: false})
+    end
   end
 
   defp process_soft_drop(
@@ -301,17 +312,26 @@ defmodule Pulk.Player.PlayerManager do
     Process.send_after(self(), :soft_drop_tick, tick_delay_in_ms)
   end
 
-  defp process_lock_delay(%{board: %Board{can_update_active_piece?: true}} = state) do
+  defp process_lock_delay(%{update_metadata: %{success?: false}} = state), do: state
+
+  defp process_lock_delay(
+         %{board: %Board{can_update_active_piece?: true}, update_metadata: %{success?: true}} =
+           state
+       ) do
     state
   end
 
-  defp process_lock_delay(%{lock_delay_timer: lock_delay_timer} = state)
+  defp process_lock_delay(
+         %{lock_delay_timer: lock_delay_timer, update_metadata: %{success?: true}} = state
+       )
        when lock_delay_timer != nil do
     Process.cancel_timer(lock_delay_timer)
     process_lock_delay(%{state | lock_delay_timer: nil})
   end
 
-  defp process_lock_delay(%{board: board, lock_delay_timer: nil} = state) do
+  defp process_lock_delay(
+         %{board: board, lock_delay_timer: nil, update_metadata: %{success?: true}} = state
+       ) do
     lock_delay_timer = schedule_lock_delay_tick(board.lock_delay)
     %{state | lock_delay_timer: lock_delay_timer}
   end
@@ -355,4 +375,6 @@ defmodule Pulk.Player.PlayerManager do
     |> process_board_update(board_update, recalculate?: false)
     |> process_lock_delay()
   end
+
+  defp extract_state(state), do: Map.delete(state, :update_metadata)
 end

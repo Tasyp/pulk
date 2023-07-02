@@ -97,11 +97,11 @@ defmodule Pulk.Board do
   end
 
   @spec update(t(), BoardUpdate.t()) :: t()
-
+  @spec update(t(), BoardUpdate.t(), Keyword.t()) :: t()
   def update(board, board_update, opts \\ [])
 
-  def update(%__MODULE__{status: :complete} = board, %BoardUpdate{}, _opts) do
-    board
+  def update(%__MODULE__{status: :complete}, %BoardUpdate{}, _opts) do
+    {:error, :board_complete}
   end
 
   def update(%__MODULE__{} = board, %BoardUpdate{} = board_update, opts) do
@@ -111,12 +111,7 @@ defmodule Pulk.Board do
          {:ok, board} <- maybe_recalculate(board, recalculate?),
          {:ok, board} <- ensure_type(board),
          {:ok, board} <- calculate_can_update_active_piece(board) do
-      board
-    else
-      {:error, reason} ->
-        Logger.debug("Board update failed. Reason: #{inspect(reason)}")
-
-        board
+      {:ok, board}
     end
   end
 
