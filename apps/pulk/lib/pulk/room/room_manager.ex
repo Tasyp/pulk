@@ -184,7 +184,9 @@ defmodule Pulk.Room.RoomManager do
 
   @impl true
   def handle_call(:get_availability, _from, %{room: %Room{room_id: room_id} = room} = state) do
-    player_count = get_players_pids(room_id)
+    player_count =
+      get_players_pids(room_id)
+      |> Enum.count()
 
     response = %{
       room: room,
