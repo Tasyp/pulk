@@ -98,24 +98,39 @@ defmodule Pulk.Piece.PositionedPiece do
     end
   end
 
+  @spec rotate(t(), Rotation.relative_rotation(), pos_integer()) :: {:ok, t()}
   @spec rotate(t(), Rotation.relative_rotation()) :: {:ok, t()}
-  def rotate(%__MODULE__{rotation: rotation} = positioned_piece, relative_rotation) do
+  def rotate(
+        %__MODULE__{rotation: rotation, piece: piece} = positioned_piece,
+        relative_rotation,
+        test_idx \\ 1
+      ) do
     rotation_angle = Rotation.relative_rotation_angle(relative_rotation)
-
-    coordinates =
-      positioned_piece.coordinates
-      |> Enum.map(&Coordinates.rotate_point(&1, rotation_angle, positioned_piece.base_point))
-
     next_rotation_type = Rotation.apply_relative_rotation(rotation, relative_rotation)
 
-    case ensure_type(%{
-           positioned_piece
-           | coordinates: coordinates,
-             rotation: next_rotation_type
-         }) do
-      {:ok, position_piece} -> {:ok, position_piece}
-      {:error, _} -> {:error, :invalid_move}
+    with {:ok, shift_by} <-
+           Rotation.get_wall_kick_shift(piece, {rotation, next_rotation_type}, test_idx),
+         coordinates = rotate_coordinates(positioned_piece, rotation_angle, shift_by),
+         {:ok, positioned_piece} <-
+           ensure_type(%{
+             positioned_piece
+             | coordinates: coordinates,
+               rotation: next_rotation_type
+           }) do
+      {:ok, positioned_piece}
+    else
+      {:error, _reason} -> {:error, :invalid_move}
     end
+  end
+
+  defp rotate_coordinates(
+         %__MODULE__{coordinates: coordinates, base_point: base_point},
+         rotation_angle,
+         shift_by
+       ) do
+    coordinates
+    |> Enum.map(&Coordinates.rotate_point(&1, rotation_angle, base_point))
+    |> Coordinates.shift_coordinates_by(shift_by)
   end
 
   defp get_base_piece_coordinates(%Piece{piece_type: piece_type}) do

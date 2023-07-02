@@ -130,6 +130,7 @@ defmodule Pulk.Board do
 
   @spec update_active_piece(t(), PieceUpdate.t() | nil) ::
           {:ok, t()} | {:error, :invalid_move}
+
   def update_active_piece(%__MODULE__{} = board, nil) do
     {:ok, board}
   end
@@ -147,23 +148,20 @@ defmodule Pulk.Board do
 
   defp do_update_active_piece(
          %__MODULE__{} = board,
-         %PieceUpdate{update_type: :simple} = piece_update
-       ) do
-    update_result =
-      cond do
-        piece_update.direction != nil ->
-          PositionedPiece.move(board.active_piece, piece_update.direction)
-
-        piece_update.relative_rotation != nil ->
-          PositionedPiece.rotate(
-            board.active_piece,
-            piece_update.relative_rotation
-          )
-      end
-
-    with {:ok, active_piece} <- update_result do
+         %PieceUpdate{update_type: :simple, direction: direction} = piece_update
+       )
+       when not is_nil(direction) do
+    with {:ok, active_piece} <- PositionedPiece.move(board.active_piece, piece_update.direction) do
       set_active_piece(board, active_piece)
     end
+  end
+
+  defp do_update_active_piece(
+         %__MODULE__{} = board,
+         %PieceUpdate{update_type: :simple, relative_rotation: relative_rotation} = piece_update
+       )
+       when not is_nil(relative_rotation) do
+    rotate_active_piece(board, piece_update)
   end
 
   defp do_update_active_piece(
@@ -345,6 +343,24 @@ defmodule Pulk.Board do
       {:ok, _board} -> true
       {:error, _reason} -> false
     end
+  end
+
+  defp rotate_active_piece(board, piece_update, test_idx \\ 1)
+
+  defp rotate_active_piece(%__MODULE__{} = board, %PieceUpdate{} = piece_update, test_idx)
+       when test_idx > 0 and test_idx < 6 do
+    with {:ok, active_piece} <-
+           PositionedPiece.rotate(board.active_piece, piece_update.relative_rotation, test_idx),
+         {:ok, board} <- set_active_piece(board, active_piece) do
+      {:ok, board}
+    else
+      {:error, _reason} ->
+        rotate_active_piece(board, piece_update, test_idx + 1)
+    end
+  end
+
+  defp rotate_active_piece(_board, _piece_update, _test_idx) do
+    {:error, :invalid_move}
   end
 end
 

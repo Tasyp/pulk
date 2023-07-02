@@ -1,4 +1,6 @@
 defmodule Pulk.Piece.Rotation do
+  alias Pulk.Piece
+
   @moduledoc """
   Collection of helper methods for rotating pieces
   """
@@ -12,12 +14,34 @@ defmodule Pulk.Piece.Rotation do
   @type relative_rotation() :: :left | :right
 
   @rotations [
+    :L,
     :O,
     :R,
-    :L,
     :two
   ]
   @rotation_in_degrees 90
+
+  @non_i_wall_kick %{
+    {:O, :R} => {{0, 0}, {-1, 0}, {-1, 1}, {0, -2}, {-1, -2}},
+    {:R, :O} => {{0, 0}, {1, 0}, {1, -1}, {0, 2}, {1, 2}},
+    {:R, :two} => {{0, 0}, {1, 0}, {1, -1}, {0, 2}, {1, 2}},
+    {:two, :R} => {{0, 0}, {-1, 0}, {-1, 1}, {0, -2}, {-1, -2}},
+    {:two, :L} => {{0, 0}, {1, 0}, {1, 1}, {0, -2}, {1, -2}},
+    {:L, :two} => {{0, 0}, {-1, 0}, {-1, -1}, {0, 2}, {-1, 2}},
+    {:L, :O} => {{0, 0}, {-1, 0}, {-1, -1}, {0, 2}, {-1, 2}},
+    {:O, :L} => {{0, 0}, {1, 0}, {1, 1}, {0, -2}, {1, -2}}
+  }
+
+  @i_wall_kick %{
+    {:O, :R} => {{0, 0}, {-2, 0}, {1, 0}, {-2, -1}, {1, 2}},
+    {:R, :O} => {{0, 0}, {2, 0}, {-1, 0}, {2, 1}, {-1, -2}},
+    {:R, :two} => {{0, 0}, {-1, 0}, {2, 0}, {-1, 2}, {2, -1}},
+    {:two, :R} => {{0, 0}, {1, 0}, {-2, 0}, {1, -2}, {-2, 1}},
+    {:two, :L} => {{0, 0}, {2, 0}, {-1, 0}, {2, 1}, {-1, -2}},
+    {:L, :two} => {{0, 0}, {-2, 0}, {1, 0}, {-2, -1}, {1, 2}},
+    {:L, :O} => {{0, 0}, {1, 0}, {-2, 0}, {1, -2}, {-2, 1}},
+    {:O, :L} => {{0, 0}, {-1, 0}, {2, 0}, {-1, 2}, {2, -1}}
+  }
 
   @spec apply_relative_rotation(t(), relative_rotation()) :: t()
   def apply_relative_rotation(rotation, relative_rotation) do
@@ -45,4 +69,29 @@ defmodule Pulk.Piece.Rotation do
       :right -> 1
     end
   end
+
+  @spec get_wall_kick_shift(Piece.t(), {t(), t()}, pos_integer()) :: {integer(), integer()}
+  def get_wall_kick_shift(%Piece{piece_type: piece}, {base_rotation, next_rotation}, test_idx)
+      when piece == "I" and
+             is_map_key(@i_wall_kick, {base_rotation, next_rotation}) and
+             test_idx > 0 and test_idx < 6 do
+    shift_by =
+      @i_wall_kick[{base_rotation, next_rotation}]
+      |> elem(test_idx - 1)
+
+    {:ok, shift_by}
+  end
+
+  def get_wall_kick_shift(%Piece{piece_type: piece}, {base_rotation, next_rotation}, test_idx)
+      when piece != "I" and
+             is_map_key(@non_i_wall_kick, {base_rotation, next_rotation}) and
+             test_idx > 0 and test_idx < 6 do
+    shift_by =
+      @non_i_wall_kick[{base_rotation, next_rotation}]
+      |> elem(test_idx - 1)
+
+    {:ok, shift_by}
+  end
+
+  def get_wall_kick_shift(_piece, _rotation, _test_idx), do: {:error, :invalid_rotation}
 end
