@@ -96,8 +96,8 @@ defmodule Pulk.Board do
     board.cleared_lines_count >= count
   end
 
-  @spec update(t(), BoardUpdate.t()) :: t()
-  @spec update(t(), BoardUpdate.t(), Keyword.t()) :: t()
+  @spec update(t(), BoardUpdate.t()) :: {:ok, t()} | {:error, term()}
+  @spec update(t(), BoardUpdate.t(), Keyword.t()) :: {:ok, t()} | {:error, term()}
   def update(board, board_update, opts \\ [])
 
   def update(%__MODULE__{status: :complete}, %BoardUpdate{}, _opts) do
@@ -109,9 +109,8 @@ defmodule Pulk.Board do
 
     with {:ok, board} <- update_active_piece(board, board_update.active_piece_update),
          {:ok, board} <- maybe_recalculate(board, recalculate?),
-         {:ok, board} <- ensure_type(board),
          {:ok, board} <- calculate_can_update_active_piece(board) do
-      {:ok, board}
+      ensure_type(board)
     end
   end
 
