@@ -1,9 +1,9 @@
-defmodule Pulk.Game.MatrixTest do
+defmodule Pulk.MatrixTest do
   use ExUnit.Case
 
-  alias Pulk.Game.Matrix
-  alias Pulk.Game.Piece
-  alias Pulk.Game.PositionedPiece
+  alias Pulk.Matrix
+  alias Pulk.Piece
+  alias Pulk.Piece.PositionedPiece
 
   describe "Matrix.remove_filled_lines/1" do
     test "it should remove filled lines and shift existing ones when only the top is incomplete" do

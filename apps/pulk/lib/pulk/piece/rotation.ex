@@ -1,4 +1,4 @@
-defmodule Pulk.Game.Rotation do
+defmodule Pulk.Piece.Rotation do
   @moduledoc """
   Collection of helper methods for rotating pieces
   """

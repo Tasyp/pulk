@@ -1,4 +1,4 @@
-defmodule Pulk.Game.BoardUpdate do
+defmodule Pulk.Board.BoardUpdate do
   @moduledoc """
   Entity that is used to update board state via public interfaces
   """
@@ -6,7 +6,7 @@ defmodule Pulk.Game.BoardUpdate do
   use TypedStruct
   use Domo
 
-  alias Pulk.Game.PieceUpdate
+  alias Pulk.Piece.PieceUpdate
 
   typedstruct do
     field :active_piece_update, PieceUpdate.t()
@@ -18,5 +18,14 @@ defmodule Pulk.Game.BoardUpdate do
 
   def has_piece_update_type?(board_update, update_type) do
     board_update.active_piece_update.update_type == update_type
+  end
+end
+
+defimpl Jason.Encoder, for: [Pulk.Board.BoardUpdate] do
+  def encode(struct, opts) do
+    Jason.Encode.map(
+      Map.from_struct(struct),
+      opts
+    )
   end
 end

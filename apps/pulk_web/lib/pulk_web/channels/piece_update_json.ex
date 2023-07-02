@@ -1,8 +1,7 @@
 defmodule PulkWeb.PieceUpdateJSON do
-  require Logger
-
-  alias Pulk.Game.PieceUpdate
-  alias PulkWeb.PieceJSON
+  @update_types ~w[simple soft_drop_start soft_drop_stop hard_drop hold]
+  @directions ~w[left right down]
+  @rotations ~w[left right]
 
   @type piece_update_json :: %{
           piece: String.t(),
@@ -11,113 +10,36 @@ defmodule PulkWeb.PieceUpdateJSON do
           direction: String.t() | nil
         }
 
-  @spec from_json(map() | nil) ::
-          {:ok, PieceUpdate.t() | nil}
-          | {:error, :invalid_piece}
-          | {:error, :invalid_update_type}
-          | {:error, :invalid_rotation}
-          | {:error, :invalid_direction}
-          | {:error, :malformed}
-  def from_json(nil) do
-    {:ok, nil}
+  def from_json(input) when is_map(input) do
+    %{}
+    |> parse_piece(input)
+    |> parse_update_type(input)
+    |> parse_rotation(input)
+    |> parse_direction(input)
   end
 
-  def from_json(
-        %{
-          "piece" => piece,
-          "update_type" => update_type
-        } = input
-      ) do
-    with {:ok, piece} <- PieceJSON.from_json(piece),
-         {:ok, update_type} <- parse_update_type(update_type),
-         {:ok, relative_rotation} <- parse_rotation(Map.get(input, "relative_rotation")),
-         {:ok, direction} <- parse_direction(Map.get(input, "direction")),
-         {:ok, piece_update} <-
-           PieceUpdate.new(
-             piece: piece,
-             update_type: update_type,
-             relative_rotation: relative_rotation,
-             direction: direction
-           ) do
-      {:ok, piece_update}
-    else
-      {:error, reason} when is_list(reason) ->
-        Logger.debug("Piece update was malformed: #{inspect(reason)} ")
-        {:error, :malformed}
+  def from_json(_), do: %{}
 
-      {:error, reason} ->
-        {:error, reason}
-    end
-  end
+  defp parse_piece(output, %{"piece" => piece}), do: Map.put(output, :piece, piece)
+  defp parse_piece(output, _), do: output
 
-  def from_json(_) do
-    Logger.debug("Piece update has missing fields")
-    {:error, :malformed}
-  end
+  defp parse_update_type(output, input),
+    do: parse_atom_value(output, input, {:update_type, @update_types})
 
-  defp parse_update_type(update_type) do
-    case update_type do
-      "simple" ->
-        {:ok, :simple}
+  defp parse_rotation(output, input),
+    do: parse_atom_value(output, input, {:relative_rotation, @rotations})
 
-      "soft_drop_start" ->
-        {:ok, :soft_drop_start}
+  defp parse_direction(output, input),
+    do: parse_atom_value(output, input, {:direction, @directions})
 
-      "soft_drop_stop" ->
-        {:ok, :soft_drop_stop}
+  defp parse_atom_value(output, input, {key, allowed_values}) do
+    input_value = Map.get(input, Atom.to_string(key))
 
-      "hard_drop" ->
-        {:ok, :hard_drop}
+    parsed_value =
+      if Enum.member?(allowed_values, input_value),
+        do: String.to_existing_atom(input_value),
+        else: nil
 
-      "hold" ->
-        {:ok, :hold}
-
-      _ ->
-        {:error, :invalid_update_type}
-    end
-  end
-
-  defp parse_rotation(relative_rotation) do
-    case relative_rotation do
-      "left" ->
-        {:ok, :left}
-
-      "right" ->
-        {:ok, :right}
-
-      nil ->
-        {:ok, nil}
-
-      _ ->
-        {:error, :invalid_rotation}
-    end
-  end
-
-  defp parse_direction(direction) do
-    case direction do
-      "down" ->
-        {:ok, :down}
-
-      "left" ->
-        {:ok, :left}
-
-      "right" ->
-        {:ok, :right}
-
-      nil ->
-        {:ok, nil}
-
-      _ ->
-        {:error, :invalid_direction}
-    end
-  end
-end
-
-defimpl Jason.Encoder, for: [Pulk.Game.PieceUpdate] do
-  def encode(struct, opts) do
-    Jason.Encode.map(
-      Map.from_struct(struct),
-      opts
-    )
+    Map.put(output, key, parsed_value)
   end
 end

@@ -1,4 +1,4 @@
-defmodule Pulk.Game.GameSupervisor do
+defmodule Pulk.GameSupervisor do
   @moduledoc """
   Root supervisor that controls all game rooms
   """

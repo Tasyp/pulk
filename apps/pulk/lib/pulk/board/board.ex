@@ -1,4 +1,4 @@
-defmodule Pulk.Game.Board do
+defmodule Pulk.Board do
   @moduledoc """
   Entity that is used to represent all metadata about the game field required to display it
   """
@@ -8,13 +8,13 @@ defmodule Pulk.Game.Board do
   use TypedStruct
   use Domo, gen_constructor_name: :_new
 
-  alias Pulk.Game.PieceUpdate
-  alias Pulk.Game.PieceBag
-  alias Pulk.Game.Piece
-  alias Pulk.Game.Matrix
-  alias Pulk.Game.BoardUpdate
-  alias Pulk.Game.BoardSnapshot
-  alias Pulk.Game.PositionedPiece
+  alias Pulk.Piece.PieceUpdate
+  alias Pulk.Piece.PieceBag
+  alias Pulk.Piece
+  alias Pulk.Matrix
+  alias Pulk.Board.BoardUpdate
+  alias Pulk.Board.BoardSnapshot
+  alias Pulk.Piece.PositionedPiece
 
   @points_per_line 100
 
@@ -34,7 +34,7 @@ defmodule Pulk.Game.Board do
     field :piece_bag, PieceBag.t(), enforce: true
 
     field :active_piece, PositionedPiece.t(), enforce: false
-
+    field :can_update_active_piece?, boolean(), default: true
     field :matrix, Matrix.t()
   end
 
@@ -86,32 +86,18 @@ defmodule Pulk.Game.Board do
     )
   end
 
-  @spec update_status(t(), state :: status()) :: {:ok, t()}
-  def update_status(%__MODULE__{} = board, status) do
-    {:ok, ensure_type!(%{board | status: status})}
+  @spec set_placement(t(), placement :: pos_integer()) :: {:ok, t()} | {:error, term()}
+  def set_placement(%__MODULE__{} = board, placement) do
+    ensure_type(%{board | status: :complete, placement: placement})
   end
 
-  @spec update_matrix(t(), Matrix.t()) ::
-          {:ok, t()} | {:error, :invalid_size} | {:error, :invalid_matrix}
-  def update_matrix(%__MODULE__{} = board, matrix) do
-    with :ok <- Matrix.has_matching_size?(matrix, {board.size_x, board.size_y}),
-         {:ok, next_board} <- ensure_type(%{board | matrix: matrix}) do
-      {:ok, next_board}
-    else
-      {:error, list_reason} when is_list(list_reason) ->
-        {:error, :invalid_matrix}
-
-      {:error, reason} ->
-        {:error, reason}
-    end
+  @spec has_lines_cleared(t(), count :: non_neg_integer()) :: boolean()
+  def has_lines_cleared(%__MODULE__{} = board, count) do
+    board.cleared_lines_count >= count
   end
 
-  @spec update(t(), BoardUpdate.t()) ::
-          {:ok, t()}
-          | {:error, :invalid_update}
-          | {:error, :board_complete}
-          | {:error, :invalid_move}
-
+  @spec update(t(), BoardUpdate.t()) :: {:ok, t()} | {:error, term()}
+  @spec update(t(), BoardUpdate.t(), Keyword.t()) :: {:ok, t()} | {:error, term()}
   def update(board, board_update, opts \\ [])
 
   def update(%__MODULE__{status: :complete}, %BoardUpdate{}, _opts) do
@@ -119,19 +105,26 @@ defmodule Pulk.Game.Board do
   end
 
   def update(%__MODULE__{} = board, %BoardUpdate{} = board_update, opts) do
-    recalculate? = Keyword.get(opts, :recalculate?, true)
+    recalculate? = should_recalculate?(board_update, opts)
 
     with {:ok, board} <- update_active_piece(board, board_update.active_piece_update),
          {:ok, board} <- maybe_recalculate(board, recalculate?),
-         {:ok, board} <-
-           ensure_type(board) do
-      {:ok, board}
-    else
-      {:error, list_reason} when is_list(list_reason) ->
-        {:error, :invalid_update}
+         {:ok, board} <- calculate_can_update_active_piece(board) do
+      ensure_type(board)
+    end
+  end
 
-      {:error, reason} ->
-        {:error, reason}
+  defp should_recalculate?(board_update, opts) do
+    cond do
+      Keyword.has_key?(opts, :recalculate?) ->
+        Keyword.fetch!(opts, :recalculate?)
+
+      BoardUpdate.has_piece_update_type?(board_update, :hard_drop) ->
+        true
+
+      true ->
+        # By default, let's not recalculate board
+        false
     end
   end
 
@@ -223,7 +216,7 @@ defmodule Pulk.Game.Board do
     recalculate(board)
   end
 
-  @spec recalculate(t()) :: t()
+  @spec recalculate(t()) :: {:ok, t()}
   def recalculate(%__MODULE__{} = board) do
     next_board =
       board
@@ -232,6 +225,36 @@ defmodule Pulk.Game.Board do
       |> detect_end_state()
 
     {:ok, next_board}
+  end
+
+  @spec maybe_change_active_piece(t()) :: t()
+  def maybe_change_active_piece(%__MODULE__{} = board) do
+    if can_update_active_piece?(board) do
+      board
+    else
+      change_active_piece(board)
+    end
+  end
+
+  def change_active_piece(
+        %__MODULE__{piece_bag: piece_bag, size_x: size_x, size_y: size_y} = board,
+        opts \\ []
+      ) do
+    add_to_matrix? = Keyword.get(opts, :add_to_matrix?, true)
+
+    {piece_bag, active_piece} = PieceBag.get_piece(piece_bag, {size_x, size_y})
+
+    %{
+      board
+      | active_piece: active_piece,
+        piece_bag: piece_bag,
+        matrix:
+          if add_to_matrix? do
+            Matrix.add_piece(board.matrix, board.active_piece)
+          else
+            board.matrix
+          end
+    }
   end
 
   @spec remove_filled_lines(t()) :: t()
@@ -271,46 +294,6 @@ defmodule Pulk.Game.Board do
     end
   end
 
-  @spec maybe_change_active_piece(t()) :: t()
-  def maybe_change_active_piece(%__MODULE__{} = board) do
-    if can_update_active_piece?(board) do
-      board
-    else
-      change_active_piece(board)
-    end
-  end
-
-  def change_active_piece(
-        %__MODULE__{piece_bag: piece_bag, size_x: size_x, size_y: size_y} = board,
-        opts \\ []
-      ) do
-    add_to_matrix? = Keyword.get(opts, :add_to_matrix?, true)
-
-    {piece_bag, active_piece} = PieceBag.get_piece(piece_bag, {size_x, size_y})
-
-    %{
-      board
-      | active_piece: active_piece,
-        piece_bag: piece_bag,
-        matrix:
-          if add_to_matrix? do
-            Matrix.add_piece(board.matrix, board.active_piece)
-          else
-            board.matrix
-          end
-    }
-  end
-
-  @spec has_lines_cleared(t(), count :: non_neg_integer()) :: boolean()
-  def has_lines_cleared(%__MODULE__{} = board, count) do
-    board.cleared_lines_count >= count
-  end
-
-  @spec set_placement(t(), placement :: pos_integer()) :: {:ok, t()} | {:error, term()}
-  def set_placement(%__MODULE__{} = board, placement) do
-    ensure_type(%{board | status: :complete, placement: placement})
-  end
-
   @spec hold_active_piece(t()) :: t()
   defp hold_active_piece(
          %__MODULE__{active_piece: %PositionedPiece{piece: %Piece{} = piece}, piece_in_hold: nil} =
@@ -348,7 +331,13 @@ defmodule Pulk.Game.Board do
     end
   end
 
-  def can_update_active_piece?(%__MODULE__{} = board) do
+  defp calculate_can_update_active_piece(%__MODULE__{} = board) do
+    {:ok, %{board | can_update_active_piece?: can_update_active_piece?(board)}}
+  end
+
+  defp can_update_active_piece?(%__MODULE__{active_piece: nil}), do: false
+
+  defp can_update_active_piece?(%__MODULE__{} = board) do
     case update_active_piece(
            board,
            PieceUpdate.update_active_piece(board, :simple, %{direction: :down})
@@ -356,5 +345,31 @@ defmodule Pulk.Game.Board do
       {:ok, _board} -> true
       {:error, _reason} -> false
     end
+  end
+end
+
+defimpl Jason.Encoder, for: [Pulk.Board] do
+  alias Pulk.Board
+
+  @visible_fields [
+    :score,
+    :cleared_lines_count,
+    :piece_in_hold,
+    :active_piece,
+    :buffer_zone_size,
+    :status,
+    :placement
+  ]
+
+  def encode(struct, opts) do
+    next_struct =
+      struct
+      |> Map.from_struct()
+      |> Map.take(@visible_fields)
+      |> Map.put(:level, Board.level(struct))
+      |> Map.put(:piece_queue, Board.piece_queue(struct))
+      |> Map.put(:matrix, Board.matrix(struct))
+
+    Jason.Encode.map(next_struct, opts)
   end
 end

@@ -1,4 +1,4 @@
-defmodule Pulk.Game.PieceBag do
+defmodule Pulk.Piece.PieceBag do
   @moduledoc """
   Provides an entity that can be used to generate pieces queue
   """
@@ -6,8 +6,8 @@ defmodule Pulk.Game.PieceBag do
   use TypedStruct
   use Domo, gen_constructor_name: :_new
 
-  alias Pulk.Game.PositionedPiece
-  alias Pulk.Game.Piece
+  alias Pulk.Piece.PositionedPiece
+  alias Pulk.Piece
 
   typedstruct do
     field :piece_queue, list(Piece.t()), enforce: true

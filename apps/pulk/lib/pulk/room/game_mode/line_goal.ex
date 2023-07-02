@@ -10,8 +10,8 @@ defmodule Pulk.Room.GameMode.LineGoal do
 
   alias Pulk.Room.GameMode
   alias Pulk.Room
-  alias Pulk.RoomContext
-  alias Pulk.Game.Board
+  alias Pulk.Room.RoomManager
+  alias Pulk.Board
   alias Pulk.Player.PlayerManager
 
   @behaviour GameMode.Behaviour
@@ -30,7 +30,7 @@ defmodule Pulk.Room.GameMode.LineGoal do
         %__MODULE__{line_goal: line_goal} = state,
         %Pulk.Room{} = room
       ) do
-    {:ok, players_boards} = RoomContext.get_room_boards(room)
+    {:ok, players_boards} = RoomManager.fetch_room_boards(room)
 
     boards =
       players_boards
@@ -142,9 +142,8 @@ defmodule Pulk.Room.GameMode.LineGoal do
   end
 
   defp set_player_placement_and_notify(player, placement) do
-    {:ok, _board} =
-      PlayerManager.set_placement(PlayerManager.via_tuple(player.player_id), placement)
+    {:ok, _board} = PlayerManager.set_placement(player.player_id, placement)
 
-    PlayerManager.publish_board(PlayerManager.via_tuple(player.player_id))
+    PlayerManager.publish_board(player.player_id)
   end
 end

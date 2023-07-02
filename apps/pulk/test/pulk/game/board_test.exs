@@ -1,12 +1,12 @@
 defmodule Pulk.Game.BoardTest do
   use ExUnit.Case
 
-  alias Pulk.Game.Piece
-  alias Pulk.Game.Board
-  alias Pulk.Game.Matrix
-  alias Pulk.Game.BoardUpdate
-  alias Pulk.Game.PieceUpdate
-  alias Pulk.Game.PositionedPiece
+  alias Pulk.Piece
+  alias Pulk.Board
+  alias Pulk.Matrix
+  alias Pulk.Board.BoardUpdate
+  alias Pulk.Piece.PieceUpdate
+  alias Pulk.Piece.PositionedPiece
 
   describe "Board.update/2" do
     test "it rejects updates that rotate active piece to an already occupied coordinates" do

@@ -1,4 +1,4 @@
-defmodule Pulk.Game.PositionedPiece do
+defmodule Pulk.Piece.PositionedPiece do
   @moduledoc """
   Entity that represents positioned piece
   """
@@ -6,9 +6,9 @@ defmodule Pulk.Game.PositionedPiece do
   use TypedStruct
   use Domo
 
-  alias Pulk.Game.Piece
-  alias Pulk.Game.Rotation
-  alias Pulk.Game.Coordinates
+  alias Pulk.Piece
+  alias Pulk.Piece.Rotation
+  alias Pulk.Matrix.Coordinates
 
   @type direction() :: :down | :left | :right
 
@@ -197,5 +197,17 @@ defmodule Pulk.Game.PositionedPiece do
           {1, 1}
         }
     end
+  end
+end
+
+defimpl Jason.Encoder, for: [Pulk.Piece.PositionedPiece] do
+  def encode(struct, opts) do
+    Jason.Encode.map(
+      struct
+      |> Map.from_struct()
+      |> Map.put(:coordinates, Enum.map(struct.coordinates, &Tuple.to_list(&1)))
+      |> Map.put(:base_point, Tuple.to_list(struct.base_point)),
+      opts
+    )
   end
 end

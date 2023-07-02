@@ -1,4 +1,4 @@
-defmodule Pulk.Game.Piece do
+defmodule Pulk.Piece do
   @moduledoc """
   Entity that represenets game piece type
   """
@@ -70,7 +70,7 @@ defmodule Pulk.Game.Piece do
   end
 end
 
-defimpl Inspect, for: Pulk.Game.Piece do
+defimpl Inspect, for: Pulk.Piece do
   def inspect(piece, _opts) do
     case piece.piece_type do
       "" ->
@@ -79,5 +79,16 @@ defimpl Inspect, for: Pulk.Game.Piece do
       value ->
         value
     end
+  end
+end
+
+defimpl Jason.Encoder, for: [Pulk.Piece] do
+  alias Pulk.Piece
+
+  def encode(struct, opts) do
+    Jason.Encode.string(
+      Piece.to_string(struct),
+      opts
+    )
   end
 end

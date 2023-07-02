@@ -1,4 +1,4 @@
-defmodule Pulk.Game.PieceUpdate do
+defmodule Pulk.Piece.PieceUpdate do
   @moduledoc """
   An entity that is used to describe piece position change
   """
@@ -6,10 +6,10 @@ defmodule Pulk.Game.PieceUpdate do
   use TypedStruct
   use Domo
 
-  alias Pulk.Game.Piece
-  alias Pulk.Game.PositionedPiece
-  alias Pulk.Game.Board
-  alias Pulk.Game.Rotation
+  alias Pulk.Piece
+  alias Pulk.Piece.PositionedPiece
+  alias Pulk.Board
+  alias Pulk.Piece.Rotation
 
   @type direction() :: :down | :left | :right
 
@@ -51,6 +51,15 @@ defmodule Pulk.Game.PieceUpdate do
     new!(
       piece: piece,
       update_type: update_type
+    )
+  end
+end
+
+defimpl Jason.Encoder, for: [Pulk.Piece.PieceUpdate] do
+  def encode(struct, opts) do
+    Jason.Encode.map(
+      Map.from_struct(struct),
+      opts
     )
   end
 end

@@ -3,12 +3,12 @@ defmodule Pulk.Room.PlayersSupervisor do
   Supervisor that controls room players
   """
 
-  use DynamicSupervisor, restart: :permanent
+  use DynamicSupervisor, restart: :transient
 
   def start_link(init_arg) do
     room = Keyword.fetch!(init_arg, :room)
 
-    DynamicSupervisor.start_link(__MODULE__, room, name: via_tuple(room))
+    DynamicSupervisor.start_link(__MODULE__, room, name: via(room))
   end
 
   @impl true
@@ -16,7 +16,7 @@ defmodule Pulk.Room.PlayersSupervisor do
     DynamicSupervisor.init(max_children: max_player_limit, strategy: :one_for_one)
   end
 
-  def via_tuple(%Pulk.Room{room_id: room_id}) do
+  def via(%Pulk.Room{room_id: room_id}) do
     Pulk.Registry.via_tuple({__MODULE__, room_id})
   end
 end

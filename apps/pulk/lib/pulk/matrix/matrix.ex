@@ -1,4 +1,4 @@
-defmodule Pulk.Game.Matrix do
+defmodule Pulk.Matrix do
   @moduledoc """
   Entity that represenets game field
   """
@@ -8,9 +8,9 @@ defmodule Pulk.Game.Matrix do
   use TypedStruct
   use Domo, gen_constructor_name: :_new
 
-  alias Pulk.Game.Piece
-  alias Pulk.Game.PositionedPiece
-  alias Pulk.Game.Coordinates
+  alias Pulk.Piece
+  alias Pulk.Piece.PositionedPiece
+  alias Pulk.Matrix.Coordinates
 
   @type line :: [Piece.t()]
   @type matrix :: [line()]
@@ -205,5 +205,17 @@ defmodule Pulk.Game.Matrix do
   @spec line_filled?(line()) :: boolean()
   defp line_filled?(line) do
     Enum.all?(line, &Kernel.not(Piece.is_empty?(&1)))
+  end
+end
+
+defimpl Jason.Encoder, for: [Pulk.Matrix] do
+  alias Pulk.Matrix
+
+  def encode(struct, opts) do
+    Jason.Encode.list(
+      struct
+      |> Matrix.get_matrix_lines(),
+      opts
+    )
   end
 end
