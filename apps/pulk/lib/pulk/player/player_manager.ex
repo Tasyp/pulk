@@ -268,21 +268,21 @@ defmodule Pulk.Player.PlayerManager do
          %BoardUpdate{} = board_update,
          opts \\ []
        ) do
-    # RoomManager will need to fetch state of all room boards so it will be 
-    # executed only after current board update is processed 
+    # RoomManager will need to fetch state of all room boards so it will be
+    # executed only after current board update is processed
     RoomManager.recalculate_room_status(room_id)
 
     case Board.update(board, board_update, opts) do
       {:ok, board} ->
         state
         |> Map.put(:board, board)
-        |> Map.put(:update_metadata, %{success?: true})
+        |> put_update_metadata(success?: true)
 
       {:error, reason} ->
         Logger.debug("Board update failed. Reason: #{inspect(reason)}")
 
         state
-        |> Map.put(:update_metadata, %{success?: false})
+        |> put_update_metadata(success?: false)
     end
   end
 
@@ -374,6 +374,17 @@ defmodule Pulk.Player.PlayerManager do
     state
     |> process_board_update(board_update, recalculate?: false)
     |> process_lock_delay()
+  end
+
+  defp put_update_metadata(state, keywords) when is_list(keywords) do
+    keywords_map = Enum.into(keywords, %{})
+
+    update_metadata =
+      state
+      |> Map.get(:update_metadata, %{})
+      |> Map.merge(keywords_map)
+
+    Map.put(state, :update_metadata, update_metadata)
   end
 
   defp extract_state(state), do: Map.delete(state, :update_metadata)
