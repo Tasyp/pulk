@@ -6,8 +6,10 @@ defmodule Pulk.Matrix do
   require Logger
 
   use TypedStruct
-  use Domo, gen_constructor_name: :_new
+  use Domo, gen_constructor_name: :_new, remote_types_as_any: [{Matrex, :t}]
 
+  alias Pulk.Matrix
+  alias Matrex
   alias Pulk.Piece
   alias Pulk.Piece.PositionedPiece
   alias Pulk.Matrix.Coordinates
@@ -16,75 +18,67 @@ defmodule Pulk.Matrix do
   @type matrix :: [line()]
 
   typedstruct do
-    field :value, matrix(), enforce: true
+    field :value, Matrex.t(), enforce: true
   end
 
   @spec new!(pos_integer(), pos_integer()) :: t()
   def new!(size_x, size_y) do
-    matrix =
-      1..size_y
-      |> Enum.map(fn _ -> 1..size_x |> Enum.map(fn _ -> Piece.new!() end) end)
-
+    matrix = Matrex.new(size_y, size_x, fn -> Piece.new!() |> Piece.to_integer() end)
     _new!(value: matrix)
   end
 
-  @spec new!(matrix()) :: t()
+  @spec new!(Matrex.t()) :: t()
   def new!(matrix) do
-    _new!(value: matrix)
+    _new!(value: from_piece_matrix(matrix))
   end
 
   def new(matrix) do
-    _new(value: matrix)
+    _new(value: from_piece_matrix(matrix))
+  end
+
+  def from_piece_matrix(piece_matrix) do
+    piece_matrix
+    |> Enum.map(fn row ->
+      row
+      |> Enum.map(fn cell ->
+        case cell do
+          _ when is_number(cell) -> cell
+          piece -> Piece.to_integer(piece)
+        end
+      end)
+    end)
+    |> Matrex.new()
   end
 
   @spec get_matrix_lines(t()) :: matrix()
   def get_matrix_lines(%__MODULE__{value: matrix}) do
-    matrix
+    Matrex.to_list_of_lists(matrix)
+    |> Enum.map(fn row ->
+      row
+      |> Enum.map(&(Piece.new!(&1)))
+    end)
   end
 
   @spec has_matching_size?(t(), {pos_integer(), pos_integer()}) ::
           :ok | {:error, :invalid_size}
   def has_matching_size?(%__MODULE__{value: matrix}, {size_x, size_y}) do
-    actual_size_y = length(matrix)
-
-    actual_sizes_x =
-      matrix |> Enum.map(fn row -> length(row) end) |> MapSet.new() |> Enum.to_list()
-
-    cond do
-      actual_size_y != size_y -> {:error, :invalid_size}
-      actual_sizes_x != [size_x] -> {:error, :invalid_size}
-      true -> :ok
+    case Matrex.size(matrix) do
+      {^size_x, ^size_y} -> :ok
+      _ -> {:error, :invalid_size}
     end
   end
 
-  def to_map(%__MODULE__{value: matrix}) do
-    matrix
-    |> Enum.with_index()
-    |> Enum.flat_map(fn {line, column_idx} ->
-      line
-      |> Enum.with_index()
-      |> Enum.map(fn {cell, row_idx} ->
-        {{row_idx, column_idx}, cell}
-      end)
-    end)
-    |> Map.new()
+  @spec map_cells(t(), Coordinates.collection(), Piece.t()) :: t()
+  def map_cells(%__MODULE__{value: matrix} = state, coordinates, piece) do
+    matrix = map_matrix_cells(matrix, coordinates, piece)
+    %{state | value: matrix}
   end
 
-  @spec map_rows(
-          t(),
-          callback :: (Piece.t(), {non_neg_integer(), non_neg_integer()} -> Piece.t())
-        ) :: t()
-  def map_rows(%__MODULE__{} = matrix, callback) do
-    matrix_value =
-      matrix.value
-      |> Enum.with_index()
-      |> Enum.map(fn {column, column_idx} ->
-        column
-        |> Enum.with_index()
-        |> Enum.map(fn {row, row_idx} -> callback.(row, {column_idx, row_idx}) end)
+  def map_matrix_cells(matrix, coordinates, piece) do
+    coordinates
+      |> Enum.reduce(matrix, fn {x, y}, matrix ->
+        Matrex.set(matrix, y + 1, x + 1, Piece.to_integer(piece))
       end)
-
-    %{matrix | value: matrix_value}
   end
 
   @spec add_piece(t(), PositionedPiece.t()) :: t()
@@ -92,16 +86,8 @@ defmodule Pulk.Matrix do
         %__MODULE__{} = matrix,
         %PositionedPiece{piece: piece, coordinates: coordinates}
       ) do
-    coordinates_set = Coordinates.to_set(coordinates)
-
     matrix
-    |> map_rows(fn row_value, {column_idx, row_idx} ->
-      if MapSet.member?(coordinates_set, {row_idx, column_idx}) do
-        piece
-      else
-        row_value
-      end
-    end)
+    |> map_cells(coordinates, piece)
   end
 
   @spec add_ghost_piece(t(), PositionedPiece.t() | nil) :: t()
@@ -111,32 +97,16 @@ defmodule Pulk.Matrix do
 
   def add_ghost_piece(%__MODULE__{} = matrix, %PositionedPiece{} = positioned_piece) do
     %PositionedPiece{coordinates: coordinates} = do_hard_drop(matrix, positioned_piece)
-    coordinates_set = Coordinates.to_set(coordinates)
 
     matrix
-    |> map_rows(fn row_value, {column_idx, row_idx} ->
-      if MapSet.member?(coordinates_set, {row_idx, column_idx}) do
-        Piece.ghost_piece()
-      else
-        row_value
-      end
-    end)
+    |> map_cells(coordinates, Piece.ghost_piece())
   end
 
   @spec can_insert_peace?(t(), PositionedPiece.t()) :: boolean()
   def can_insert_peace?(%__MODULE__{} = matrix, %PositionedPiece{coordinates: coordinates}) do
-    matrix_map =
-      matrix
-      |> to_map()
-
     coordinates
-    |> Enum.all?(fn coordinates ->
-      current_value =
-        matrix_map
-        |> Map.get(coordinates)
-
-      current_value !== nil && Piece.is_empty?(current_value)
-    end)
+    |> Enum.map(fn {x, y} -> at(matrix, x, y) end)
+    |> Enum.all?(&(&1 !== nil && Piece.new!(&1) |> Piece.is_empty?()))
   end
 
   @spec do_hard_drop(t(), PositionedPiece.t()) :: t()
@@ -157,15 +127,15 @@ defmodule Pulk.Matrix do
   @spec remove_filled_lines(t()) :: {t(), non_neg_integer()}
   def remove_filled_lines(%__MODULE__{value: matrix}) do
     {matrix, filled_lines_count} = do_remove_filled_lines(matrix)
-    {new!(matrix), filled_lines_count}
+    {new!(Matrex.to_list_of_lists(matrix)), filled_lines_count}
   end
 
-  @spec do_remove_filled_lines(matrix()) :: {matrix(), non_neg_integer()}
-  @spec do_remove_filled_lines(matrix(), non_neg_integer()) ::
-          {matrix(), non_neg_integer()}
+  @spec do_remove_filled_lines(Matrex.t()) :: {Matrex.t(), non_neg_integer()}
+  @spec do_remove_filled_lines(Matrex.t(), non_neg_integer()) :: {Matrex.t(), non_neg_integer()}
   defp do_remove_filled_lines(matrix, filled_lines_count \\ 0) do
     maybe_filled_line_idx =
       matrix
+      |> Matrex.list_of_rows()
       |> Enum.find_index(&line_filled?/1)
 
     case maybe_filled_line_idx do
@@ -173,20 +143,21 @@ defmodule Pulk.Matrix do
         {matrix, filled_lines_count}
 
       line_idx ->
+        {_rows_count, column_count} = Matrex.size(matrix)
+
         next_matrix =
           line_idx..0//-1
           |> Enum.to_list()
           |> List.foldl(matrix, fn
             0, acc ->
-              empty_line =
-                matrix
-                |> Enum.at(line_idx)
-                |> create_empty_line()
+              coordinates = 0..(column_count - 1)
+                |> Enum.map(&({&1, 0}))
 
-              List.replace_at(acc, 0, empty_line)
+              acc
+              |> map_matrix_cells(coordinates, Piece.new!())
 
             idx, acc ->
-              List.replace_at(acc, idx, Enum.at(acc, idx - 1))
+              replace_row(acc, idx + 1, Matrex.row(acc, idx))
           end)
 
         do_remove_filled_lines(
@@ -196,15 +167,28 @@ defmodule Pulk.Matrix do
     end
   end
 
-  @spec create_empty_line(line()) :: line()
-  defp create_empty_line(line) do
-    line
-    |> Enum.map(fn _ -> Piece.new!() end)
+  defp at(%__MODULE__{value: matrix}, x, y) do
+    try do
+      Matrex.at(matrix, x + 1, y + 1)
+    rescue
+      ArgumentError -> nil
+    end
+  end
+
+  defp replace_row(matrix, idx, row) do
+    {_rows_count, column_count} = Matrex.size(matrix)
+
+    1..column_count
+    |> Enum.reduce(matrix, fn column_idx, matrix ->
+      value = Matrex.at(row, 1, column_idx)
+
+      Matrex.set(matrix, idx, column_idx, value)
+    end)
   end
 
   @spec line_filled?(line()) :: boolean()
   defp line_filled?(line) do
-    Enum.all?(line, &Kernel.not(Piece.is_empty?(&1)))
+    Enum.all?(line, &Kernel.not(Piece.new!(&1) |> Piece.is_empty?()))
   end
 end
 

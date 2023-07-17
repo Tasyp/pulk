@@ -43,6 +43,7 @@ defmodule Pulk.MixProject do
       {:domo, "~> 1.5"},
       {:friendlyid, "~> 0.2.0"},
       {:nanoid, "~> 2.0.5"},
+      {:matrex, "~> 0.6"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end

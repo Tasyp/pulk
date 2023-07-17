@@ -23,7 +23,7 @@ defmodule Pulk.MatrixTest do
 
       {matrix, cleared_lines_count} = Matrix.remove_filled_lines(matrix)
 
-      assert matrix == expected_matrix
+      assert Matrix.get_matrix_lines(expected_matrix) == Matrix.get_matrix_lines(matrix)
       assert cleared_lines_count == 2
     end
 

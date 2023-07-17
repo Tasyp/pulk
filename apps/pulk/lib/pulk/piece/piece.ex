@@ -34,6 +34,11 @@ defmodule Pulk.Piece do
     _new!()
   end
 
+  def new!(piece_idx) when is_number(piece_idx) do
+    piece_type = Enum.at(@supported_values, round(piece_idx))
+    _new!(piece_type: piece_type)
+  end
+
   def new!(piece_type) do
     _new!(piece_type: piece_type)
   end
@@ -67,6 +72,10 @@ defmodule Pulk.Piece do
   @spec to_string(t()) :: String.t()
   def to_string(%__MODULE__{piece_type: piece_type}) do
     piece_type
+  end
+
+  def to_integer(%__MODULE__{piece_type: piece_type}) do
+    Enum.find_index(@supported_values, &(&1 == piece_type))
   end
 end
 
