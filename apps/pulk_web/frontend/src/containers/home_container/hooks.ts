@@ -3,7 +3,7 @@ import useSWR from "swr";
 
 import { usePlayer } from "../../lib/player";
 
-const fetcher = ([resource], init) =>
+const fetcher = ([resource]: [URL], init?: RequestInit) =>
   fetch(resource, init).then((res) => res.json());
 
 export const useAvailableRoom = (): {

@@ -10,7 +10,7 @@ export const useKeyboard = (
 ) => {
   const isDownKeyPressed = React.useRef(false);
   const isSoftDropActivated = React.useRef(false);
-  const softDropTimerId = React.useRef<number | undefined>(undefined);
+  const softDropTimerId = React.useRef<NodeJS.Timeout | undefined>(undefined);
 
   useHotkeys(
     "down",

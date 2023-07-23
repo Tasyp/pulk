@@ -1,5 +1,7 @@
+import "./app.css";
+
 import React from "react";
-import { SWRConfig } from "swr";
+import { SWRConfig, SWRConfiguration } from "swr";
 import { styled } from "goober";
 import { Socket } from "phoenix";
 
@@ -14,7 +16,7 @@ const Container = styled("div")`
   padding: 0;
 `;
 
-export const SWR_CONFIG = {
+const SWR_CONFIG: SWRConfiguration = {
   fetcher: (resource, init) => fetch(resource, init).then((res) => res.json()),
 };
 

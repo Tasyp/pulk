@@ -23,7 +23,7 @@ export const PlayerProvider: React.FunctionComponent<PropsWithChildren> = ({
     }
 
     setCachedPlayerId(data?.data.player_id);
-  }, [setCachedPlayerId, data]);
+  }, [setCachedPlayerId, data, cachedPlayerId]);
 
   const value = React.useMemo(() => {
     if (cachedPlayerId !== undefined) {

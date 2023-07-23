@@ -43,7 +43,6 @@ defmodule PulkWeb.MixProject do
       {:phoenix_live_view, "~> 0.18.16"},
       {:floki, ">= 0.30.0", only: :test},
       {:phoenix_live_dashboard, "~> 0.7.2"},
-      {:esbuild, "~> 0.7", runtime: Mix.env() == :dev},
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
       {:pulk, in_umbrella: true},
@@ -62,14 +61,11 @@ defmodule PulkWeb.MixProject do
     [
       setup: ["deps.get", "assets.setup", "assets.build"],
       "format.all": ["format", "format.js"],
-      "format.js": "cmd --cd assets yarn format",
-      lint: ["format --check-formatted", "cmd --cd assets yarn lint", "credo"],
-      "assets.setup": [
-        "cmd --cd assets yarn",
-        "esbuild.install --if-missing"
-      ],
-      "assets.build": ["esbuild default"],
-      "assets.deploy": ["esbuild default --minify", "phx.digest"]
+      "format.js": "cmd --cd frontend yarn format",
+      lint: ["format --check-formatted", "cmd --cd frontend yarn lint", "credo"],
+      "assets.setup": ["cmd --cd frontend yarn"],
+      "assets.build": ["build.web"],
+      "assets.deploy": ["assets.build", "phx.digest"]
     ]
   end
 end

@@ -46,7 +46,7 @@ export const onRoomJoin = (
     .receive("error", (response) => onError(getRoomJoinError(response)));
 };
 
-const getRoomJoinError = (response): RoomErrorType => {
+const getRoomJoinError = (response: { reason: string | undefined } | undefined): RoomErrorType => {
   switch (response?.reason) {
     case "unknown_room":
       return RoomErrorType.UNKNOWN_ROOM;
@@ -99,7 +99,7 @@ export type RoomOutgoingMessagePayload = {
     payload: {
       active_piece_update: PieceUpdate;
     };
-    success: {};
+    success: unknown;
   };
 };
 

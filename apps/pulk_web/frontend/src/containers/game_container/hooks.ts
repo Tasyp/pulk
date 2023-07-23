@@ -24,6 +24,7 @@ export const useRoom = ({
   player: Board | undefined;
   otherPlayers: Map<string, BoardSnapshot>;
 } => {
+  const socket = useContext(SocketContext);
   const { playerId } = usePlayer();
   const [roomJoinState, setRoomJoinState] = useState<"ok" | "failed" | "init">(
     "init"
@@ -36,10 +37,9 @@ export const useRoom = ({
     new Map<string, BoardSnapshot>()
   );
 
-  const socket = useContext(SocketContext);
   const channel = useMemo(
     () => socket.channel(getRoomChannelId(roomId), { player_id: playerId }),
-    [roomId, playerId]
+    [roomId, playerId, socket]
   );
 
   useEffect(() => {
@@ -94,7 +94,7 @@ export const useRoom = ({
     return () => {
       channel.leave();
     };
-  }, [setRoomJoinState, setOtherPlayers, setErrorReason]);
+  }, [setRoomJoinState, channel, setOtherPlayers, setErrorReason]);
 
   useEffect(() => {
     const snapshotRef = onRoomMessage(
@@ -144,7 +144,7 @@ export const useRoom = ({
       channel.off(RoomIncomingEventType.BOARD_SNAPSHOT_UPDATE, snapshotRef);
       channel.off(RoomIncomingEventType.BOARD_UPDATE, boardRef);
     };
-  }, [setOtherPlayers, playerId]);
+  }, [setOtherPlayers, channel, playerId]);
 
   const setBoard = useCallback(
     (boardUpdate: BoardUpdate): void => {
@@ -152,7 +152,7 @@ export const useRoom = ({
         active_piece_update: boardUpdate.activePieceUpdate,
       });
     },
-    [channel, setPlayerBoard]
+    [channel]
   );
 
   return {
