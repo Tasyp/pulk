@@ -5,7 +5,7 @@ import { TetrisField } from "../tetris_field";
 import { BoardSnapshotView, LoadingSpinner } from "../../components";
 import { useRoom } from "./hooks";
 
-import styles from './game_container.module.css';
+import styles from "./game_container.module.css";
 
 interface Props {
   roomId: string;
@@ -41,7 +41,7 @@ export const GameContainer: React.FunctionComponent<Props> = ({ roomId }) => {
               <div key={playerId}>
                 <BoardSnapshotView snapshot={snapshot} />
               </div>
-            )
+            ),
         )}
       </div>
       <div className={classNames(styles.playersColumn)}>
@@ -57,7 +57,7 @@ export const GameContainer: React.FunctionComponent<Props> = ({ roomId }) => {
               <div key={playerId}>
                 <BoardSnapshotView snapshot={snapshot} />
               </div>
-            )
+            ),
         )}
       </div>
     </div>

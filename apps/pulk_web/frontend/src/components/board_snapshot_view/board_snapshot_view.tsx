@@ -2,7 +2,7 @@ import React from "react";
 import classNames from "classnames";
 import { Matrix } from "react-tetris/lib/models/Matrix";
 
-import styles from './board_snapshot_view.module.css'
+import styles from "./board_snapshot_view.module.css";
 
 import {
   BoardSnapshot,
@@ -25,44 +25,50 @@ export const BoardSnapshotView: React.FunctionComponent<Props> = ({
       hasActivePiece && activePiece !== null
         ? addPiece(inputMatrix, activePiece)
         : inputMatrix,
-      bufferZoneSize
-    )
+      bufferZoneSize,
+    ),
   );
 
   return (
     <table>
       <tbody>
-        {matrix.map((row, i) =>
+        {matrix.map((row, i) => (
           <tr key={i}>
             {row.map((block, j) => (
-              <td key={j} className={classNames(styles["game-block"], getBlockClass(block))} />
+              <td
+                key={j}
+                className={classNames(
+                  styles["game-block"],
+                  getBlockClass(block),
+                )}
+              />
             ))}
           </tr>
-        )}
+        ))}
       </tbody>
     </table>
   );
 };
 
-const getBlockClass  = (block: Matrix[number][number]): string => {
+const getBlockClass = (block: Matrix[number][number]): string => {
   switch (block) {
-    case 'I':
+    case "I":
       return styles["piece-i"];
-    case 'J':
+    case "J":
       return styles["piece-j"];
-    case 'L':
+    case "L":
       return styles["piece-l"];
-    case 'O':
+    case "O":
       return styles["piece-o"];
-    case 'S':
+    case "S":
       return styles["piece-s"];
-    case 'T':
+    case "T":
       return styles["piece-t"];
-    case 'Z':
+    case "Z":
       return styles["piece-z"];
-    case 'ghost':
+    case "ghost":
       return styles["piece-preview"];
     default:
-      return '';
+      return "";
   }
-}
+};

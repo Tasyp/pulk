@@ -6,5 +6,5 @@ import App from "./app.tsx";
 const socket = initSocket();
 
 ReactDOM.createRoot(document.getElementById("app")!).render(
-  <App socket={socket} />
+  <App socket={socket} />,
 );

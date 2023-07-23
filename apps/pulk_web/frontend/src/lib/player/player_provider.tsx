@@ -14,7 +14,7 @@ export const PlayerProvider: React.FunctionComponent<PropsWithChildren> = ({
     string | undefined
   >(LOCAL_STORAGE_ID, undefined);
   const { data, error, isLoading } = useSWRImmutable(() =>
-    cachedPlayerId === undefined ? "/api/player" : null
+    cachedPlayerId === undefined ? "/api/player" : null,
   );
 
   React.useEffect(() => {

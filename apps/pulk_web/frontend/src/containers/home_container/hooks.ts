@@ -14,7 +14,7 @@ export const useAvailableRoom = (): {
   const random = React.useRef(Date.now());
   const { data, error, isLoading } = useSWR<{ data: { room_id: string } }>(
     () => [`/api/room?player_id=${playerId}`, random],
-    fetcher
+    fetcher,
   );
 
   if (isLoading) {

@@ -6,7 +6,7 @@ import { Direction, RelativeRotation, UpdateType } from "../../lib/room";
 
 export const useKeyboard = (
   board: Board | undefined,
-  setBoard: (boardUpdate: BoardUpdate) => void
+  setBoard: (boardUpdate: BoardUpdate) => void,
 ) => {
   const isDownKeyPressed = React.useRef(false);
   const isSoftDropActivated = React.useRef(false);
@@ -71,7 +71,7 @@ export const useKeyboard = (
       }
     },
     { preventDefault: true, keydown: true, keyup: true },
-    [board]
+    [board],
   );
 
   useHotkeys(
@@ -90,7 +90,7 @@ export const useKeyboard = (
       });
     },
     { preventDefault: true, keydown: false, keyup: true },
-    [board]
+    [board],
   );
   useHotkeys(
     "right",
@@ -108,7 +108,7 @@ export const useKeyboard = (
       });
     },
     { preventDefault: true, keydown: false, keyup: true },
-    [board]
+    [board],
   );
   useHotkeys(
     "space",
@@ -125,7 +125,7 @@ export const useKeyboard = (
       });
     },
     { preventDefault: true, keydown: false, keyup: true },
-    [board]
+    [board],
   );
 
   useHotkeys(
@@ -144,7 +144,7 @@ export const useKeyboard = (
       });
     },
     { preventDefault: true, keydown: false, keyup: true },
-    [board]
+    [board],
   );
 
   useHotkeys(
@@ -162,7 +162,7 @@ export const useKeyboard = (
       });
     },
     { preventDefault: true, keydown: false, keyup: true },
-    [board]
+    [board],
   );
 
   useHotkeys(
@@ -181,6 +181,6 @@ export const useKeyboard = (
       });
     },
     { preventDefault: true, keydown: false, keyup: true },
-    [board]
+    [board],
   );
 };

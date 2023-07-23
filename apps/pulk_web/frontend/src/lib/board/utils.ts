@@ -17,7 +17,7 @@ export const composeTetrisMatrix = (matrix: Matrix): TetrisMatrix => {
         default:
           return value;
       }
-    })
+    }),
   );
 };
 
@@ -32,13 +32,13 @@ export const composeMatrix = (matrix: TetrisMatrix): Matrix => {
         default:
           return value;
       }
-    })
+    }),
   );
 };
 
 export const addPiece = (
   inputMatrix: Matrix,
-  piece: PositionedPiece
+  piece: PositionedPiece,
 ): Matrix => {
   const matrix = inputMatrix.map((row) => row.map((cell) => cell));
   const nextMatrix = piece.coordinates.reduce((matrix, [x, y]) => {

@@ -38,7 +38,7 @@ export type RoomJoinPayload = {
 export const onRoomJoin = (
   channel: Channel,
   onSuccess: (payload: RoomJoinPayload) => void,
-  onError: (error: RoomErrorType) => void
+  onError: (error: RoomErrorType) => void,
 ) => {
   channel
     .join()
@@ -46,7 +46,9 @@ export const onRoomJoin = (
     .receive("error", (response) => onError(getRoomJoinError(response)));
 };
 
-const getRoomJoinError = (response: { reason: string | undefined } | undefined): RoomErrorType => {
+const getRoomJoinError = (
+  response: { reason: string | undefined } | undefined,
+): RoomErrorType => {
   switch (response?.reason) {
     case "unknown_room":
       return RoomErrorType.UNKNOWN_ROOM;
@@ -109,7 +111,7 @@ export const pushRoomMessage = <T extends RoomOutgoingEventType>(
   channel: Channel,
   messageType: T,
   payload: RoomOutgoingMessagePayload[T]["payload"],
-  onSuccess?: (payload: RoomOutgoingMessagePayload[T]["success"]) => void
+  onSuccess?: (payload: RoomOutgoingMessagePayload[T]["success"]) => void,
 ) => {
   channel.push(messageType, payload).receive("ok", onSuccess ?? noOp);
 };
@@ -142,7 +144,7 @@ export type RoomIncomingMessagePayload = {
 export function onRoomMessage<T extends RoomIncomingEventType>(
   channel: Channel,
   messageType: T,
-  callback: (payload: RoomIncomingMessagePayload[T]) => void
+  callback: (payload: RoomIncomingMessagePayload[T]) => void,
 ): number {
   return channel.on(messageType, callback);
 }

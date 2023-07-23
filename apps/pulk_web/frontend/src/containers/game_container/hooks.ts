@@ -27,19 +27,19 @@ export const useRoom = ({
   const socket = useContext(SocketContext);
   const { playerId } = usePlayer();
   const [roomJoinState, setRoomJoinState] = useState<"ok" | "failed" | "init">(
-    "init"
+    "init",
   );
   const [errorReason, setErrorReason] = useState<undefined | RoomErrorType>(
-    undefined
+    undefined,
   );
   const [playerBoard, setPlayerBoard] = useState<Board | null>(null);
   const [otherPlayers, setOtherPlayers] = useState(
-    new Map<string, BoardSnapshot>()
+    new Map<string, BoardSnapshot>(),
   );
 
   const channel = useMemo(
     () => socket.channel(getRoomChannelId(roomId), { player_id: playerId }),
-    [roomId, playerId, socket]
+    [roomId, playerId, socket],
   );
 
   useEffect(() => {
@@ -57,9 +57,9 @@ export const useRoom = ({
                   bufferZoneSize: snapshot.buffer_zone_size,
                   status: snapshot.status,
                 },
-              ]
-            )
-          )
+              ],
+            ),
+          ),
         );
 
         const {
@@ -88,7 +88,7 @@ export const useRoom = ({
       (error) => {
         setRoomJoinState("failed");
         setErrorReason(error);
-      }
+      },
     );
 
     return () => {
@@ -113,10 +113,10 @@ export const useRoom = ({
                 activePiece: board_snapshot.active_piece,
                 status: board_snapshot.status,
                 bufferZoneSize: board_snapshot.buffer_zone_size,
-              })
-            )
+              }),
+            ),
         );
-      }
+      },
     );
 
     const boardRef = onRoomMessage(
@@ -135,9 +135,9 @@ export const useRoom = ({
                 level: response.level,
                 status: response.status,
               }
-            : null
+            : null,
         );
-      }
+      },
     );
 
     return () => {
@@ -152,7 +152,7 @@ export const useRoom = ({
         active_piece_update: boardUpdate.activePieceUpdate,
       });
     },
-    [channel]
+    [channel],
   );
 
   return {
