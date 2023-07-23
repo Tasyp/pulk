@@ -1,0 +1,27 @@
+.container {
+  display: flex;
+  height: 100%;
+}
+
+.playersColumn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 40%;
+}
+
+.competitorsColumn {
+  display: flex;
+  width: 40%;
+  padding: 16px;
+  gap: 8px;
+
+  &.left {
+    justify-content: flex-end;
+  }
+
+  &.right {
+    justify-content: flex-start;
+  }
+}
