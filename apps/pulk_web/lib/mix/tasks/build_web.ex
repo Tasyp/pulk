@@ -1,4 +1,8 @@
 defmodule Mix.Tasks.Build.Web do
+  @moduledoc """
+  Mix task to facilitate frontend compilation
+  """
+
   use Mix.Task
   require Logger
 
