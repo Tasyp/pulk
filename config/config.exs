@@ -9,25 +9,6 @@
 # move said applications out of the umbrella.
 import Config
 
-# Configure Mix tasks and generators
-# TODO: Add Ecto
-# config :pulk,
-#   ecto_repos: [Pulk.Repo]
-
-# Configures the mailer
-#
-# By default it uses the "Local" adapter which stores the emails
-# locally. You can see the emails in your browser, at "/dev/mailbox".
-#
-# For production it's recommended to configure a different adapter
-# at the `config/runtime.exs`.
-config :pulk, Pulk.Mailer, adapter: Swoosh.Adapters.Local
-
-# TODO: Add Ecto
-# config :pulk_web,
-#   ecto_repos: [Pulk.Repo],
-#   generators: [context_app: :pulk]
-
 # Configures the endpoint
 config :pulk_web, PulkWeb.Endpoint,
   url: [host: "localhost"],
@@ -37,16 +18,6 @@ config :pulk_web, PulkWeb.Endpoint,
   ],
   pubsub_server: Pulk.PubSub,
   live_view: [signing_salt: "NJf8BruN"]
-
-# Configure esbuild (the version is required)
-config :esbuild,
-  version: "0.17.11",
-  default: [
-    args:
-      ~w(js/app.tsx --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
-    cd: Path.expand("../apps/pulk_web/assets", __DIR__),
-    env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
-  ]
 
 # Configures Elixir's Logger
 config :logger, :console,

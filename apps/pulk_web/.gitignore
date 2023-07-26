@@ -28,6 +28,9 @@ pulk_web-*.tar
 # Ignore assets that are produced by build tools.
 /priv/static/assets/
 
+# Ignore frontend build
+/priv/static/frontend
+
 # Ignore digested assets cache.
 /priv/static/cache_manifest.json
 

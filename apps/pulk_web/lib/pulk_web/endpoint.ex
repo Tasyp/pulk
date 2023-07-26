@@ -13,9 +13,9 @@ defmodule PulkWeb.Endpoint do
 
   socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
 
-  socket "/socket", PulkWeb.RoomSocket,
+  socket "/api/socket", PulkWeb.RoomSocket,
     websocket: true,
-    longpoll: false
+    longpoll: true
 
   # Serve at "/" the static files from "priv/static" directory.
   #
