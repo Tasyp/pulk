@@ -1,0 +1,17 @@
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  & .title {
+    font-size: 16px;
+    color: #000;
+    text-transform: uppercase;
+  }
+
+  & .subtitle {
+    font-size: 16px;
+    text-transform: uppercase;
+    color: #808080;
+  }
+}

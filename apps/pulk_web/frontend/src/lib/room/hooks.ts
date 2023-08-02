@@ -1,7 +1,7 @@
 import React from "react";
 import useSWR from "swr";
 
-import { usePlayer } from "../../lib/player";
+import { usePlayer } from "../player";
 
 const fetcher = ([resource]: [URL], init?: RequestInit) =>
   fetch(resource, init).then((res) => res.json());
