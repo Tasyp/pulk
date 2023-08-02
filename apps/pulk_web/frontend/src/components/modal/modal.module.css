@@ -1,0 +1,72 @@
+.modal {
+  margin: 0 10px;
+  background-color: #c0c0c0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 3px 4px;
+  box-shadow:
+    2px 2px 0px 0px #dfdfdf inset,
+    -2px -2px 0px 0px #7f7f7f inset,
+    1px 1px 0px 0px #fff inset,
+    -1px -1px 0px 0px #000 inset;
+  max-width: 600px;
+  width: 100%;
+
+  & .windowFrame {
+    display: block;
+    padding: 0px 4px;
+    color: #000;
+  }
+
+  & .content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 0px 8px;
+  }
+}
+
+.header {
+  display: flex;
+  background-color: #000080;
+  padding: 2px 2px 2px 4px;
+  align-items: center;
+
+  & .title {
+    display: flex;
+    gap: 2px;
+    font-size: 14px;
+    color: #fff;
+    align-items: center;
+  }
+
+  & .controls {
+    display: flex;
+    gap: 2px;
+    margin-left: auto;
+  }
+}
+
+.iconButton {
+  display: flex;
+  width: 16px;
+  height: 16px;
+  justify-content: center;
+  background-color: #c0c0c0;
+  padding: 4px;
+  border: 0;
+  box-shadow:
+    2px 2px 0px 0px #dfdfdf inset,
+    -2px -2px 0px 0px #7f7f7f inset,
+    1px 1px 0px 0px #fff inset,
+    -1px -1px 0px 0px #000 inset;
+
+  &.centered {
+    align-items: center;
+  }
+
+  &.end {
+    align-items: flex-end;
+  }
+}

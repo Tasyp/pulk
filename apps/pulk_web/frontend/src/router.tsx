@@ -1,17 +1,18 @@
 import React from "react";
-import { Route, Switch } from "wouter";
+import { Route } from "wouter";
 
-import { GameContainer, HomeContainer } from "./containers";
+import { GameContainer } from "./containers";
+import { LoginPage } from "./pages";
 
 export const Router: React.FunctionComponent = () => {
   return (
-    <Switch>
+    <>
       <Route path="/">
-        <HomeContainer />
+        <LoginPage />
       </Route>
       <Route<{ roomId: string }> path="/room/:roomId">
         {(params) => <GameContainer roomId={params.roomId} />}
       </Route>
-    </Switch>
+    </>
   );
 };
