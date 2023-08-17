@@ -8,12 +8,8 @@ import { useLocation } from "wouter";
 
 const GAME_MODES = [
   {
-    label: "40 lines (505)",
+    label: "40 lines",
     value: 0,
-  },
-  {
-    label: "Garbage (103)",
-    value: 1,
   },
 ];
 
@@ -28,7 +24,7 @@ export const LoginPage: React.FunctionComponent = () => {
   return (
     <div className={styles.container}>
       <Logo className={styles.logo} />
-      <Modal title="Login" subnote="5 095 345 player(s)">
+      <Modal title="Login" subnote="0 player(s)">
         <div className={styles.intro}>
           <p className={styles.title}>Welcome to Pulk.io</p>
           <p className={styles.text}>
