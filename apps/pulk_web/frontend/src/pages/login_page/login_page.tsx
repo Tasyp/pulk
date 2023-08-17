@@ -1,10 +1,10 @@
 import { Button, Select, TextInput } from "react95";
+import { useLocation } from "wouter";
 
 import { InputGroup, Logo, Modal } from "../../components";
 import { useAvailableRoom } from "../../lib/room";
 
 import styles from "./login_page.module.css";
-import { useLocation } from "wouter";
 
 const GAME_MODES = [
   {
