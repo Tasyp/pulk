@@ -2,7 +2,6 @@ import classNames from "classnames";
 
 import {
   IconCross,
-  IconFolderSmall,
   IconMinimize,
   IconWindow,
 } from "../../icons";
@@ -11,31 +10,46 @@ import { Frame } from "react95";
 
 interface Props {
   title?: React.ReactNode;
+  icon?: React.ReactNode;
   children?: React.ReactNode;
   subnote?: React.ReactNode;
+  className?: string;
+  controls?: 'all' | 'only-close';
 }
 
 export const Modal: React.FunctionComponent<Props> = ({
+  icon,
   title,
   children,
   subnote,
+  className,
+  controls = 'all',
 }) => (
-  <div className={styles.modal}>
+  <div className={classNames(styles.modal, className)}>
     <div className={styles.header}>
       <div className={styles.title}>
-        <IconFolderSmall />
+        {icon}
         <span>{title}</span>
       </div>
       <div className={styles.controls}>
-        <IconButton align="end">
-          <IconMinimize />
-        </IconButton>
-        <IconButton align="center">
-          <IconWindow />
-        </IconButton>
-        <IconButton align="center">
-          <IconCross />
-        </IconButton>
+        {controls === 'all' ? (
+          <>
+            <IconButton align="end">
+              <IconMinimize />
+            </IconButton>
+            <IconButton align="center">
+              <IconWindow />
+            </IconButton>
+            <IconButton align="center">
+              <IconCross />
+            </IconButton>
+          </>
+        ) : (
+          <IconButton align="center">
+            <IconCross />
+          </IconButton>
+        )}
+
       </div>
     </div>
     <div className={styles.content}>

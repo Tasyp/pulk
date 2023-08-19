@@ -1,0 +1,40 @@
+.container {
+  background-color: #000000;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  flex-direction: column;
+
+  & .modal {
+    max-width: 429px;
+  }
+}
+
+
+.playersTitle {
+  text-transform: uppercase;
+  font-size: 24px;
+}
+
+.playerCountContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.playerCount {
+  color: #808080;
+  font-size: 16px;
+  text-align: center;
+}
+
+.playersModal {
+  padding: 24px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+}

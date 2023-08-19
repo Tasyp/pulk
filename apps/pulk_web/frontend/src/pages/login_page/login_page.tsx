@@ -2,6 +2,7 @@ import { Button, Select, TextInput } from "react95";
 import { useLocation } from "wouter";
 
 import { InputGroup, Logo, Modal } from "../../components";
+import { IconFolderSmall } from "../../icons";
 import { useAvailableRoom } from "../../lib/room";
 
 import styles from "./login_page.module.css";
@@ -24,7 +25,7 @@ export const LoginPage: React.FunctionComponent = () => {
   return (
     <div className={styles.container}>
       <Logo className={styles.logo} />
-      <Modal title="Login" subnote="0 player(s)">
+      <Modal icon={<IconFolderSmall />} title="Login" subnote="0 player(s)">
         <div className={styles.intro}>
           <p className={styles.title}>Welcome to Pulk.io</p>
           <p className={styles.text}>

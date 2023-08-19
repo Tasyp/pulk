@@ -1,8 +1,7 @@
 import React from "react";
 import { Route } from "wouter";
 
-import { GameContainer } from "./containers";
-import { LoginPage } from "./pages";
+import { LoginPage, RoomPage } from "./pages";
 
 export const Router: React.FunctionComponent = () => {
   return (
@@ -11,7 +10,7 @@ export const Router: React.FunctionComponent = () => {
         <LoginPage />
       </Route>
       <Route<{ roomId: string }> path="/room/:roomId">
-        {(params) => <GameContainer roomId={params.roomId} />}
+        {(params) => <RoomPage roomId={params.roomId} />}
       </Route>
     </>
   );
