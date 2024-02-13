@@ -1,10 +1,6 @@
 import classNames from "classnames";
 
-import {
-  IconCross,
-  IconMinimize,
-  IconWindow,
-} from "../../icons";
+import { IconCross, IconMinimize, IconWindow } from "../../icons";
 import styles from "./modal.module.css";
 import { Frame } from "react95";
 
@@ -14,7 +10,7 @@ interface Props {
   children?: React.ReactNode;
   subnote?: React.ReactNode;
   className?: string;
-  controls?: 'all' | 'only-close';
+  controls?: "all" | "only-close";
 }
 
 export const Modal: React.FunctionComponent<Props> = ({
@@ -23,7 +19,7 @@ export const Modal: React.FunctionComponent<Props> = ({
   children,
   subnote,
   className,
-  controls = 'all',
+  controls = "all",
 }) => (
   <div className={classNames(styles.modal, className)}>
     <div className={styles.header}>
@@ -32,7 +28,7 @@ export const Modal: React.FunctionComponent<Props> = ({
         <span>{title}</span>
       </div>
       <div className={styles.controls}>
-        {controls === 'all' ? (
+        {controls === "all" ? (
           <>
             <IconButton align="end">
               <IconMinimize />
@@ -49,7 +45,6 @@ export const Modal: React.FunctionComponent<Props> = ({
             <IconCross />
           </IconButton>
         )}
-
       </div>
     </div>
     <div className={styles.content}>

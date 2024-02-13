@@ -1,6 +1,21 @@
 .container {
   display: flex;
   height: 100%;
+  background-color: #000;
+  justify-content: center;
+  padding: 40px 0px;
+  box-sizing: border-box;
+}
+
+.fields {
+  display: flex;
+  gap: 34px;
+  max-width: 1500px;
+  width: 100%;
+
+  & .column {
+    width: 50%;
+  }
 }
 
 .playersColumn {
@@ -16,12 +31,4 @@
   width: 40%;
   padding: 16px;
   gap: 8px;
-
-  &.left {
-    justify-content: flex-end;
-  }
-
-  &.right {
-    justify-content: flex-start;
-  }
 }

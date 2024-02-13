@@ -1,9 +1,7 @@
 declare const classNames: {
   readonly container: "container";
   readonly modal: "modal";
-  readonly playersTitle: "playersTitle";
-  readonly playerCountContainer: "playerCountContainer";
-  readonly playerCount: "playerCount";
-  readonly playersModal: "playersModal";
+  readonly title: "title";
+  readonly content: "content";
 };
 export = classNames;

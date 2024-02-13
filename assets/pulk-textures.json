@@ -1,0 +1,84 @@
+{"frames": {
+
+"background.svg":
+{
+	"frame": {"x":0,"y":0,"w":55,"h":55},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":55,"h":55},
+	"sourceSize": {"w":55,"h":55}
+},
+"block-garbage.svg":
+{
+	"frame": {"x":0,"y":55,"w":55,"h":55},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":55,"h":55},
+	"sourceSize": {"w":55,"h":55}
+},
+"block-i.svg":
+{
+	"frame": {"x":0,"y":110,"w":55,"h":55},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":55,"h":55},
+	"sourceSize": {"w":55,"h":55}
+},
+"block-j.png":
+{
+	"frame": {"x":0,"y":165,"w":55,"h":56},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":55,"h":56},
+	"sourceSize": {"w":55,"h":56}
+},
+"block-l.svg":
+{
+	"frame": {"x":0,"y":221,"w":55,"h":56},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":55,"h":56},
+	"sourceSize": {"w":55,"h":56}
+},
+"block-o.svg":
+{
+	"frame": {"x":0,"y":277,"w":55,"h":56},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":55,"h":56},
+	"sourceSize": {"w":55,"h":56}
+},
+"block-s.svg":
+{
+	"frame": {"x":0,"y":333,"w":55,"h":56},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":55,"h":56},
+	"sourceSize": {"w":55,"h":56}
+},
+"block-t.svg":
+{
+	"frame": {"x":0,"y":389,"w":55,"h":56},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":55,"h":56},
+	"sourceSize": {"w":55,"h":56}
+},
+"block-z.svg":
+{
+	"frame": {"x":0,"y":445,"w":55,"h":55},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":55,"h":55},
+	"sourceSize": {"w":55,"h":55}
+}},
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.1",
+	"image": "pulk-textures.png",
+	"format": "RGBA8888",
+	"size": {"w":55,"h":500},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:4b543f9f147817e83371a5132037b83a:fc28b662c995db5aa3adc4358611b14c:804dd511ba1e1b61fd930cdcc28aa6e4$"
+}
+}
