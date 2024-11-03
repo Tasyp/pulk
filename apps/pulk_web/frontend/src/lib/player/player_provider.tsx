@@ -3,16 +3,12 @@ import useSWRImmutable from "swr/immutable";
 
 import { PlayerContext } from "./player_context";
 import { LoadingSpinner } from "../../components";
-import { useLocalStorage } from "../utils";
-
-const LOCAL_STORAGE_ID = "pulk_player_id";
+import { useCachedPlayer } from "./cached_player";
 
 export const PlayerProvider: React.FunctionComponent<PropsWithChildren> = ({
   children,
 }) => {
-  const [cachedPlayerId, setCachedPlayerId] = useLocalStorage<
-    string | undefined
-  >(LOCAL_STORAGE_ID, undefined);
+  const [cachedPlayerId, setCachedPlayerId] = useCachedPlayer();
   const { data, error, isLoading } = useSWRImmutable(() =>
     cachedPlayerId === undefined ? "/api/player" : null,
   );

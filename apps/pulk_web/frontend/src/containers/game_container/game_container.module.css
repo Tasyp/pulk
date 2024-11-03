@@ -25,3 +25,9 @@
     justify-content: flex-start;
   }
 }
+
+.resetField {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+}

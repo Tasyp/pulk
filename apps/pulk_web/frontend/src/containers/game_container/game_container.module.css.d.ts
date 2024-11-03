@@ -4,5 +4,6 @@ declare const classNames: {
   readonly competitorsColumn: "competitorsColumn";
   readonly left: "left";
   readonly right: "right";
+  readonly resetField: "resetField";
 };
 export = classNames;

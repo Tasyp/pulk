@@ -28,6 +28,5 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
-
   config :pulk_web, PulkWeb.Endpoint, server: true
 end

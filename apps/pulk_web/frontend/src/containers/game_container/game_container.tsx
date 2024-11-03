@@ -1,20 +1,28 @@
 import React from "react";
 import classNames from "classnames";
+import { Button } from "react95";
 
 import { TetrisField } from "../tetris_field";
 import { BoardSnapshotView, LoadingSpinner } from "../../components";
 import { useRoom } from "./hooks";
 
 import styles from "./game_container.module.css";
+import { useCachedPlayer } from "../../lib/player/cached_player";
 
 interface Props {
   roomId: string;
 }
 
 export const GameContainer: React.FunctionComponent<Props> = ({ roomId }) => {
+  const [, setCachedPlayer] = useCachedPlayer();
   const { setBoard, error, player, otherPlayers, isLoading } = useRoom({
     roomId,
   });
+
+  const onReset = () => {
+    setCachedPlayer(undefined);
+    window.location.reload();
+  };
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -59,6 +67,11 @@ export const GameContainer: React.FunctionComponent<Props> = ({ roomId }) => {
               </div>
             ),
         )}
+      </div>
+      <div className={styles.resetField}>
+        <Button onClick={onReset} primary>
+          Reset field
+        </Button>
       </div>
     </div>
   );
