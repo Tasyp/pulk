@@ -3,3 +3,4 @@ export * from "./loading_spinner";
 export * from "./logo";
 export * from "./input_group";
 export * from "./modal";
+export * from "./tiled_background";
