@@ -1,11 +1,21 @@
 import { PieceUpdate } from "../room";
 
-export type Piece = "" | "I" | "O" | "T" | "S" | "Z" | "J" | "L" | "X";
+export const InteractivePieceTypes = [
+  "I",
+  "O",
+  "T",
+  "S",
+  "Z",
+  "J",
+  "L",
+] as const;
+export type InteractivePieceType = (typeof InteractivePieceTypes)[number];
+export type PieceType = "" | "X" | InteractivePieceType;
 
-export type Matrix = Piece[][];
+export type Matrix = PieceType[][];
 
 export type PositionedPiece = {
-  piece: Piece;
+  piece: PieceType;
   coordinates: [x: number, y: number][];
 };
 
@@ -21,7 +31,7 @@ export type Board = {
   placement: number | null;
   status: BoardStatus;
   activePiece: PositionedPiece | null;
-  pieceInHold: Piece | null;
+  pieceInHold: PieceType | null;
 };
 
 export type BoardSnapshot = {

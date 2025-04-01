@@ -1,5 +1,5 @@
 import { Channel } from "phoenix";
-import { BoardStatus, Matrix, Piece } from "../board";
+import { BoardStatus, Matrix, PieceType } from "../board";
 
 export type PlayerId = string;
 
@@ -13,7 +13,7 @@ export type IncomingBoardSnapshot = {
   status: BoardStatus;
   buffer_zone_size: number;
   active_piece: {
-    piece: Piece;
+    piece: PieceType;
     coordinates: [x: number, y: number][];
   } | null;
 };
@@ -27,10 +27,10 @@ export type RoomJoinPayload = {
     buffer_zone_size: number;
     status: BoardStatus;
     active_piece: {
-      piece: Piece;
+      piece: PieceType;
       coordinates: [x: number, y: number][];
     } | null;
-    piece_in_hold: Piece | null;
+    piece_in_hold: PieceType | null;
   };
   other_snapshots: Record<PlayerId, IncomingBoardSnapshot>;
 };
@@ -82,17 +82,17 @@ export enum Direction {
 
 export type PieceUpdate =
   | {
-      piece: Piece;
+      piece: PieceType;
       update_type: UpdateType.SIMPLE;
       relative_rotation: RelativeRotation;
     }
   | {
-      piece: Piece;
+      piece: PieceType;
       update_type: UpdateType.SIMPLE;
       direction: Direction;
     }
   | {
-      piece: Piece;
+      piece: PieceType;
       update_type: Exclude<UpdateType, UpdateType.SIMPLE>;
     };
 
@@ -129,10 +129,10 @@ export type RoomIncomingMessagePayload = {
   [RoomIncomingEventType.BOARD_UPDATE]: {
     matrix: Matrix;
     active_piece: {
-      piece: Piece;
+      piece: PieceType;
       coordinates: [x: number, y: number][];
     } | null;
-    piece_in_hold: Piece | null;
+    piece_in_hold: PieceType | null;
     score: number;
     status: BoardStatus;
     cleared_lines_count: number;
