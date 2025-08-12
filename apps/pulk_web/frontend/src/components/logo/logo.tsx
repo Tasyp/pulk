@@ -7,5 +7,5 @@ interface Props {
 }
 
 export const Logo: React.FunctionComponent<Props> = ({ className }) => (
-  <div className={classNames(styles.logo, className)}>Pulk.io</div>
+  <div className={classNames(styles.logo, className)}>Pulk.cc</div>
 );
