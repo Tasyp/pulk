@@ -1,4 +1,4 @@
-import { InteractivePieceType } from "../board";
+import { InteractivePieceType, InteractivePieceTypes } from "../board";
 import { PIECE_SHAPES } from "./shapes";
 import { getRandomPieceType } from "./utils";
 
@@ -13,23 +13,6 @@ export type GridPiece = {
 
 type GridBox = { isOccupied: boolean; piece: InteractivePieceType | null };
 type Grid = GridBox[][];
-type ProbabilityMap = number[][];
-
-// Configuration constants
-const TARGET_GRID_FILL = 0.1;
-const AVERAGE_PIECE_SIZE = 4;
-const MAX_PLACEMENT_ATTEMPTS = 100;
-const PROBABILITY_REDUCTION_RADIUS = 3;
-const PROBABILITY_REDUCTION_FACTOR = 0.3;
-
-export enum PatternStartPoint {
-  TOP_LEFT = "top_left",
-  TOP_RIGHT = "top_right",
-  BOTTOM_LEFT = "bottom_left",
-  BOTTOM_RIGHT = "bottom_right",
-  TOP_CENTER = "top_center",
-  BOTTOM_CENTER = "bottom_center",
-}
 
 const getEmptyGrid = (rows: number, cols: number): Grid => {
   return Array(rows)
@@ -41,72 +24,26 @@ const getEmptyGrid = (rows: number, cols: number): Grid => {
     );
 };
 
-const createProbabilityMap = (
+const SAFE_EDGE_BUFFER = 4;
+const getStartingPointCoordinates = (
   rows: number,
   cols: number,
   startPoint: PatternStartPoint,
-): ProbabilityMap => {
-  const map = Array(rows)
-    .fill(0)
-    .map(() => Array(cols).fill(0));
-
-  // Define corner coordinates
-  const corners = {
-    [PatternStartPoint.TOP_LEFT]: { row: 0, col: 0 },
-    [PatternStartPoint.TOP_RIGHT]: { row: 0, col: cols - 1 },
-    [PatternStartPoint.BOTTOM_LEFT]: { row: rows - 1, col: 0 },
-    [PatternStartPoint.BOTTOM_RIGHT]: { row: rows - 1, col: cols - 1 },
-    [PatternStartPoint.TOP_CENTER]: { row: 0, col: Math.floor(cols / 2) },
-    [PatternStartPoint.BOTTOM_CENTER]: {
-      row: rows - 1,
-      col: Math.floor(cols / 2),
-    },
-  };
-
-  const corner = corners[startPoint];
-
-  // Create probability based on distance from corner
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      const distance = Math.sqrt(
-        Math.pow(row - corner.row, 2) + Math.pow(col - corner.col, 2),
-      );
-      // Higher probability closer to corner, with falloff
-      map[row][col] = Math.max(0, 1 - distance / Math.max(rows, cols));
-    }
+) => {
+  switch (startPoint) {
+    case PatternStartPoint.TOP_LEFT:
+      return { row: 0, col: 0 };
+    case PatternStartPoint.TOP_RIGHT:
+      return { row: 0, col: cols - SAFE_EDGE_BUFFER };
+    case PatternStartPoint.BOTTOM_LEFT:
+      return { row: rows - SAFE_EDGE_BUFFER, col: 0 };
+    case PatternStartPoint.BOTTOM_RIGHT:
+      return { row: rows - SAFE_EDGE_BUFFER, col: cols - SAFE_EDGE_BUFFER };
+    case PatternStartPoint.TOP_CENTER:
+      return { row: 0, col: Math.floor(cols / 2) - 1 };
+    case PatternStartPoint.BOTTOM_CENTER:
+      return { row: rows - SAFE_EDGE_BUFFER, col: Math.floor(cols / 2) - 1 };
   }
-
-  return map;
-};
-
-const samplePositionFromProbabilityMap = (
-  probabilityMap: ProbabilityMap,
-): { row: number; col: number } | null => {
-  const rows = probabilityMap.length;
-  const cols = probabilityMap[0].length;
-
-  // Calculate total probability
-  let totalProbability = 0;
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      totalProbability += probabilityMap[row][col];
-    }
-  }
-
-  if (totalProbability === 0) return null;
-
-  // Sample based on probability
-  let random = Math.random() * totalProbability;
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      random -= probabilityMap[row][col];
-      if (random <= 0) {
-        return { row, col };
-      }
-    }
-  }
-
-  return null;
 };
 
 export const rotatePieceShape = (
@@ -114,8 +51,6 @@ export const rotatePieceShape = (
   rotation: number,
 ): number[][] => {
   const shape = PIECE_SHAPES[piece];
-  if (rotation === 0) return shape;
-
   const size = shape.length;
   const rotated = Array(size)
     .fill(0)
@@ -123,120 +58,187 @@ export const rotatePieceShape = (
 
   for (let i = 0; i < size; i++) {
     for (let j = 0; j < shape[i].length; j++) {
-      if (rotation === 1) {
-        rotated[j][size - 1 - i] = shape[i][j];
-      } else if (rotation === 2) {
-        rotated[size - 1 - i][size - 1 - j] = shape[i][j];
-      } else if (rotation === 3) {
-        rotated[size - 1 - j][i] = shape[i][j];
+      switch (rotation) {
+        case 1: // 90 degrees
+          rotated[j][size - 1 - i] = shape[i][j];
+          break;
+        case 2: // 180 degrees
+          rotated[size - 1 - i][size - 1 - j] = shape[i][j];
+          break;
+        case 3: // 270 degrees
+          rotated[size - 1 - j][i] = shape[i][j];
+          break;
+        default: // 0 degrees
+          rotated[i][j] = shape[i][j];
       }
     }
   }
   return rotated;
 };
 
-const canPlacePiece = (
-  grid: Grid,
-  piece: InteractivePieceType,
-  position: { row: number; col: number },
-  rotation: number,
-): boolean => {
-  const rotatedShape = rotatePieceShape(piece, rotation);
-  const { row, col } = position;
+export enum PatternStartPoint {
+  TOP_LEFT = "top_left",
+  TOP_RIGHT = "top_right",
+  BOTTOM_LEFT = "bottom_left",
+  BOTTOM_RIGHT = "bottom_right",
+  TOP_CENTER = "top_center",
+  BOTTOM_CENTER = "bottom_center",
+}
 
-  // Check bounds
-  if (
-    row < 0 ||
-    col < 0 ||
-    row + rotatedShape.length > grid.length ||
-    col + rotatedShape[0].length > grid[0].length
-  ) {
-    return false;
-  }
-
-  // Check for collisions
-  for (let i = 0; i < rotatedShape.length; i++) {
-    for (let j = 0; j < rotatedShape[i].length; j++) {
-      if (rotatedShape[i][j] && grid[row + i][col + j].isOccupied) {
-        return false;
-      }
-    }
-  }
-
-  return true;
-};
-
-const placePiece = (
-  grid: Grid,
-  pieces: GridPiece[],
-  piece: InteractivePieceType,
-  position: { row: number; col: number },
-  rotation: number,
-): void => {
-  pieces.push({ piece, position: { ...position, rotation } });
-  const rotatedShape = rotatePieceShape(piece, rotation);
-
-  // Mark grid as occupied
-  for (let i = 0; i < rotatedShape.length; i++) {
-    for (let j = 0; j < rotatedShape[i].length; j++) {
-      if (rotatedShape[i][j]) {
-        grid[position.row + i][position.col + j] = {
-          isOccupied: true,
-          piece: piece,
-        };
-      }
-    }
-  }
-};
-
-const reduceProbabilityAroundPosition = (
-  probabilityMap: ProbabilityMap,
-  position: { row: number; col: number },
-): void => {
-  const rows = probabilityMap.length;
-  const cols = probabilityMap[0].length;
-
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      const distance = Math.sqrt(
-        Math.pow(row - position.row, 2) + Math.pow(col - position.col, 2),
-      );
-      if (distance <= PROBABILITY_REDUCTION_RADIUS) {
-        probabilityMap[row][col] *= PROBABILITY_REDUCTION_FACTOR;
-      }
-    }
-  }
-};
-
+const PIECE_PATTERN_GRID_ATTEMPTS = InteractivePieceTypes.length * 4;
+const TARGET_GRID_FILL = 0.1;
+const AVERAGE_PIECE_SIZE = 4;
 export const getPiecePatternGrid = (
   rows: number,
   cols: number,
   startPoint: PatternStartPoint,
-): GridPiece[] => {
-  const grid = getEmptyGrid(rows, cols);
+) => {
   const pieces: GridPiece[] = [];
-  const probabilityMap = createProbabilityMap(rows, cols, startPoint);
 
-  // Calculate target number of pieces
+  const grid = getEmptyGrid(rows, cols);
+
+  const placePiece = (
+    piece: InteractivePieceType,
+    row: number,
+    col: number,
+    rotation: number,
+  ) => {
+    pieces.push({ piece, position: { row, col, rotation } });
+    const rotatedShape = rotatePieceShape(piece, rotation);
+    rotatedShape.forEach((shapeRow, i) => {
+      shapeRow.forEach((cell, j) => {
+        if (cell) {
+          grid[row + i][col + j] = { isOccupied: true, piece: piece };
+        }
+      });
+    });
+  };
+
+  const startingPoint = getStartingPointCoordinates(rows, cols, startPoint);
+
+  let attempts = 0;
+  while (attempts < PIECE_PATTERN_GRID_ATTEMPTS) {
+    const piece = getRandomPieceType();
+    const rotation = Math.floor(Math.random() * 4);
+    if (
+      isValidPosition(
+        grid,
+        piece,
+        { rows, cols },
+        { row: startingPoint.row, col: startingPoint.col },
+        rotation,
+        getIsGridEmpty(pieces),
+      )
+    ) {
+      placePiece(piece, startingPoint.row, startingPoint.col, rotation);
+      break;
+    }
+    attempts++;
+  }
+
   const totalArea = rows * cols;
   const targetArea = totalArea * TARGET_GRID_FILL;
   const targetPieces = Math.floor(targetArea / AVERAGE_PIECE_SIZE);
 
-  let attempts = 0;
-  while (pieces.length < targetPieces && attempts < MAX_PLACEMENT_ATTEMPTS) {
-    const position = samplePositionFromProbabilityMap(probabilityMap);
-    if (!position) break; // No more valid positions
+  let failedAttempts = 0;
+  const maxFailedAttempts = 1000;
+  while (pieces.length < targetPieces && failedAttempts < maxFailedAttempts) {
+    const existingPiece = pieces[Math.floor(Math.random() * pieces.length)];
 
-    const piece = getRandomPieceType();
-    const rotation = Math.floor(Math.random() * 4);
+    const directions = [
+      [-1, 0],
+      [1, 0],
+      [0, -1],
+      [0, 1],
+    ];
+    let placed = false;
 
-    if (canPlacePiece(grid, piece, position, rotation)) {
-      placePiece(grid, pieces, piece, position, rotation);
-      reduceProbabilityAroundPosition(probabilityMap, position);
+    for (const [dRow, dCol] of directions) {
+      let attempts = 0;
+      while (attempts < PIECE_PATTERN_GRID_ATTEMPTS) {
+        const piece = getRandomPieceType();
+        const rotation = Math.floor(Math.random() * 4);
+        const rotatedShape = rotatePieceShape(piece, rotation);
+        const newRow = existingPiece.position.row + dRow * rotatedShape.length;
+        const newCol =
+          existingPiece.position.col + dCol * rotatedShape[0].length;
+
+        if (
+          isValidPosition(
+            grid,
+            piece,
+            { rows, cols },
+            { row: newRow, col: newCol },
+            rotation,
+            getIsGridEmpty(pieces),
+          )
+        ) {
+          placePiece(piece, newRow, newCol, rotation);
+          placed = true;
+          break;
+        }
+        attempts++;
+      }
+      if (placed) break;
     }
 
-    attempts++;
+    if (!placed) failedAttempts++;
   }
 
   return pieces;
 };
+
+const isValidPosition = (
+  grid: Grid,
+  piece: InteractivePieceType,
+  gridSize: { rows: number; cols: number },
+  position: { row: number; col: number },
+  rotation: number,
+  isGridEmpty: boolean,
+) => {
+  if (position.row < 0 || position.col < 0) return false;
+
+  const rotatedShape = rotatePieceShape(piece, rotation);
+  if (
+    position.row + rotatedShape.length > gridSize.rows ||
+    position.col + rotatedShape[0].length > gridSize.cols
+  ) {
+    return false;
+  }
+
+  let hasAdjacent = false;
+  for (let i = 0; i < rotatedShape.length; i++) {
+    for (let j = 0; j < rotatedShape[i].length; j++) {
+      if (rotatedShape[i][j]) {
+        if (grid[position.row + i][position.col + j].isOccupied) return false;
+
+        const adjacentPositions = [
+          [position.row + i - 1, position.col + j],
+          [position.row + i + 1, position.col + j],
+          [position.row + i, position.col + j - 1],
+          [position.row + i, position.col + j + 1],
+        ];
+
+        for (const [adjRow, adjCol] of adjacentPositions) {
+          if (
+            adjRow >= 0 &&
+            adjRow < gridSize.rows &&
+            adjCol >= 0 &&
+            adjCol < gridSize.cols
+          ) {
+            if (grid[adjRow][adjCol].isOccupied) {
+              hasAdjacent = true;
+              if (grid[adjRow][adjCol].piece === piece) {
+                return false;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return hasAdjacent || isGridEmpty;
+};
+
+const getIsGridEmpty = (pieces: GridPiece[]) => pieces.length === 0;
